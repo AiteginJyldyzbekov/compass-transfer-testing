@@ -1,0 +1,11 @@
+{
+  "Main": {
+    "welcomeMessage": "Welcome,",
+    "profileTitle": "User Profile:"
+  },
+  "languages": {
+    "kg": "Kyrg",
+    "ru": "Rus",
+    "en": "Eng"
+  }
+}

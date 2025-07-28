@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "./**/*",
+    "../../packages/features/**/*",
+    "../../packages/server/**/*",
+    "../../packages/entities/**/*",
+    "../../packages/shared/**/*"
+  ]
+}

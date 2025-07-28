@@ -1,0 +1,13 @@
+{
+  "Tariffs": {
+    "title": "Select Tariff",
+    "occupancy": "Up to {count} people",
+    "loading": "Loading tariffs...",
+    "tariffNames": {
+      "Economy": "Economy",
+      "Comfort": "Comfort",
+      "ComfortPlus": "Comfort+",
+      "Business": "Business"
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "MainTerminal": {
+    "welcomeMessage": "Directions of our country",
+    "heroTitle": "Taxi to anywhere in Kyrgyzstan!",
+    "heroTitleBishkek": "Taxi around Bishkek!",
+    "heroTitleChui": "Taxi around Chui region!",
+    "heroTitleNaryn": "Taxi around Naryn region!",
+    "heroTitleOsh": "Taxi around Osh region!",
+    "heroTitleBatken": "Taxi around Batken region!",
+    "heroTitleTalas": "Taxi around Talas region!",
+    "heroTitleJalalAbad": "Taxi around Jalal-Abad region!",
+    "heroTitleIssykKul": "Taxi around Issyk-Kul region!",
+    "clickRegionMessage": "Click on the appropriate area of the picture",
+    "searchPlaceholder": "Where are we going?",
+    "distanceKm": "km",
+    "taxiDescription": "Here you can get an instant taxi, enter your address and let's go",
+    "helpButton": "Q&A"
+  },
+
+  "Regions": {
+    "bishkek": "Bishkek",
+    "chui": "Chui",
+    "naryn": "Naryn",
+    "osh": "Osh",
+    "batken": "Batken",
+    "talas": "Talas",
+    "jalal-abad": "Jalal-Abad",
+    "issyk-kul": "Issyk-Kul"
+  },
+
+  "FAQ": {
+    "title": "Frequently Asked Questions",
+    "close": "Close",
+    "contactTitle": "Didn't find the answer to your question?",
+    "contactDescription": "Contact our support service:",
+    "phone": "Phone",
+    "email": "Email",
+    "workingHours": "Working hours",
+    "workingHoursValue": "24/7",
+    "questions": {
+      "howToOrder": {
+        "question": "How to order a taxi through the terminal?",
+        "answer": "Select a region on the main page, then specify your destination. You can add multiple stops for a complex route. After selecting locations, proceed to payment and choose a convenient payment method."
+      },
+      "paymentMethods": {
+        "question": "What payment methods are available?",
+        "answer": "The following payment methods are available: bank card via POS terminal, QR code payment through mobile banking app, and cash payment to the driver upon boarding."
+      },
+      "priceCalculation": {
+        "question": "How is the trip cost calculated?",
+        "answer": "The cost is calculated automatically based on the route distance and current tariffs. The base pickup cost and cost per kilometer are taken into account. The total amount is displayed before payment."
+      },
+      "multipleStops": {
+        "question": "Can I add multiple stops?",
+        "answer": "Yes, you can add multiple intermediate stops. On the location selection page, click \"Add point\" after selecting the first destination. All stops will be taken into account when calculating the cost."
+      },
+      "noDriver": {
+        "question": "What to do if no driver is found?",
+        "answer": "If there are currently no available drivers in your area, the system will automatically notify you. Try repeating the order in a few minutes or choose a different time."
+      },
+      "cancelOrder": {
+        "question": "How to cancel an order?",
+        "answer": "You can cancel an order before the driver arrives without additional charge. After the driver accepts the order, cancellation may incur a fee according to the tariffs."
+      },
+      "waitingTime": {
+        "question": "How long to wait for a driver?",
+        "answer": "The average car arrival time is 5-15 minutes depending on traffic congestion and the number of available drivers in the area. The exact time will be indicated when confirming the order."
+      },
+      "languages": {
+        "question": "Can I use the terminal in different languages?",
+        "answer": "Yes, the terminal supports multiple languages: Kyrgyz, Russian, and English. You can switch the language at the bottom of the main page."
+      },
+      "technicalIssues": {
+        "question": "What to do in case of technical problems?",
+        "answer": "If you experience technical problems with the terminal, contact the facility administrator or contact our support service at [phone]."
+      },
+      "safety": {
+        "question": "Are trips through the terminal safe?",
+        "answer": "All drivers undergo verification and have the necessary documents. Vehicles regularly undergo technical inspection. Each trip is tracked via GPS, which ensures passenger safety."
+      }
+    }
+  },
+
+  "Footer": {
+    "companyDetails": "Our Company Details",
+    "publicOffer": "Public Offer and Terms of Service",
+    "privacyPolicy": "Privacy Policy"
+  },
+
+  "Common": {
+    "back": "Back",
+    "reset": "Reset",
+    "next": "Next",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  }
+}

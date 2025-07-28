@@ -1,0 +1,24 @@
+{
+  "Locations": {
+    "addPoint": "Точканы кошуу",
+    "locationsTitle": "Локациялар",
+    "selectTariff": "Тарифти тандоо",
+    "goToPayment": "Төлөмгө өтүү",
+    "title": "Багыт тандоо",
+    "subtitle": "Кетүү жана барчу жерлерди тандаңыз",
+    "selectedRoute": "Тандалган багыт",
+    "from": "Кайдан",
+    "to": "Кайда",
+    "selectFrom": "Кетүү жерин тандаңыз",
+    "selectTo": "Барчу жерди тандаңыз",
+    "selectFromFirst": "Адегенде кетүү жерин тандаңыз",
+    "searchFrom": "Кетүү жерин издөө",
+    "searchTo": "Барчу жерди издөө",
+    "searchPlaceholder": "Жердин атын же дарегин жазыңыз",
+    "availableLocations": "Жеткиликтүү жерлер",
+    "noResults": "Сиздин сурооңуз боюнча эч нерсе табылган жок",
+    "noLocations": "Жерлер табылган жок",
+    "proceedToTariff": "Тариф тандоо",
+    "locationsNotFound": "Локациялар табылган жок"
+  }
+}

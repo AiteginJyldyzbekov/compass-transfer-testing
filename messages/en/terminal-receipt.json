@@ -1,0 +1,16 @@
+{
+  "Receipt": {
+    "takeReceipt": "Take your receipt",
+    "photoInstruction": "Take a photo of the receipt to keep the trip information safe. This receipt confirms your order and contains all necessary details.",
+    "transactionSuccess": "Transaction successful",
+    "status": "Status",
+    "active": "Active",
+    "date": "Date",
+    "name": "Name",
+    "car": "Car",
+    "carNumber": "Car number",
+    "code": "Code",
+    "purchase": "Purchase",
+    "toMain": "To main page"
+  }
+}

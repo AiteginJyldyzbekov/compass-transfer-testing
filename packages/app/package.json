@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "name": "@my/app",
+  "main": "index.ts",
+  "types": "./index.ts",
+  "private": true
+}

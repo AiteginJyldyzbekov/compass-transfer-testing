@@ -1,0 +1,361 @@
+stages:
+  - install
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: '20'
+
+# Кэширование для ускорения сборки
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - .yarn/cache/
+    - .next/cache/
+
+# Установка зависимостей (только при изменении package.json/yarn.lock или ручной запуск)
+install_dependencies:
+  stage: install
+  image: node:${NODE_VERSION}-alpine
+  script:
+    - echo "📦 Установка зависимостей"
+    - echo "Yarn версия:" && yarn --version
+    - yarn install --frozen-lockfile
+    - echo "✅ Зависимости установлены"
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 24 hours
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web" && ($CI_COMMIT_REF_NAME == "main" || $CI_COMMIT_REF_NAME == "develop")
+      when: manual
+      allow_failure: false
+    - if: $CI_COMMIT_REF_NAME == "main" || $CI_COMMIT_REF_NAME == "develop"
+      changes:
+        - package.json
+        - yarn.lock
+        - packages/*/package.json
+      when: on_success
+    - if: $CI_COMMIT_REF_NAME == "main" || $CI_COMMIT_REF_NAME == "develop"
+      when: manual
+      allow_failure: true
+
+# Сборка Admin приложения (порт 3027)
+build_admin:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - install_dependencies
+  before_script:
+    - |
+      if [ ! -d "node_modules" ]; then
+        echo "📦 node_modules не найден, устанавливаем зависимости..."
+        yarn install --frozen-lockfile
+      else
+        echo "✅ Используем кэшированные зависимости"
+      fi
+  variables:
+    APP_VERSION: '1.0.0'
+    NODE_ENV: 'production'
+    HOSTNAME: 'compass.local'
+    PORT: '3027'
+    NEXT_PUBLIC_API_URL: 'http://karaoketest.ru/api'
+    NEXT_PUBLIC_DOMAIN: '.karaoketest.ru'
+    AUTH_COOKIE_NAME: '.AspNetCore.Identity.Application'
+    NEXT_PUBLIC_WS_BASE_URL: 'ws://karaoketest.ru/hubs/wshub'
+  script:
+    - echo "🏗️ Сборка Admin приложения (порт 3027)"
+    - cd apps/compass-admin
+    - echo "Создание .env.production файла..."
+    - |
+      cat > .env.production << EOF
+      APP_VERSION=$APP_VERSION
+      NODE_ENV=$NODE_ENV
+      HOSTNAME=$HOSTNAME
+      PORT=$PORT
+      NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      NEXT_PUBLIC_DOMAIN=$NEXT_PUBLIC_DOMAIN
+      AUTH_COOKIE_NAME=$AUTH_COOKIE_NAME
+      NEXT_PUBLIC_WS_BASE_URL=$NEXT_PUBLIC_WS_BASE_URL
+      EOF
+    - echo "Environment файл создан:"
+    - cat .env.production
+    - yarn build
+    - echo "✅ Admin приложение собрано"
+  artifacts:
+    paths:
+      - apps/compass-admin/.next/
+      - apps/compass-admin/.env.production
+    expire_in: 1 day
+  only:
+    - main
+    - develop
+
+# Сборка Driver приложения (порт 3028)
+build_driver:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - install_dependencies
+  before_script:
+    - |
+      if [ ! -d "node_modules" ]; then
+        echo "📦 node_modules не найден, устанавливаем зависимости..."
+        yarn install --frozen-lockfile
+      else
+        echo "✅ Используем кэшированные зависимости"
+      fi
+  variables:
+    APP_VERSION: '1.0.0'
+    NODE_ENV: 'production'
+    HOSTNAME: 'compass.local'
+    PORT: '3028'
+    NEXT_PUBLIC_API_URL: 'http://testingkg.su/api'
+    NEXT_PUBLIC_DOMAIN: '.testingkg.su'
+    AUTH_COOKIE_NAME: '.AspNetCore.Identity.Application'
+    NEXT_PUBLIC_WS_BASE_URL: 'ws://testingkg.su/hubs/wshub'
+  script:
+    - echo "🏗️ Сборка Driver приложения (порт 3028)"
+    - cd apps/compass-driver
+    - echo "Создание .env.production файла..."
+    - |
+      cat > .env.production << EOF
+      APP_VERSION=$APP_VERSION
+      NODE_ENV=$NODE_ENV
+      HOSTNAME=$HOSTNAME
+      PORT=$PORT
+      NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      NEXT_PUBLIC_DOMAIN=$NEXT_PUBLIC_DOMAIN
+      AUTH_COOKIE_NAME=$AUTH_COOKIE_NAME
+      NEXT_PUBLIC_WS_BASE_URL=$NEXT_PUBLIC_WS_BASE_URL
+      EOF
+    - echo "Environment файл создан:"
+    - cat .env.production
+    - yarn build
+    - echo "✅ Driver приложение собрано"
+  artifacts:
+    paths:
+      - apps/compass-driver/.next/
+      - apps/compass-driver/.env.production
+    expire_in: 1 day
+  only:
+    - main
+    - develop
+
+# Сборка Terminal приложения (порт 3029)
+build_terminal:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - install_dependencies
+  before_script:
+    - |
+      if [ ! -d "node_modules" ]; then
+        echo "📦 node_modules не найден, устанавливаем зависимости..."
+        yarn install --frozen-lockfile
+      else
+        echo "✅ Используем кэшированные зависимости"
+      fi
+  variables:
+    APP_VERSION: '1.0.0'
+    NODE_ENV: 'production'
+    HOSTNAME: 'compass.local'
+    PORT: '3029'
+    NEXT_PUBLIC_API_URL: 'http://daimnemas.su/api'
+    NEXT_PUBLIC_DOMAIN: '.daimnemas.su'
+    AUTH_COOKIE_NAME: '.AspNetCore.Identity.Application'
+    NEXT_PUBLIC_WS_BASE_URL: 'ws://daimnemas.su/hubs/wshub'
+  script:
+    - echo "🏗️ Сборка Terminal приложения (порт 3029)"
+    - cd apps/compass-terminal
+    - echo "Создание .env.production файла..."
+    - |
+      cat > .env.production << EOF
+      APP_VERSION=$APP_VERSION
+      NODE_ENV=$NODE_ENV
+      HOSTNAME=$HOSTNAME
+      PORT=$PORT
+      NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      NEXT_PUBLIC_DOMAIN=$NEXT_PUBLIC_DOMAIN
+      AUTH_COOKIE_NAME=$AUTH_COOKIE_NAME
+      NEXT_PUBLIC_WS_BASE_URL=$NEXT_PUBLIC_WS_BASE_URL
+      EOF
+    - echo "Environment файл создан:"
+    - cat .env.production
+    - yarn build
+    - echo "✅ Terminal приложение собрано"
+  artifacts:
+    paths:
+      - apps/compass-terminal/.next/
+      - apps/compass-terminal/.env.production
+    expire_in: 1 day
+  only:
+    - main
+    - develop
+
+# Деплой Admin приложения
+deploy_admin:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - build_admin
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - eval $(ssh-agent -s)
+    # Создаем временный файл для ключа
+    - echo "$SSH_PRIVATE_KEY" > /tmp/ssh_key
+    - echo "==== SSH KEY BEGIN ===="
+    - cat /tmp/ssh_key
+    - echo "==== SSH KEY END ===="
+    - chmod 600 /tmp/ssh_key
+    - ssh-add /tmp/ssh_key
+    - rm /tmp/ssh_key
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - echo "🚀 Деплой Admin приложения (порт 3027)"
+    - echo "Синхронизация файлов..."
+    - rsync -avz --delete apps/compass-admin/.next/ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/admin/.next/
+    - rsync -avz apps/compass-admin/.env.production $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/admin/
+    - echo "Перезапуск PM2 процесса..."
+    - ssh $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH/admin && pm2 restart compass-admin || pm2 start npm --name compass-admin -- start"
+    - echo "✅ Admin приложение задеплоено на порт 3027"
+  environment:
+    name: production-admin
+    url: http://karaoketest.ru
+  only:
+    - main
+  when: manual
+
+# Деплой Driver приложения
+deploy_driver:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - build_driver
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - eval $(ssh-agent -s)
+    # Создаем временный файл для ключа
+    - echo "$SSH_PRIVATE_KEY" > /tmp/ssh_key
+    - echo "==== SSH KEY BEGIN ===="
+    - cat /tmp/ssh_key
+    - echo "==== SSH KEY END ===="
+    - chmod 600 /tmp/ssh_key
+    - ssh-add /tmp/ssh_key
+    - rm /tmp/ssh_key
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - echo "🚀 Деплой Driver приложения (порт 3028)"
+    - echo "Синхронизация файлов..."
+    - rsync -avz --delete apps/compass-driver/.next/ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/driver/.next/
+    - rsync -avz apps/compass-driver/.env.production $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/driver/
+    - echo "Перезапуск PM2 процесса..."
+    - ssh $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH/driver && pm2 restart compass-driver || pm2 start npm --name compass-driver -- start"
+    - echo "✅ Driver приложение задеплоено на порт 3028"
+  environment:
+    name: production-driver
+    url: http://testingkg.su
+  only:
+    - main
+  when: manual
+
+# Деплой Terminal приложения
+deploy_terminal:
+  stage: deploy
+  image: alpine:latest
+  dependencies: [build_terminal]
+
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - eval $(ssh-agent -s)
+    # Создаем временный файл для ключа
+    - echo "$SSH_PRIVATE_KEY" > /tmp/ssh_key
+    - echo "==== SSH KEY BEGIN ===="
+    - cat /tmp/ssh_key
+    - echo "==== SSH KEY END ===="
+    - chmod 600 /tmp/ssh_key
+    - ssh-add /tmp/ssh_key
+    - rm /tmp/ssh_key
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+
+  script:
+    - echo "🚀 Деплой Terminal (3029)"
+    - echo $DEPLOY_USER
+    - echo $DEPLOY_HOST
+    - echo $DEPLOY_PATH
+    # 1. создаём каталог на сервере
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p $DEPLOY_PATH/terminal/.next"
+    # 2. синхронизация
+    - rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes" \
+      apps/compass-terminal/.next/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/terminal/.next/"
+    - rsync -avz -e "ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes" \
+      apps/compass-terminal/.env.production "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/terminal/"
+    # 3. перезапуск PM2
+    - ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes "$DEPLOY_USER@$DEPLOY_HOST" \
+      "cd $DEPLOY_PATH/terminal && pm2 restart compass-terminal || pm2 start npm --name compass-terminal -- start"
+    - echo "✅ Terminal задеплоен"
+
+# Деплой всех приложений одновременно
+deploy_all:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - build_admin
+    - build_driver
+    - build_terminal
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - eval $(ssh-agent -s)
+    # Создаем временный файл для ключа
+    - echo "$SSH_PRIVATE_KEY" > /tmp/ssh_key
+    - echo "==== SSH KEY BEGIN ===="
+    - cat /tmp/ssh_key
+    - echo "==== SSH KEY END ===="
+    - chmod 600 /tmp/ssh_key
+    - ssh-add /tmp/ssh_key
+    - rm /tmp/ssh_key
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - echo "🚀 Деплой всех приложений Compass 2.0"
+    - echo "Синхронизация Admin..."
+    - rsync -avz --delete apps/compass-admin/.next/ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/admin/.next/
+    - rsync -avz apps/compass-admin/.env.production $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/admin/
+    - echo "Синхронизация Driver..."
+    - rsync -avz --delete apps/compass-driver/.next/ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/driver/.next/
+    - rsync -avz apps/compass-driver/.env.production $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/driver/
+    - echo "Синхронизация Terminal..."
+    - rsync -avz --delete apps/compass-terminal/.next/ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/terminal/.next/
+    - rsync -avz apps/compass-terminal/.env.production $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/terminal/
+    - echo "Перезапуск всех PM2 процессов..."
+    - ssh $DEPLOY_USER@$DEPLOY_HOST "pm2 restart compass-admin compass-driver compass-terminal || echo 'Некоторые процессы не найдены'"
+    - echo "✅ Все приложения задеплоены"
+  environment:
+    name: production-all
+  only:
+    - main
+  when: manual
+
+# Очистка кэша (ручной запуск)
+cleanup_cache:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "🧹 Очистка кэша CI/CD"
+    - rm -rf node_modules/ .yarn-cache/ .next/cache/
+    - echo "✅ Кэш очищен"
+  when: manual
+  only:
+    - main

@@ -1,0 +1,13 @@
+{
+  "Tariffs": {
+    "title": "Выбор тарифа",
+    "occupancy": "До {count} человек",
+    "loading": "Загрузка тарифов...",
+    "tariffNames": {
+      "Economy": "Эконом",
+      "Comfort": "Комфорт",
+      "ComfortPlus": "Комфорт+",
+      "Business": "Бизнес"
+    }
+  }
+}

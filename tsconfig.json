@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@compass-admin/*": ["./apps/compass-admin/src/*"],
+      "@compass-driver/*": ["./apps/compass-driver/src/*"],
+      "@compass-terminal/*": ["./apps/compass-terminal/src/*"],
+      "@app/*": ["./packages/app/*"],
+      "@pages/*": ["./packages/pages/*"],
+      "@widgets/*": ["./packages/widgets/*"],
+      "@entities/*": ["./packages/entities/*"],
+      "@features/*": ["./packages/features/*"],
+      "@server/*": ["./packages/server/*"],
+      "@shared/*": ["./packages/shared/*"]
+    },
+    "target": "ES2017"
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "apps/compass-admin/next-env.d.ts",
+    "apps/compass-admin/src/types/env.d.ts",
+    "apps/compass-admin/.next/types/**/*.ts",
+    "apps/compass-admin/tsconfig.json",
+    "apps/compass-admin/src/middleware.t1",
+    "apps/compass-admin/src/app/фывыфв"
+  ],
+  "exclude": ["node_modules"]
+}

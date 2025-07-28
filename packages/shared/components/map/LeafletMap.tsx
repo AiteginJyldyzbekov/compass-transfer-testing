@@ -1,0 +1,290 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle } from 'react-leaflet';
+// Импорты типов и компонентов
+import {
+  MapClickHandler,
+  MapBoundsHandler,
+  LocationMarker,
+  DriverMarker,
+  RouteMarker,
+  RouteSelectionMarker,
+} from './components';
+import { useRouteBuilder, useDriverTracking, useUIScale } from './hooks';
+import { createPinIcon, getColorByType } from './icons';
+import type { LeafletMapProps } from './types';
+import { calculateHeading } from './utils';
+
+/**
+ * Компонент карты на основе React-Leaflet и OpenStreetMap
+ */
+export const LeafletMap: React.FC<LeafletMapProps> = ({
+  latitude,
+  longitude,
+  zoom = 13,
+  height = '400px',
+  width = '100%',
+  showMarker = true,
+  markerText,
+  routePoints = [],
+  showRoute = false,
+  activeDrivers = [],
+  showActiveDrivers = false,
+  className = '',
+  onMapClick,
+  onBoundsChange,
+  onDriverSelect,
+  selectedDriverId,
+  mapLocations = [],
+  selectedLocationIds = [],
+  onLocationToggle,
+  getDriverById,
+  showDriverSearchZone = false,
+  driverSearchRadius = 2000,
+  currentDriverLocation,
+  routeDeviationThreshold = 100,
+  onRouteDeviation,
+  locations = [],
+  selectedStartLocation,
+  selectedEndLocation,
+  onLocationSelect,
+  isSelectingStart = true,
+}) => {
+  const position: [number, number] = [latitude, longitude];
+  const [isClient, setIsClient] = useState(false);
+
+  // Инициализация на клиенте
+  useEffect(() => {
+    setIsClient(true);
+
+    // Динамический импорт Leaflet только на клиенте
+    import('leaflet').then(L => {
+      // Динамически добавляем CSS
+      if (typeof document !== 'undefined') {
+        const link = document.createElement('link');
+
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      // Исправляем проблему с иконками маркеров в Next.js
+      delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl:
+          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      });
+    });
+  }, []);
+
+  // Используем хуки
+  const uiScale = useUIScale();
+  const routeCoordinates = useRouteBuilder(showRoute, routePoints);
+  const { isDriverOffRoute } = useDriverTracking({
+    currentDriverLocation,
+    routeCoordinates,
+    routeDeviationThreshold,
+    onRouteDeviation,
+  });
+
+  // Показываем загрузку пока не инициализирован клиент
+  if (!isClient) {
+    return (
+      <div className={className} style={{ height, width }}>
+        <div className='w-full h-full flex items-center justify-center bg-gray-100 rounded-lg'>
+          <div className='flex flex-col items-center gap-2'>
+            <div className='h-8 w-8 rounded-full bg-gray-300 animate-pulse' />
+            <p className='text-sm text-gray-500'>Загрузка карты...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={className} style={{ height, width }}>
+      <style>{`
+        .leaflet-popup-content-wrapper {
+          font-size: 1rem !important;
+        }
+        .leaflet-popup-content {
+          margin: 0.75rem !important;
+            font-size: inherit !important;
+        }
+        .leaflet-popup-close-button {
+          font-size: 1.5rem !important;
+          padding: 0.25rem 0.5rem !important;
+        }
+      `}</style>
+      <MapContainer
+        center={position}
+        zoom={zoom}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom
+      >
+        {/* Обычная карта без топографии и POI */}
+        <TileLayer attribution='' url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' />
+
+        {/* Обработчик кликов по карте */}
+        {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
+
+        {/* Обработчик изменения границ карты */}
+        {onBoundsChange && <MapBoundsHandler onBoundsChange={onBoundsChange} />}
+
+        {/* Основной маркер */}
+        {showMarker && (
+          <Marker position={position}>
+            <Popup>
+              {markerText || `Координаты: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`}
+            </Popup>
+          </Marker>
+        )}
+
+        {/* Маркеры маршрута */}
+        {routePoints.map((point, index) => (
+          <RouteMarker
+            key={index}
+            point={point}
+            index={index}
+            routePoints={routePoints}
+            onLocationToggle={onLocationToggle}
+            uiScale={uiScale}
+          />
+        ))}
+
+        {/* Маркеры активных водителей */}
+        {showActiveDrivers &&
+          activeDrivers.map(driver => {
+            // Вычисляем направление движения водителя к ближайшей точке маршрута
+            let heading = 0;
+
+            if (routePoints.length > 0) {
+              const routeLocations = routePoints.filter(p => p.type !== 'driver');
+
+              if (routeLocations.length > 0) {
+                const nearestPoint = routeLocations[0];
+
+                heading = calculateHeading(
+                  driver.currentLocation.latitude,
+                  driver.currentLocation.longitude,
+                  nearestPoint.latitude,
+                  nearestPoint.longitude,
+                );
+              }
+            }
+
+            return (
+              <DriverMarker
+                key={`driver-${driver.id}`}
+                driver={driver}
+                isSelected={selectedDriverId === driver.id}
+                heading={heading}
+                onDriverSelect={onDriverSelect}
+                getDriverById={getDriverById}
+                uiScale={uiScale}
+              />
+            );
+          })}
+
+        {/* Дорожный маршрут */}
+        {showRoute && routeCoordinates.length >= 2 && (
+          <>
+            {/* Подложка маршрута (темная) */}
+            <Polyline
+              positions={routeCoordinates}
+              color={isDriverOffRoute ? '#7f1d1d' : '#1e40af'}
+              weight={4}
+              opacity={0.8}
+            />
+            {/* Основная линия маршрута */}
+            <Polyline
+              positions={routeCoordinates}
+              color={isDriverOffRoute ? '#ef4444' : '#3b82f6'}
+              weight={2}
+              opacity={0.9}
+            />
+            {/* Индикатор отклонения от маршрута */}
+            {isDriverOffRoute && currentDriverLocation && (
+              <Circle
+                center={[currentDriverLocation.latitude, currentDriverLocation.longitude]}
+                radius={routeDeviationThreshold}
+                color='#ef4444'
+                weight={2}
+                opacity={0.7}
+                fillColor='#ef4444'
+                fillOpacity={0.2}
+                dashArray='5, 5'
+              />
+            )}
+          </>
+        )}
+
+        {/* Зона поиска водителей для мгновенных заказов */}
+        {showDriverSearchZone &&
+          routePoints &&
+          routePoints.length > 0 &&
+          routePoints[0] &&
+          typeof routePoints[0].latitude === 'number' &&
+          typeof routePoints[0].longitude === 'number' &&
+          !isNaN(routePoints[0].latitude) &&
+          !isNaN(routePoints[0].longitude) && (
+            <Circle
+              center={[routePoints[0].latitude, routePoints[0].longitude]}
+              radius={driverSearchRadius}
+              color='#3b82f6'
+              weight={2}
+              opacity={0.6}
+              fillColor='#3b82f6'
+              fillOpacity={0.1}
+            />
+          )}
+
+        {/* Маркеры доступных локаций */}
+        {mapLocations.map(location => {
+          const icon = createPinIcon(getColorByType('location'), undefined, uiScale);
+          const isSelected = selectedLocationIds.includes(location.id);
+
+          return (
+            <LocationMarker
+              key={`loc-${location.id}`}
+              location={location}
+              icon={icon}
+              isSelected={isSelected}
+              onLocationToggle={onLocationToggle}
+            />
+          );
+        })}
+
+        {/* Маркеры локаций для выбора маршрута */}
+        {locations.map(location => (
+          <RouteSelectionMarker
+            key={`route-loc-${location.id}`}
+            location={location}
+            selectedStartLocation={selectedStartLocation}
+            selectedEndLocation={selectedEndLocation}
+            onLocationSelect={onLocationSelect}
+            isSelectingStart={isSelectingStart}
+            uiScale={uiScale}
+          />
+        ))}
+
+        {/* Маршрут между выбранными локациями */}
+        {selectedStartLocation && selectedEndLocation && showRoute && (
+          <Polyline
+            positions={[
+              [selectedStartLocation.latitude, selectedStartLocation.longitude],
+              [selectedEndLocation.latitude, selectedEndLocation.longitude],
+            ]}
+            color='#3b82f6'
+            weight={3}
+            opacity={0.7}
+            dashArray='10, 10'
+          />
+        )}
+      </MapContainer>
+    </div>
+  );
+};

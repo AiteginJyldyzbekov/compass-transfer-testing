@@ -1,0 +1,22 @@
+services:
+  compass-admin:
+    image: node:20-alpine3.19
+    working_dir: /app
+    restart: always
+    volumes:
+      - ../:/app
+    ports:
+      - '3027:3027'
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ../apps/compass-admin/.env.production
+    command: >
+      sh -c "yarn start:admin"
+    networks:
+      - compass-network
+
+networks:
+  compass-network:
+    name: compass_default
+    external: true

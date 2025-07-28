@@ -1,0 +1,58 @@
+import type { Notification } from './types';
+
+export const notifications: Notification[] = [
+  {
+    id: 1,
+    type: 'order',
+    title: 'Новый заказ',
+    message: 'Получен заказ #12345 от ул. Советская до аэропорта',
+    time: '2 минуты назад',
+    isRead: false,
+    priority: 'high',
+  },
+  {
+    id: 2,
+    type: 'payment',
+    title: 'Оплата получена',
+    message: 'Заказ #12340 успешно оплачен картой',
+    time: '15 минут назад',
+    isRead: false,
+    priority: 'medium',
+  },
+  {
+    id: 3,
+    type: 'system',
+    title: 'Обновление системы',
+    message: 'Запланировано обновление системы завтра в 03:00',
+    time: '1 час назад',
+    isRead: true,
+    priority: 'low',
+  },
+  {
+    id: 4,
+    type: 'support',
+    title: 'Обращение в поддержку',
+    message: 'Пассажир оставил отзыв о поездке',
+    time: '2 часа назад',
+    isRead: true,
+    priority: 'medium',
+  },
+  {
+    id: 5,
+    type: 'order',
+    title: 'Заказ отменен',
+    message: 'Заказ #12338 отменен пассажиром',
+    time: '3 часа назад',
+    isRead: true,
+    priority: 'medium',
+  },
+  {
+    id: 6,
+    type: 'payment',
+    title: 'Проблема с оплатой',
+    message: 'Ошибка при обработке платежа заказа #12335',
+    time: '5 часов назад',
+    isRead: false,
+    priority: 'high',
+  },
+];

@@ -1,0 +1,25 @@
+{
+  "Locations": {
+    "addPoint": "Add point",
+    "locationsTitle": "Locations",
+    "selectTariff": "Select tariff",
+    "goToPayment": "Go to payment",
+    "heroTitle": "Такси в любую точку Кыргызстана!",
+    "title": "Выбор маршрута",
+    "subtitle": "Выберите точки отправления и назначения",
+    "selectedRoute": "Выбранный маршрут",
+    "from": "Откуда",
+    "to": "Куда",
+    "selectFrom": "Выберите точку отправления",
+    "selectTo": "Выберите точку назначения",
+    "selectFromFirst": "Сначала выберите точку отправления",
+    "searchFrom": "Поиск точки отправления",
+    "searchTo": "Поиск точки назначения",
+    "searchPlaceholder": "Введите название места или адрес",
+    "availableLocations": "Доступные локации",
+    "noResults": "По вашему запросу ничего не найдено",
+    "noLocations": "Локации не найдены",
+    "proceedToTariff": "Выбрать тариф",
+    "locationsNotFound": "Locations not found"
+  }
+}

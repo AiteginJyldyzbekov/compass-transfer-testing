@@ -1,0 +1,13 @@
+{
+  "Order": {
+    "payment": "К оплате",
+    "transferRequest": "Заявка на трансфер",
+    "fullName": "ФИО",
+    "phoneNumber": "Номер телефона",
+    "orderTransfer": "Заказать трансфер",
+    "errors": {
+      "phoneLength": "Номер должен содержать 9 цифр",
+      "nameFormat": "ФИО должно содержать только буквы и пробелы"
+    }
+  }
+}

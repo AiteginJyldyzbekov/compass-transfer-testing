@@ -1,0 +1,28 @@
+services:
+  compass-terminal:
+    image: node:20-alpine3.19
+    working_dir: /app
+    volumes:
+      - ../:/app
+    environment:
+      - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=4096
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 1.1.1.1
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+    env_file:
+      - ../apps/compass-terminal/.env.production
+    command: >
+      sh -c "yarn build:terminal"  
+    networks:
+      - compass-network
+
+networks:
+  compass-network:
+    name: compass_default
+    external: true

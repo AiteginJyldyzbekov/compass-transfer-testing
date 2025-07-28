@@ -1,0 +1,56 @@
+{
+  // Наследуем общие настройки из корневого tsconfig.json
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    // Базовый URL для путей внутри этого воркспейса (payload-cms)
+    "baseUrl": ".",
+    // --- Настройки, специфичные для Next.js/Payload или переопределяющие корневые ---
+    // Позволяет импортировать JSON файлы как модули
+    "resolveJsonModule": true,
+    // Обязательный плагин для Next.js
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    // Отключаем генерацию файлов .d.ts и .js, так как Next.js делает это сам
+    "noEmit": true,
+    // Используем JSX как есть (Next.js обработает)
+    "jsx": "preserve",
+    // Разрешение модулей, как рекомендует Next.js/Payload
+    "module": "esnext", // Payload/Next.js часто используют esnext
+    "moduleResolution": "node", // Совместимо с корневым tsconfig
+    // Инкрементальная сборка для ускорения
+    "incremental": true,
+    // Пропускать проверку типов в библиотеках
+    "skipLibCheck": true, // Часто оставляют true в конечных приложениях
+    // --- Пути (aliases) для монорепозитория ---
+    // Пути указываются относительно baseUrl (".")
+    "paths": {
+      "@compass-admin/*": ["./src/*"],
+      "@app/*": ["../../packages/app/*"],
+      "@pages/*": ["../../packages/pages/*"],
+      "@widgets/*": ["../../packages/widgets/*"],
+      "@entities/*": ["../../packages/entities/*"],
+      "@features/*": ["../../packages/features/*"],
+      "@shared/*": ["../../packages/shared/*"],
+      "@/*": ["./src/*"]
+    }
+  },
+  // --- Файлы, включаемые в компиляцию TypeScript для этого проекта ---
+  // Пути указываются относительно этого tsconfig.json
+  "include": [
+    "next-env.d.ts", // Декларации типов Next.js
+    "src/**/*.ts", // Все TypeScript файлы в src
+    "src/**/*.tsx", // Все TSX файлы в src
+    "src/types/**/*.d.ts",
+    ".next/types/**/*.ts" // Типы, генерируемые Next.js
+  ],
+  // --- Файлы и директории, исключаемые из компиляции ---
+  // Обычно наследуется из extends, но можно добавить специфичные
+  "exclude": [
+    "node_modules", // Всегда исключаем node_modules
+    "dist", // Директория сборки Payload (если используется)
+    "build" // Директория сборки Payload (если используется)
+  ]
+}

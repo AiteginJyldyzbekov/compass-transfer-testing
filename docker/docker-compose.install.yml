@@ -1,0 +1,18 @@
+services:
+  compass-install:
+    image: node:20-alpine3.19
+    container_name: compass_install
+    working_dir: /app
+    volumes:
+      - ../:/app
+    environment:
+      - NODE_ENV=production
+    command: >
+      sh -c "yarn install"
+    networks:
+      - compass-network
+
+networks:
+  compass-network:
+    name: compass_default
+    external: true

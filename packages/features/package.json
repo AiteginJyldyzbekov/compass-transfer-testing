@@ -1,0 +1,14 @@
+{
+  "name": "@my/features",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.ts",
+  "types": "./index.ts",
+  "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "lucide-react": "^0.294.0",
+    "react-hook-form": "^7.48.2",
+    "sonner": "^2.0.6",
+    "zod": "^4.0.5"
+  }
+}

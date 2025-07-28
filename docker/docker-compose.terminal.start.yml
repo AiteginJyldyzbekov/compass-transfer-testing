@@ -1,0 +1,22 @@
+services:
+  compass-terminal:
+    image: node:20-alpine3.19
+    working_dir: /app
+    restart: always
+    volumes:
+      - ../:/app
+    ports:
+      - '3029:3029'
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ../apps/compass-terminal/.env.production
+    command: >
+      sh -c "yarn start:terminal"
+    networks:
+      - compass-network
+
+networks:
+  compass-network:
+    name: compass_default
+    external: true

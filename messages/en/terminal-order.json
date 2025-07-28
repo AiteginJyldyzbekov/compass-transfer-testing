@@ -1,0 +1,13 @@
+{
+  "Order": {
+    "payment": "Payment amount",
+    "transferRequest": "Transfer request",
+    "fullName": "Full name",
+    "phoneNumber": "Phone number",
+    "orderTransfer": "Order transfer",
+    "errors": {
+      "phoneLength": "Number must contain 9 digits",
+      "nameFormat": "Name should contain only letters and spaces"
+    }
+  }
+}

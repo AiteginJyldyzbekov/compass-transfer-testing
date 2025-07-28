@@ -1,0 +1,28 @@
+{
+  "Payment": {
+    "title": "Service Payment",
+    "waitingDriver": "Waiting for driver...",
+    "paymentAmount": "Payment amount",
+    "selectPaymentMethod": "Select payment method",
+    "paymentMethods": {
+      "qrcode": "Payment by QR code",
+      "card": "Payment by card"
+    },
+    "processing": "Processing...",
+    "pay": "Pay",
+    "errors": {
+      "noMethod": "Payment method not selected",
+      "noTariff": "Tariff is missing",
+      "startLocationMissing": "Start location is missing",
+      "createOrderFailed": "Failed to create order",
+      "driverNotFound": "Could not find drivers matching all criteria. Please try changing the order parameters.",
+      "noData": "Missing data to create order"
+    },
+    "logs": {
+      "orderAccepted": "🚗 Order accepted by driver:",
+      "noDriversNearby": "❌ No available drivers nearby, please contact technical support",
+      "driverCancelled": "❌ Could not find responding drivers, please contact technical support",
+      "orderCreated": "Order created successfully:"
+    }
+  }
+}

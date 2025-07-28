@@ -1,0 +1,13 @@
+{
+  "Tariffs": {
+    "title": "Тарифти тандоо",
+    "occupancy": "{count} адамга чейин",
+    "loading": "Тарифтер жүктөлүүдө...",
+    "tariffNames": {
+      "Economy": "Эконом",
+      "Comfort": "Комфорт",
+      "ComfortPlus": "Комфорт+",
+      "Business": "Бизнес"
+    }
+  }
+}

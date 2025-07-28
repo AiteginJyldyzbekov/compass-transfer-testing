@@ -1,0 +1,22 @@
+services:
+  compass-driver:
+    image: node:20-alpine3.19
+    working_dir: /app
+    restart: always
+    volumes:
+      - ../:/app
+    ports:
+      - '3028:3028'
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ../apps/compass-driver/.env.production
+    command: > 
+      sh -c "yarn start:driver"
+    networks:
+      - compass-network
+
+networks:
+  compass-network:
+    name: compass_default
+    external: true

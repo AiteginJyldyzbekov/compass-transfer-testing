@@ -1,0 +1,12 @@
+{
+  "name": "compass-terminal",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3008 --turbopack -H compass.local",
+    "build": "next build",
+    "start": "next start -p 3029",
+    "lint": "next lint"
+  }
+}

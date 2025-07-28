@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig",
+  "include": [
+    "./**/*",
+    "../../packages/pages/**/*",
+    "../../packages/widgets/**/*",
+    "../../packages/features/**/*",
+    "../../packages/server/**/*",
+    "../../packages/entities/**/*",
+    "../../packages/shared/**/*"
+  ]
+}
