@@ -25,7 +25,6 @@ interface ColumnVisibility {
   coordinates: boolean;
   isActive: boolean;
   popular1: boolean;
-  popular2: boolean;
   actions: boolean;
 }
 
@@ -101,8 +100,7 @@ export function LocationsTableContent({
             {columnVisibility.region && <SortableHeader field='region' sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>Регион</SortableHeader>}
             {columnVisibility.coordinates && <TableHead>Координаты</TableHead>}
             {columnVisibility.isActive && <SortableHeader field='isActive' sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>Активна</SortableHeader>}
-            {columnVisibility.popular1 && <SortableHeader field='popular1' sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>Популярная 1</SortableHeader>}
-            {columnVisibility.popular2 && <SortableHeader field='popular2' sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>Популярная 2</SortableHeader>}
+            {columnVisibility.popular1 && <SortableHeader field='popular1' sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}>Топ точки</SortableHeader>}
             {columnVisibility.actions && <TableHead className='w-[100px]'>Действия</TableHead>}
           </TableRow>
         </TableHeader>
@@ -161,13 +159,7 @@ export function LocationsTableContent({
                   </Badge>
                 </TableCell>
               )}
-              {columnVisibility.popular2 && (
-                <TableCell>
-                  <Badge variant={location.popular2 ? 'default' : 'outline'}>
-                    {location.popular2 ? 'Да' : 'Нет'}
-                  </Badge>
-                </TableCell>
-              )}
+
               {columnVisibility.actions && (
                 <TableCell>
                   <DropdownMenu>

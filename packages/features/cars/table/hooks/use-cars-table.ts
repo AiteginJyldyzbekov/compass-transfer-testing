@@ -77,6 +77,7 @@ export function useCarsTable() {
   // Пагинация (cursor-based)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
+  const [currentPageNumber, setCurrentPageNumber] = useState(1);
 
   // Инициализируем pageSize из localStorage синхронно
   const [pageSize, setPageSize] = useState(() => {
@@ -98,7 +99,6 @@ export function useCarsTable() {
   const [totalCount, setTotalCount] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
-  const [currentPageNumber, setCurrentPageNumber] = useState(1);
 
   // Сортировка
   const [sortBy, setSortBy] = useState<string>('make');
@@ -333,15 +333,17 @@ export function useCarsTable() {
     if (cars.length > 0) {
       // Используем ID последнего элемента как курсор
       const lastCar = cars[cars.length - 1];
-      
+
       setCurrentCursor(lastCar.id);
       setIsFirstPage(false);
+      setCurrentPageNumber(prev => prev + 1);
     }
   };
 
   const handlePrevPage = () => {
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   const handlePageSizeChange = (size: number) => {
@@ -349,6 +351,7 @@ export function useCarsTable() {
     // Сбрасываем на первую страницу
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
 
     // Сохраняем в localStorage
     if (typeof window !== 'undefined') {
@@ -383,18 +386,21 @@ export function useCarsTable() {
     setColorFilter(colors);
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   const handleTypeFilterChange = (types: VehicleType[]) => {
     setTypeFilter(types);
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   const handleServiceClassFilterChange = (classes: ServiceClass[]) => {
     setServiceClassFilter(classes);
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   const handleStatusFilterChange = useCallback((statuses: VehicleStatus[]) => {
@@ -413,12 +419,14 @@ export function useCarsTable() {
 
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   }, [searchParams, router]);
 
   const handleFeaturesFilterChange = (features: CarFeature[]) => {
     setFeaturesFilter(features);
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   return {
@@ -464,31 +472,37 @@ export function useCarsTable() {
       setSearchTerm(term);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setMakeFilter: (make: string) => {
       setMakeFilter(make);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setModelFilter: (model: string) => {
       setModelFilter(model);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setYearFilter: (year: string) => {
       setYearFilter(year);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setLicensePlateFilter: (plate: string) => {
       setLicensePlateFilter(plate);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setPassengerCapacityFilter: (capacity: string) => {
       setPassengerCapacityFilter(capacity);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setShowAdvancedFilters,
 

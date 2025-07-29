@@ -3,7 +3,36 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import React from 'react';
 import { cn } from '@shared/lib/utils';
 
-const Select = SelectPrimitive.Root;
+// Исправленный Select для работы с React Hook Form
+interface SelectProps extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root> {
+  value?: string;
+  onValueChange?: (value: string) => void;
+}
+
+const Select = React.forwardRef<
+  React.ComponentRef<typeof SelectPrimitive.Root>,
+  SelectProps
+>(({ value, onValueChange, ...props }, ref) => {
+  const [forceRender, setForceRender] = React.useState(0);
+
+  // Костыль: принудительный перерендер при изменении value
+  React.useEffect(() => {
+    setForceRender(prev => prev + 1);
+  }, [value]);
+
+  return (
+    <SelectPrimitive.Root
+      key={forceRender} // Принудительный перерендер
+      value={value || undefined}
+      onValueChange={(newValue) => {
+        onValueChange?.(newValue);
+      }}
+      {...props}
+    />
+  );
+});
+
+Select.displayName = 'Select';
 
 const SelectGroup = SelectPrimitive.Group;
 
@@ -143,6 +172,62 @@ const SelectSeparator = React.forwardRef<
 
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
+// FormSelect - ПРАВИЛЬНАЯ обертка для работы с React Hook Form
+interface FormSelectProps {
+  value?: string;
+  onValueChange?: (value: string) => void;
+  placeholder?: string;
+  children: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
+}
+
+const FormSelect = React.forwardRef<
+  HTMLButtonElement,
+  FormSelectProps
+>(({ value, onValueChange, placeholder, children, className, disabled, ...props }, ref) => {
+  console.log('FormSelect render - value:', value, 'type:', typeof value);
+
+  return (
+    <SelectPrimitive.Root
+      value={value || undefined}
+      onValueChange={(newValue) => {
+        console.log('FormSelect onValueChange:', newValue);
+        onValueChange?.(newValue);
+      }}
+      disabled={disabled}
+    >
+      <SelectPrimitive.Trigger
+        ref={ref}
+        className={cn(
+          'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+          className,
+        )}
+        {...props}
+      >
+        <SelectPrimitive.Value placeholder={placeholder} />
+        <SelectPrimitive.Icon asChild>
+          <ChevronDown className='h-4 w-4 opacity-50' />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content
+          className={cn(
+            'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+          )}
+          position="popper"
+        >
+          <SelectPrimitive.Viewport className="p-1">
+            {children}
+          </SelectPrimitive.Viewport>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
+  );
+});
+
+FormSelect.displayName = 'FormSelect';
+
 export {
   Select,
   SelectGroup,
@@ -154,4 +239,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  FormSelect,
 };

@@ -116,8 +116,8 @@ export const useScheduledOrderLogic = ({ mode, id }: UseScheduledOrderLogicProps
     formLogic.tariffs.length,
     formLogic.services.length,
     formLogic.users.length,
-    formLogic.orderData,
-    formLogic.rawOrderData,
+    !!formLogic.orderData, // Преобразуем в boolean
+    !!formLogic.rawOrderData, // Преобразуем в boolean
     formLogic.displayLocations.length,
     formLogic.passengers.length,
     isUIReady,

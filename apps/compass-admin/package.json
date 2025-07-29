@@ -10,14 +10,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.3.2",
+    "@hookform/resolvers": "^5.0.1",
     "@my/app": "workspace:*",
     "@my/entities": "workspace:*",
     "@my/features": "workspace:*",
     "@my/pages": "workspace:*",
     "@my/shared": "workspace:*",
     "@my/widgets": "workspace:*",
-    "react-hook-form": "^7.48.2",
+    "react-hook-form": "^7.56.2",
     "sonner": "^2.0.6"
   }
 }

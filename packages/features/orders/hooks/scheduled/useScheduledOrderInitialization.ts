@@ -98,7 +98,7 @@ export const useScheduledOrderInitialization = ({
       setSelectedTariffRef.current(firstTariff);
       methods.setValue('tariffId', firstTariff.id);
     }
-  }, [mode, tariffs, selectedTariff, selectedTariffKey, methods]); // Используем стабильный ключ
+  }, [mode, tariffs, selectedTariff, selectedTariffKey]); // Убираем methods из зависимостей
 
   // === ИНИЦИАЛИЗАЦИЯ ДАННЫХ ПРИ РЕДАКТИРОВАНИИ ===
   useEffect(() => {
@@ -256,11 +256,10 @@ export const useScheduledOrderInitialization = ({
     orderDataKey, // ✅ Стабильный ключ
     rawOrderDataKey, // ✅ Стабильный ключ
     tariffs,
-    methods,
     isDataInitialized,
     orderData,
     rawOrderData,
-  ]); // ✅ Убираем все нестабильные функции
+  ]); // Убираем methods из зависимостей
 
   // === АВТОМАТИЧЕСКОЕ ПЕРЕКЛЮЧЕНИЕ В РУЧНОЙ РЕЖИМ ===
   useEffect(() => {
@@ -271,5 +270,5 @@ export const useScheduledOrderInitialization = ({
       setSelectedRouteIdRef.current('');
       methods.setValue('routeId', null);
     }
-  }, [hasMainPartner, routeMode, methods]); // ✅ Убираем нестабильные функции
+  }, [hasMainPartner, routeMode]); // Убираем methods из зависимостей
 };

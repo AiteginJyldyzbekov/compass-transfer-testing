@@ -26,7 +26,6 @@ interface ColumnVisibility {
   coordinates: boolean;
   isActive: boolean;
   popular1: boolean;
-  popular2: boolean;
   actions: boolean;
 }
 
@@ -52,8 +51,6 @@ interface LocationsTableFiltersProps {
   handleIsActiveFilterChange: (isActive: boolean | null) => void;
   popular1Filter: boolean | null;
   setPopular1Filter: (popular1: boolean | null) => void;
-  popular2Filter: boolean | null;
-  setPopular2Filter: (popular2: boolean | null) => void;
   pageSize: number;
   handlePageSizeChange: (size: number) => void;
   showAdvancedFilters: boolean;
@@ -88,8 +85,6 @@ export function LocationsTableFilters({
   handleIsActiveFilterChange,
   popular1Filter,
   setPopular1Filter,
-  popular2Filter,
-  setPopular2Filter,
   pageSize,
   handlePageSizeChange,
   showAdvancedFilters,
@@ -120,7 +115,6 @@ export function LocationsTableFilters({
     handleTypeFilterChange([]);
     setIsActiveFilter(null);
     setPopular1Filter(null);
-    setPopular2Filter(null);
   };
 
   const activeFiltersCount = [
@@ -134,8 +128,7 @@ export function LocationsTableFilters({
   ].filter(Boolean).length + 
   typeFilter.length + 
   (isActiveFilter !== null ? 1 : 0) +
-  (popular1Filter !== null ? 1 : 0) +
-  (popular2Filter !== null ? 1 : 0);
+  (popular1Filter !== null ? 1 : 0);
 
   return (
     <>
@@ -264,8 +257,7 @@ export function LocationsTableFilters({
                   { key: 'region', label: 'Регион' },
                   { key: 'coordinates', label: 'Координаты' },
                   { key: 'isActive', label: 'Активность' },
-                  { key: 'popular1', label: 'Популярность 1' },
-                  { key: 'popular2', label: 'Популярность 2' },
+                  { key: 'popular1', label: 'Топ точки' },
                   { key: 'actions', label: 'Действия' },
                 ].map(column => (
                   <DropdownMenuItem
@@ -354,7 +346,7 @@ export function LocationsTableFilters({
 
 
             <div>
-              <Label htmlFor='popular1'>Популярная 1</Label>
+              <Label htmlFor='popular1'>Топ точки</Label>
               <Select 
                 value={popular1Filter === null ? 'all' : popular1Filter.toString()} 
                 onValueChange={(value) => setPopular1Filter(value === 'all' ? null : value === 'true')}

@@ -24,40 +24,71 @@ export const tariffCreateSchema = z.object({
     }),
   
   basePrice: z
-    .number({
-      required_error: 'Базовая цена обязательна',
-      invalid_type_error: 'Базовая цена должна быть числом',
-    })
-    .min(0, { message: 'Базовая цена не может быть отрицательной' }),
+    .preprocess(
+      (val) => {
+        if (val === '' || val === null || val === undefined) return undefined;
+        const parsed = Number(val);
+        return isNaN(parsed) ? undefined : parsed;
+      },
+      z
+        .number({
+          required_error: 'Базовая цена обязательна',
+          invalid_type_error: 'Базовая цена должна быть числом',
+        })
+        .min(0, { message: 'Базовая цена не может быть отрицательной' })
+    ),
   
   minutePrice: z
-    .number({
-      required_error: 'Цена за минуту обязательна',
-      invalid_type_error: 'Цена за минуту должна быть числом',
-    })
-    .min(0, { message: 'Цена за минуту не может быть отрицательной' }),
-  
+    .preprocess(
+      (val) => {
+        if (val === '' || val === null || val === undefined) return undefined;
+        const parsed = Number(val);
+        return isNaN(parsed) ? undefined : parsed;
+      },
+      z
+        .number({
+          required_error: 'Цена за минуту обязательна',
+          invalid_type_error: 'Цена за минуту должна быть числом',
+        })
+        .min(0, { message: 'Цена за минуту не может быть отрицательной' })
+    ),
+
   minimumPrice: z
-    .number({
-      required_error: 'Минимальная цена обязательна',
-      invalid_type_error: 'Минимальная цена должна быть числом',
-    })
-    .min(0, { message: 'Минимальная цена не может быть отрицательной' }),
+    .preprocess(
+      (val) => 0, // Всегда возвращаем 0, игнорируя входное значение
+      z.number().default(0)
+    ),
   
   perKmPrice: z
-    .number({
-      required_error: 'Цена за километр обязательна',
-      invalid_type_error: 'Цена за километр должна быть числом',
-    })
-    .min(0, { message: 'Цена за километр не может быть отрицательной' }),
+    .preprocess(
+      (val) => {
+        if (val === '' || val === null || val === undefined) return undefined;
+        const parsed = Number(val);
+        return isNaN(parsed) ? undefined : parsed;
+      },
+      z
+        .number({
+          required_error: 'Цена за километр обязательна',
+          invalid_type_error: 'Цена за километр должна быть числом',
+        })
+        .min(0, { message: 'Цена за километр не может быть отрицательной' })
+    ),
   
   freeWaitingTimeMinutes: z
-    .number({
-      required_error: 'Время бесплатного ожидания обязательно',
-      invalid_type_error: 'Время ожидания должно быть числом',
-    })
-    .min(0, { message: 'Время ожидания не может быть отрицательным' })
-    .max(60, { message: 'Время ожидания не может превышать 60 минут' }),
+    .preprocess(
+      (val) => {
+        if (val === '' || val === null || val === undefined) return undefined;
+        const parsed = Number(val);
+        return isNaN(parsed) ? undefined : parsed;
+      },
+      z
+        .number({
+          required_error: 'Время бесплатного ожидания обязательно',
+          invalid_type_error: 'Время ожидания должно быть числом',
+        })
+        .min(0, { message: 'Время ожидания не может быть отрицательным' })
+        .max(60, { message: 'Время ожидания не может превышать 60 минут' })
+    ),
 });
 
 /**

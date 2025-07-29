@@ -133,21 +133,6 @@ export function NotificationBasicSection({
           <p className="text-sm text-red-600">{errors.orderType.message}</p>
         )}
       </div>
-
-      {showOptionalWarning && (
-        <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                Внимание
-              </h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <p>Некоторые поля не заполнены, но это не критично для создания уведомления.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

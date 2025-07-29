@@ -1,13 +1,15 @@
 'use client';
 
+import { use } from 'react';
 import { ServiceEditView } from '@pages/(admin)/services/edit/service-edit-view';
 
 interface EditServicePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function EditServicePage({ params }: EditServicePageProps) {
-  return <ServiceEditView serviceId={params.id} />;
+  const { id } = use(params);
+  return <ServiceEditView serviceId={id} />;
 }

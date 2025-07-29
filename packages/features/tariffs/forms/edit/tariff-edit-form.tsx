@@ -56,7 +56,7 @@ export function useTariffEditFormLogic({
       carType: initialData.carType,
       basePrice: initialData.basePrice,
       minutePrice: initialData.minutePrice,
-      minimumPrice: initialData.minimumPrice,
+      minimumPrice: 0, // Всегда 0
       perKmPrice: initialData.perKmPrice,
       freeWaitingTimeMinutes: initialData.freeWaitingTimeMinutes,
     },
@@ -82,7 +82,7 @@ export function useTariffEditFormLogic({
           carType: data.carType,
           basePrice: data.basePrice,
           minutePrice: data.minutePrice,
-          minimumPrice: data.minimumPrice,
+          minimumPrice: 0, // Всегда передаем 0
           perKmPrice: data.perKmPrice,
           freeWaitingTimeMinutes: data.freeWaitingTimeMinutes,
         };

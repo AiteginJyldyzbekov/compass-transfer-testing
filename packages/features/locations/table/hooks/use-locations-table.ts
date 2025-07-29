@@ -18,7 +18,6 @@ interface ColumnVisibility {
   coordinates: boolean;
   isActive: boolean;
   popular1: boolean;
-  popular2: boolean;
   actions: boolean;
 }
 
@@ -58,12 +57,12 @@ export function useLocationsTable() {
     return null;
   });
   const [popular1Filter, setPopular1Filter] = useState<boolean | null>(null);
-  const [popular2Filter, setPopular2Filter] = useState<boolean | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Пагинация (cursor-based)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
+  const [currentPageNumber, setCurrentPageNumber] = useState(1); // Отслеживаем номер страницы
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('locations-page-size');
@@ -77,6 +76,9 @@ export function useLocationsTable() {
     return 10;
   });
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   // Сортировка
   const [sortBy, setSortBy] = useState<string>('name');
@@ -105,7 +107,6 @@ export function useLocationsTable() {
       coordinates: false,
       isActive: true,
       popular1: true,
-      popular2: false,
       actions: true,
     };
   });
@@ -158,9 +159,6 @@ export function useLocationsTable() {
       if (popular1Filter !== null) {
         params.popular1 = popular1Filter;
       }
-      if (popular2Filter !== null) {
-        params.popular2 = popular2Filter;
-      }
       if (searchTerm) {
         params['FTS.Plain'] = searchTerm;
       }
@@ -171,6 +169,9 @@ export function useLocationsTable() {
       setFilteredLocations(response.data);
       setPaginatedLocations(response.data);
       setTotalPages(Math.ceil(response.totalCount / pageSize));
+      setTotalCount(response.totalCount);
+      setHasNext(response.hasNext);
+      setHasPrevious(response.hasPrevious);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
     } finally {
@@ -191,7 +192,6 @@ export function useLocationsTable() {
     typeFilter,
     isActiveFilter,
     popular1Filter,
-    popular2Filter,
     searchTerm,
   ]);
 
@@ -214,6 +214,7 @@ export function useLocationsTable() {
       setIsActiveFilter(newIsActiveFilter);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     }
   }, [searchParams.get('isActive')]); // Реагируем на изменения URL параметра
 
@@ -271,6 +272,7 @@ export function useLocationsTable() {
 
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   }, [searchParams, router]);
 
   // Обработчики
@@ -279,18 +281,21 @@ export function useLocationsTable() {
       const lastLocation = locations[locations.length - 1];
       setCurrentCursor(lastLocation.id);
       setIsFirstPage(false);
+      setCurrentPageNumber(prev => prev + 1);
     }
   };
 
   const handlePrevPage = () => {
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
 
     // Сохраняем в localStorage
     if (typeof window !== 'undefined') {
@@ -327,6 +332,7 @@ export function useLocationsTable() {
     setTypeFilter(types);
     setCurrentCursor(null);
     setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   return {
@@ -348,14 +354,17 @@ export function useLocationsTable() {
     typeFilter,
     isActiveFilter,
     popular1Filter,
-    popular2Filter,
     showAdvancedFilters,
 
     // Пагинация
     currentCursor,
     isFirstPage,
+    currentPageNumber,
     pageSize,
     totalPages,
+    totalCount,
+    hasNext,
+    hasPrevious,
 
     // Сортировка
     sortBy,
@@ -369,51 +378,55 @@ export function useLocationsTable() {
       setSearchTerm(term);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setNameFilter: (name: string) => {
       setNameFilter(name);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setAddressFilter: (address: string) => {
       setAddressFilter(address);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setDistrictFilter: (district: string) => {
       setDistrictFilter(district);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setCityFilter: (city: string) => {
       setCityFilter(city);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setCountryFilter: (country: string) => {
       setCountryFilter(country);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setRegionFilter: (region: string) => {
       setRegionFilter(region);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setIsActiveFilter: (isActive: boolean | null) => {
       setIsActiveFilter(isActive);
       setCurrentCursor(null);
       setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setPopular1Filter: (popular1: boolean | null) => {
       setPopular1Filter(popular1);
       setCurrentCursor(null);
       setIsFirstPage(true);
-    },
-    setPopular2Filter: (popular2: boolean | null) => {
-      setPopular2Filter(popular2);
-      setCurrentCursor(null);
-      setIsFirstPage(true);
+      setCurrentPageNumber(1);
     },
     setShowAdvancedFilters,
 

@@ -43,7 +43,7 @@ export function useTariffFormLogic({
       carType: CarType.Sedan,
       basePrice: undefined,
       minutePrice: undefined,
-      minimumPrice: undefined,
+      minimumPrice: 0,
       perKmPrice: undefined,
       freeWaitingTimeMinutes: undefined,
     },
@@ -70,7 +70,7 @@ export function useTariffFormLogic({
           carType: data.carType,
           basePrice: data.basePrice,
           minutePrice: data.minutePrice,
-          minimumPrice: data.minimumPrice,
+          minimumPrice: 0, // Всегда передаем 0
           perKmPrice: data.perKmPrice,
           freeWaitingTimeMinutes: data.freeWaitingTimeMinutes,
         };

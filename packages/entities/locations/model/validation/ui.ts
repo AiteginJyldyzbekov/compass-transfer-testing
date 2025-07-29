@@ -37,29 +37,53 @@ export function getBasicLocationDataStatus(
 }
 
 /**
- * Получает статус главы "Координаты и настройки" для создания локации
+ * Получает статус главы "Местоположение на карте" для создания локации
+ */
+export function getMapLocationDataStatus(
+  formData: LocationCreateFormData,
+  errors: FieldErrors<LocationCreateFormData>,
+  isSubmitted: boolean,
+): 'complete' | 'warning' | 'error' | 'pending' {
+  // Проверяем наличие ошибок координат
+  const hasErrors = errors.latitude || errors.longitude;
+
+  if (hasErrors) {
+    return 'error';
+  }
+
+  // Проверяем заполненность координат
+  const coordinatesFilled =
+    formData.latitude !== undefined &&
+    formData.longitude !== undefined;
+
+  if (coordinatesFilled) {
+    return 'complete';
+  }
+
+  return 'pending';
+}
+
+/**
+ * Получает статус главы "Настройки локации" для создания локации
  */
 export function getCoordinatesLocationDataStatus(
   formData: LocationCreateFormData,
   errors: FieldErrors<LocationCreateFormData>,
   isSubmitted: boolean,
 ): 'complete' | 'warning' | 'error' | 'pending' {
-  // Проверяем наличие ошибок
-  const hasErrors = errors.latitude || errors.longitude || errors.isActive || errors.popular || errors.popular2;
-  
+  // Проверяем наличие ошибок настроек
+  const hasErrors = errors.isActive || errors.popular;
+
   if (hasErrors) {
     return 'error';
   }
 
-  // Проверяем заполненность обязательных полей
-  const requiredFieldsFilled = 
-    formData.latitude !== undefined && 
-    formData.longitude !== undefined &&
+  // Проверяем заполненность обязательных полей настроек
+  const settingsFilled =
     formData.isActive !== undefined &&
-    formData.popular !== undefined &&
-    formData.popular2 !== undefined;
+    formData.popular !== undefined;
 
-  if (requiredFieldsFilled) {
+  if (settingsFilled) {
     return 'complete';
   }
 
@@ -149,9 +173,9 @@ export function getBasicLocationDataErrors(
 }
 
 /**
- * Получает список ошибок для главы "Координаты и настройки" при создании локации
+ * Получает список ошибок для главы "Местоположение на карте" при создании локации
  */
-export function getCoordinatesLocationDataErrors(
+export function getMapLocationDataErrors(
   formData: LocationCreateFormData,
   errors: FieldErrors<LocationCreateFormData>,
   isSubmitted: boolean,
@@ -160,9 +184,22 @@ export function getCoordinatesLocationDataErrors(
 
   if (errors.latitude?.message) errorList.push(errors.latitude.message);
   if (errors.longitude?.message) errorList.push(errors.longitude.message);
+
+  return errorList;
+}
+
+/**
+ * Получает список ошибок для главы "Настройки локации" при создании локации
+ */
+export function getCoordinatesLocationDataErrors(
+  formData: LocationCreateFormData,
+  errors: FieldErrors<LocationCreateFormData>,
+  isSubmitted: boolean,
+): string[] {
+  const errorList: string[] = [];
+
   if (errors.isActive?.message) errorList.push(errors.isActive.message);
   if (errors.popular?.message) errorList.push(errors.popular.message);
-  if (errors.popular2?.message) errorList.push(errors.popular2.message);
 
   return errorList;
 }
@@ -199,7 +236,6 @@ export function getCoordinatesLocationDataErrorsForUpdate(
   if (errors.longitude?.message) errorList.push(errors.longitude.message);
   if (errors.isActive?.message) errorList.push(errors.isActive.message);
   if (errors.popular?.message) errorList.push(errors.popular.message);
-  if (errors.popular2?.message) errorList.push(errors.popular2.message);
 
   return errorList;
 }

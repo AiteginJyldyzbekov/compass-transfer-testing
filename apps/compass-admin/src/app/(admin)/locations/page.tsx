@@ -6,13 +6,12 @@ import { LocationsTable } from '@features/locations';
 export default async function LocationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ 
+  searchParams: Promise<{
     type?: string;
     city?: string;
     region?: string;
     isActive?: string;
     popular1?: string;
-    popular2?: string;
   }>;
 }) {
   const params = await searchParams;

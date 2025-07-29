@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useCallback, useRef } from 'react';
 import { notificationsApi, type GetNotificationDTO, type NotificationApiResponse } from '@shared/api/notifications';
 import { logger } from '@shared/lib/logger';
@@ -39,11 +41,6 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
   const loadNotifications = useCallback(
     async (append: boolean = false) => {
       try {
-        logger.info('🔄 useNotifications.loadNotifications:', {
-          append,
-          lastCursor: lastCursorRef.current,
-        });
-
         if (append) {
           setIsLoadingMore(true);
         } else {
@@ -60,13 +57,6 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
 
         const newNotifications = result.data || [];
 
-        logger.info('📊 useNotifications результат:', {
-          newCount: newNotifications.length,
-          hasNext: result.hasNext,
-          totalCount: result.totalCount,
-          append,
-        });
-
         if (append) {
           setNotifications(prev => [...prev, ...newNotifications]);
         } else {
@@ -80,7 +70,6 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
         if (newNotifications.length > 0) {
           const newCursor = newNotifications[newNotifications.length - 1].id;
 
-          logger.info('🎯 useNotifications обновляем курсор:', newCursor);
           lastCursorRef.current = newCursor;
         }
       } catch (err) {
@@ -99,22 +88,15 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
   // Загрузка следующей страницы
   const loadMore = useCallback(async () => {
     if (!hasMore || isLoadingMore || isLoading) {
-      logger.info('🚫 useNotifications.loadMore заблокирован:', {
-        hasMore,
-        isLoadingMore,
-        isLoading,
-      });
 
       return;
     }
 
-    logger.info('📥 useNotifications.loadMore: загружаем следующую страницу');
     await loadNotifications(true);
   }, [hasMore, isLoadingMore, isLoading, loadNotifications]);
 
   // Обновление списка
   const refresh = useCallback(async () => {
-    logger.info('🔄 useNotifications.refresh');
     await loadNotifications(false);
   }, [loadNotifications]);
 
@@ -130,7 +112,6 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
         ),
       );
 
-      logger.info('✅ useNotifications.markAsRead успешно:', id);
     } catch (err) {
       logger.error('❌ useNotifications.markAsRead ошибка:', err);
       throw err;

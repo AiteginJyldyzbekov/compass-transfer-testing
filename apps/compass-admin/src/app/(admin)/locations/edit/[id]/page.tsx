@@ -1,13 +1,15 @@
 'use client';
 
+import { use } from 'react';
 import { LocationEditView } from '@pages/(admin)/locations/edit/location-edit-view';
 
 interface EditLocationPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function EditLocationPage({ params }: EditLocationPageProps) {
-  return <LocationEditView locationId={params.id} />;
+  const { id } = use(params);
+  return <LocationEditView locationId={id} />;
 }

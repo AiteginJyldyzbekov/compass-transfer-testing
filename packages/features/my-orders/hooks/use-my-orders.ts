@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ordersApi, type GetMyOrdersParams } from '@shared/api/orders';
+import { ordersApi, type GetMyOrdersParams } from '@shared/api/orders/orders-api';
 import { logger } from '@shared/lib';
 import type { GetOrderDTO, OrderStatsDTO } from '@entities/orders/interface';
 

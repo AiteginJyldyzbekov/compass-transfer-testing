@@ -71,14 +71,12 @@ export function TariffFormView({
                       labels={{
                         basePrice: 'Базовая цена (сом) *',
                         minutePrice: 'Цена за минуту (сом) *',
-                        minimumPrice: 'Минимальная цена (сом) *',
                         perKmPrice: 'Цена за километр (сом) *',
                         freeWaitingTimeMinutes: 'Бесплатное ожидание (минуты) *',
                       }}
                       placeholders={{
                         basePrice: '50.00',
                         minutePrice: '5.00',
-                        minimumPrice: '80.00',
                         perKmPrice: '15.00',
                         freeWaitingTimeMinutes: '5',
                       }}

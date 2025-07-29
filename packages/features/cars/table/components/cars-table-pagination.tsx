@@ -25,23 +25,13 @@ export function CarsTablePagination({
   handleNextPage,
   handlePrevPage,
 }: CarsTablePaginationProps) {
-  const startItem = (currentPageNumber - 1) * pageSize + 1;
-  const endItem = Math.min(currentPageNumber * pageSize, totalCount);
-
-  if (!hasNext && !hasPrevious) {
-    return (
-      <div className='flex items-center justify-between px-2'>
-        <div className='text-sm text-muted-foreground'>
-          Показано {paginatedCars.length} из {totalCount} автомобилей
-        </div>
-      </div>
-    );
-  }
+  // Вычисляем общее количество страниц
+  const totalPagesCalculated = Math.ceil(totalCount / pageSize);
 
   return (
     <div className='flex items-center justify-between px-2'>
       <div className='text-sm text-muted-foreground'>
-        Показано {startItem}-{endItem} из {totalCount} автомобилей
+        Показано {paginatedCars.length} из {totalCount} автомобилей
       </div>
 
       <div className='flex items-center space-x-2'>
@@ -57,7 +47,7 @@ export function CarsTablePagination({
         </Button>
 
         <span className='text-sm text-muted-foreground px-2'>
-          Страница {currentPageNumber}
+          {totalPagesCalculated > 1 && `${currentPageNumber} / ${totalPagesCalculated}`}
         </span>
 
         <Button

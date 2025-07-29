@@ -7,11 +7,14 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { locationsApi } from '@shared/api/locations';
 import { logger } from '@shared/lib';
+import { parseAddress } from '@entities/locations/lib/address-parser';
 import { LocationType } from '@entities/locations/enums';
 import {
   getBasicLocationDataStatus,
+  getMapLocationDataStatus,
   getCoordinatesLocationDataStatus,
   getBasicLocationDataErrors,
+  getMapLocationDataErrors,
   getCoordinatesLocationDataErrors,
 } from '@entities/locations/model/validation/ui';
 import {
@@ -38,14 +41,16 @@ export function useLocationFormLogic({
     mode: 'onSubmit',
     defaultValues: {
       name: '',
-      description: '',
+      description: '', // Оставляем для схемы, но не показываем в UI
       type: LocationType.Airport,
       address: '',
-      latitude: undefined,
-      longitude: undefined,
+      country: '',
+      region: '',
+      city: '',
+      latitude: 42.856219, // Центр Бишкека по умолчанию
+      longitude: 74.603967,
       isActive: true,
       popular: false,
-      popular2: false,
     },
   });
 
@@ -63,20 +68,27 @@ export function useLocationFormLogic({
     async (data: LocationCreateFormData) => {
       setIsSubmitting(true);
       try {
+        // Парсим адрес для извлечения компонентов
+        const addressComponents = parseAddress(data.address);
+
+        // Формируем название из номера дома и улицы
+        const locationName = [addressComponents.houseNumber, addressComponents.street]
+          .filter(Boolean)
+          .join(', ') || data.name;
+
         // Подготавливаем данные для API
         const apiData = {
-          name: data.name,
+          name: locationName,
           description: data.description || null,
           type: data.type,
           address: data.address,
-          city: 'Бишкек', // Временно захардкодим
-          country: 'Кыргызстан', // Временно захардкодим
-          region: 'Чуйская область', // Временно захардкодим
+          city: addressComponents.city || 'Не известно',
+          country: addressComponents.country || 'Кыргызстан',
+          region: addressComponents.region || data.region || 'Не известно',
           latitude: data.latitude,
           longitude: data.longitude,
           isActive: data.isActive,
           popular1: data.popular,
-          popular2: data.popular2,
         };
 
         const result = await locationsApi.createLocation(apiData);
@@ -125,6 +137,9 @@ export function useLocationFormLogic({
       if (chapterId === 'basic') {
         return getBasicLocationDataStatus(formData, errors, isSubmitted);
       }
+      if (chapterId === 'map') {
+        return getMapLocationDataStatus(formData, errors, isSubmitted);
+      }
       if (chapterId === 'coordinates') {
         return getCoordinatesLocationDataStatus(formData, errors, isSubmitted);
       }
@@ -137,6 +152,9 @@ export function useLocationFormLogic({
     return (chapterId: string): string[] => {
       if (chapterId === 'basic') {
         return getBasicLocationDataErrors(formData, errors, isSubmitted);
+      }
+      if (chapterId === 'map') {
+        return getMapLocationDataErrors(formData, errors, isSubmitted);
       }
       if (chapterId === 'coordinates') {
         return getCoordinatesLocationDataErrors(formData, errors, isSubmitted);
@@ -158,7 +176,7 @@ export function useLocationFormLogic({
 
       return;
     }
-    await handleSubmit(onSubmit)();
+    await handleSubmit(onSubmit as any)();
   }, [trigger, handleSubmit, onSubmit, form.formState.errors, setFocus]);
 
   const handleChapterClick = useCallback((chapterId: string) => {

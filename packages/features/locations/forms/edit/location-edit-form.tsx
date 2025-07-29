@@ -7,12 +7,15 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { locationsApi } from '@shared/api/locations';
 import { logger } from '@shared/lib';
+import { parseAddress } from '@entities/locations/lib/address-parser';
 import { LocationType } from '@entities/locations/enums';
 import type { LocationDTO } from '@entities/locations/interface';
 import {
   getBasicLocationDataStatusForUpdate,
+  getMapLocationDataStatus,
   getCoordinatesLocationDataStatusForUpdate,
   getBasicLocationDataErrorsForUpdate,
+  getMapLocationDataErrors,
   getCoordinatesLocationDataErrorsForUpdate,
 } from '@entities/locations/model/validation/ui';
 import {
@@ -60,7 +63,6 @@ export function useLocationEditFormLogic({
       longitude: initialData.longitude,
       isActive: initialData.isActive,
       popular: initialData.popular,
-      popular2: initialData.popular2,
     },
   });
 
@@ -78,14 +80,22 @@ export function useLocationEditFormLogic({
     async (data: LocationUpdateFormData) => {
       setIsSubmitting(true);
       try {
+        // Парсим адрес для извлечения компонентов
+        const addressComponents = parseAddress(data.address);
+
+        // Формируем название из номера дома и улицы
+        const locationName = [addressComponents.houseNumber, addressComponents.street]
+          .filter(Boolean)
+          .join(', ') || data.name;
+
         const apiData = {
-          name: data.name,
+          name: locationName,
           description: data.description || null,
           type: data.type,
           address: data.address,
-          city: 'Бишкек', // Временно захардкодим
-          country: 'Кыргызстан', // Временно захардкодим
-          region: 'Чуйская область', // Временно захардкодим
+          city: addressComponents.city || 'Бишкек',
+          country: addressComponents.country || 'Кыргызстан',
+          region: addressComponents.region || data.region || 'Не известно',
           latitude: data.latitude,
           longitude: data.longitude,
           isActive: data.isActive,
@@ -138,6 +148,10 @@ export function useLocationEditFormLogic({
       if (chapterId === 'basic') {
         return getBasicLocationDataStatusForUpdate(formData, errors, isSubmitted);
       }
+      if (chapterId === 'map') {
+        // Используем функцию для создания, так как логика одинаковая
+        return getMapLocationDataStatus(formData, errors, isSubmitted);
+      }
       if (chapterId === 'coordinates') {
         return getCoordinatesLocationDataStatusForUpdate(formData, errors, isSubmitted);
       }
@@ -150,6 +164,10 @@ export function useLocationEditFormLogic({
     return (chapterId: string): string[] => {
       if (chapterId === 'basic') {
         return getBasicLocationDataErrorsForUpdate(formData, errors, isSubmitted);
+      }
+      if (chapterId === 'map') {
+        // Используем функцию для создания, так как логика одинаковая
+        return getMapLocationDataErrors(formData, errors, isSubmitted);
       }
       if (chapterId === 'coordinates') {
         return getCoordinatesLocationDataErrorsForUpdate(formData, errors, isSubmitted);

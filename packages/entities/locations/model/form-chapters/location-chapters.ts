@@ -11,12 +11,17 @@ export const LOCATION_FORM_CHAPTERS = {
       description: 'Название, описание, тип и адрес локации',
     },
     {
+      id: 'map',
+      title: 'Местоположение на карте',
+      description: 'Выберите точное местоположение на карте',
+    },
+    {
       id: 'coordinates',
-      title: 'Координаты и настройки',
-      description: 'Географические координаты и параметры локации',
+      title: 'Настройки локации',
+      description: 'Параметры активности и популярности локации',
     },
   ] as FormChapter[],
-  
+
   EDIT: [
     {
       id: 'basic',
@@ -24,9 +29,14 @@ export const LOCATION_FORM_CHAPTERS = {
       description: 'Название, описание, тип и адрес локации',
     },
     {
+      id: 'map',
+      title: 'Местоположение на карте',
+      description: 'Выберите точное местоположение на карте',
+    },
+    {
       id: 'coordinates',
-      title: 'Координаты и настройки',
-      description: 'Географические координаты и параметры локации',
+      title: 'Настройки локации',
+      description: 'Параметры активности и популярности локации',
     },
   ] as FormChapter[],
 };

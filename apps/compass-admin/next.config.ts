@@ -1,37 +1,46 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
-const withNextIntl = createNextIntlPlugin(); // Заголовки безопасности, которые будут применяться ко всем маршрутам
-const securityHeaders = [
-  {
-    key: 'X-DNS-Prefetch-Control',
-    value: 'on',
-  },
-  {
-    key: 'X-XSS-Protection',
-    value: '1; mode=block',
-  },
-  {
-    key: 'X-Frame-Options',
-    value: 'SAMEORIGIN',
-  },
-  {
-    key: 'X-Content-Type-Options',
-    value: 'nosniff',
-  },
-  {
-    key: 'Referrer-Policy',
-    value: 'strict-origin-when-cross-origin',
-  },
-  {
-    key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=()',
-  },
-  {
+const withNextIntl = createNextIntlPlugin();
+
+// Заголовки безопасности, которые будут применяться ко всем маршрутам
+const getSecurityHeaders = (isDev: boolean) => {
+  const baseHeaders = [
+    {
+      key: 'X-DNS-Prefetch-Control',
+      value: 'on',
+    },
+    {
+      key: 'X-XSS-Protection',
+      value: '1; mode=block',
+    },
+    {
+      key: 'X-Frame-Options',
+      value: 'SAMEORIGIN',
+    },
+    {
+      key: 'X-Content-Type-Options',
+      value: 'nosniff',
+    },
+    {
+      key: 'Referrer-Policy',
+      value: 'strict-origin-when-cross-origin',
+    },
+    {
+      key: 'Permissions-Policy',
+      value: 'camera=(), microphone=(), geolocation=(self)',
+    },
+  ];
+
+  // В режиме разработки используем более мягкий CSP для Яндекс Карт
+  const cspHeader = {
     key: 'Content-Security-Policy',
-    value:
-      "default-src 'self'; connect-src 'self' http://api.compass.local:3030 https://compass-api.karaoketest.ru:80 https://api.open-meteo.com https://api.exchangerate-api.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' https://www.youtube.com https://youtube.com; frame-src https://www.youtube.com https://youtube.com;",
-  },
-];
+    value: isDev
+      ? "default-src 'self'; connect-src 'self' http://api.compass.local:3030 ws://api.compass.local:3030 https://compass-api.karaoketest.ru:80 https://api.open-meteo.com https://api.exchangerate-api.com https: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; media-src 'self' https://www.youtube.com https://youtube.com; frame-src https://www.youtube.com https://youtube.com;"
+      : "default-src 'self'; connect-src 'self' http://api.compass.local:3030 ws://api.compass.local:3030 https://compass-api.karaoketest.ru:80 https://api.open-meteo.com https://api.exchangerate-api.com https://api-maps.yandex.ru https://geocode-maps.yandex.ru https://yastatic.net https://*.maps.yandex.net https://*.yandex.ru; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api-maps.yandex.ru https://yastatic.net https://*.yandex.ru; style-src 'self' 'unsafe-inline' https://yastatic.net https://*.yandex.ru; img-src 'self' data: https: https://core-renderer-tiles.maps.yandex.net https://yastatic.net https://*.maps.yandex.net https://*.yandex.ru; media-src 'self' https://www.youtube.com https://youtube.com; frame-src https://www.youtube.com https://youtube.com;",
+  };
+
+  return [...baseHeaders, cspHeader];
+};
 const nextConfig: NextConfig = {
   reactStrictMode: false,
   typescript: {
@@ -104,6 +113,9 @@ const nextConfig: NextConfig = {
 
   // Добавляем настройку заголовков
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+    const securityHeaders = getSecurityHeaders(isDev);
+
     return [
       {
         // Применяем ко всем маршрутам

@@ -9,14 +9,12 @@ interface TariffPricingSectionProps {
   labels?: {
     basePrice?: string;
     minutePrice?: string;
-    minimumPrice?: string;
     perKmPrice?: string;
     freeWaitingTimeMinutes?: string;
   };
   placeholders?: {
     basePrice?: string;
     minutePrice?: string;
-    minimumPrice?: string;
     perKmPrice?: string;
     freeWaitingTimeMinutes?: string;
   };
@@ -49,7 +47,11 @@ export function TariffPricingSection({
           className="w-full"
           {...register('basePrice', {
             valueAsNumber: true,
-            setValueAs: (value) => value === '' ? undefined : parseFloat(value)
+            setValueAs: (value) => {
+              if (value === '' || value === null || value === undefined) return undefined;
+              const parsed = parseFloat(value);
+              return isNaN(parsed) ? undefined : parsed;
+            }
           })}
         />
         {errors.basePrice && (
@@ -74,7 +76,11 @@ export function TariffPricingSection({
           className="w-full"
           {...register('minutePrice', {
             valueAsNumber: true,
-            setValueAs: (value) => value === '' ? undefined : parseFloat(value)
+            setValueAs: (value) => {
+              if (value === '' || value === null || value === undefined) return undefined;
+              const parsed = parseFloat(value);
+              return isNaN(parsed) ? undefined : parsed;
+            }
           })}
         />
         {errors.minutePrice && (
@@ -85,30 +91,15 @@ export function TariffPricingSection({
         </p>
       </div>
 
-      {/* Минимальная цена */}
-      <div className="space-y-2">
-        <Label htmlFor="minimumPrice" className="text-sm font-medium">
-          {labels.minimumPrice || 'Минимальная цена (сом) *'}
-        </Label>
-        <Input
-          id="minimumPrice"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder={placeholders.minimumPrice || '80.00'}
-          className="w-full"
-          {...register('minimumPrice', {
-            valueAsNumber: true,
-            setValueAs: (value) => value === '' ? undefined : parseFloat(value)
-          })}
-        />
-        {errors.minimumPrice && (
-          <p className="text-sm text-red-600">{errors.minimumPrice.message}</p>
-        )}
-        <p className="text-sm text-muted-foreground">
-          Минимальная стоимость поездки по тарифу
-        </p>
-      </div>
+      {/* Скрытое поле для минимальной цены */}
+      <input
+        type="hidden"
+        {...register('minimumPrice', {
+          valueAsNumber: true,
+          setValueAs: () => 0 // Всегда возвращаем 0
+        })}
+        value={0}
+      />
 
       {/* Цена за километр */}
       <div className="space-y-2">
@@ -124,7 +115,11 @@ export function TariffPricingSection({
           className="w-full"
           {...register('perKmPrice', {
             valueAsNumber: true,
-            setValueAs: (value) => value === '' ? undefined : parseFloat(value)
+            setValueAs: (value) => {
+              if (value === '' || value === null || value === undefined) return undefined;
+              const parsed = parseFloat(value);
+              return isNaN(parsed) ? undefined : parsed;
+            }
           })}
         />
         {errors.perKmPrice && (
@@ -150,7 +145,11 @@ export function TariffPricingSection({
           className="w-full"
           {...register('freeWaitingTimeMinutes', {
             valueAsNumber: true,
-            setValueAs: (value) => value === '' ? undefined : parseInt(value)
+            setValueAs: (value) => {
+              if (value === '' || value === null || value === undefined) return undefined;
+              const parsed = parseInt(value);
+              return isNaN(parsed) ? undefined : parsed;
+            }
           })}
         />
         {errors.freeWaitingTimeMinutes && (

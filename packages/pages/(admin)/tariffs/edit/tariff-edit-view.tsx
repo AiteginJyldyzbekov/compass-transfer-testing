@@ -64,7 +64,7 @@ export function TariffEditView({ tariffId }: TariffEditViewProps) {
       carType: 'Sedan' as any,
       basePrice: 0,
       minutePrice: 0,
-      minimumPrice: 0,
+      minimumPrice: 0, // Всегда 0
       perKmPrice: 0,
       freeWaitingTimeMinutes: 0,
     },
@@ -81,7 +81,7 @@ export function TariffEditView({ tariffId }: TariffEditViewProps) {
         carType: tariff.carType,
         basePrice: tariff.basePrice || 0,
         minutePrice: tariff.minutePrice || 0,
-        minimumPrice: tariff.minimumPrice || 0,
+        minimumPrice: 0, // Всегда 0, игнорируем значение из API
         perKmPrice: tariff.perKmPrice || 0,
         freeWaitingTimeMinutes: tariff.freeWaitingTimeMinutes || 0,
       });

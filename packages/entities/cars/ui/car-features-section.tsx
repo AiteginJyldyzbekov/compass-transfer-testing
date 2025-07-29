@@ -159,31 +159,6 @@ export function CarFeaturesSection({
           </div>
         ))}
       </div>
-
-      {/* Показываем выбранные опции */}
-      {features.length > 0 && (
-        <div className="rounded-md bg-blue-50 p-4 border border-blue-200">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">
-                Выбранные опции ({features.length})
-              </h3>
-              <div className="mt-2 text-sm text-blue-700">
-                <div className="flex flex-wrap gap-2">
-                  {features.map((feature) => (
-                    <span
-                      key={feature}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                    >
-                      {carFeatureLabels[feature]}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

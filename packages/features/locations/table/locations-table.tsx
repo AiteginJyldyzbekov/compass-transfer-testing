@@ -14,7 +14,6 @@ export function LocationsTable({
     region?: string;
     isActive?: string;
     popular1?: string;
-    popular2?: string;
   };
 }) {
   const {
@@ -32,12 +31,16 @@ export function LocationsTable({
     typeFilter,
     isActiveFilter,
     popular1Filter,
-    popular2Filter,
     showAdvancedFilters,
-    currentPage,
+    currentCursor,
+    isFirstPage,
+    currentPageNumber,
     pageSize,
     columnVisibility,
     totalPages,
+    totalCount,
+    hasNext,
+    hasPrevious,
     sortBy,
     sortOrder,
     setSearchTerm,
@@ -49,9 +52,9 @@ export function LocationsTable({
     setRegionFilter,
     setIsActiveFilter,
     setPopular1Filter,
-    setPopular2Filter,
     setShowAdvancedFilters,
-    handlePageChange,
+    handleNextPage,
+    handlePrevPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleTypeFilterChange,
@@ -116,8 +119,6 @@ export function LocationsTable({
         handleIsActiveFilterChange={handleIsActiveFilterChange}
         popular1Filter={popular1Filter}
         setPopular1Filter={setPopular1Filter}
-        popular2Filter={popular2Filter}
-        setPopular2Filter={setPopular2Filter}
         pageSize={pageSize}
         handlePageSizeChange={handlePageSizeChange}
         showAdvancedFilters={showAdvancedFilters}
@@ -149,9 +150,16 @@ export function LocationsTable({
       <LocationsTablePagination
         paginatedLocations={paginatedLocations}
         filteredLocations={filteredLocations}
-        currentPage={currentPage}
+        currentCursor={currentCursor}
+        isFirstPage={isFirstPage}
+        currentPageNumber={currentPageNumber}
         totalPages={totalPages}
-        handlePageChange={handlePageChange}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        hasNext={hasNext}
+        hasPrevious={hasPrevious}
+        handleNextPage={handleNextPage}
+        handlePrevPage={handlePrevPage}
       />
 
       {/* Модальное окно удаления */}

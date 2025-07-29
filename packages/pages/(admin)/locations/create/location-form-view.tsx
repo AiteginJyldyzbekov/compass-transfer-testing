@@ -3,7 +3,7 @@ import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent } from '@shared/ui/layout';
 import { ChapterHeader } from '@shared/ui/layout/chapter-header';
 import { FormSidebar } from '@shared/ui/layout/form-sidebar';
-import { LocationBasicSection, LocationCoordinatesSection } from '@entities/locations';
+import { LocationBasicSection, LocationCoordinatesSection, LocationMapSection } from '@entities/locations';
 import { LOCATION_FORM_CHAPTERS } from '@entities/locations/model/form-chapters/location-chapters';
 import type { LocationCreateFormData } from '@entities/locations/schemas/locationCreateSchema';
 
@@ -46,25 +46,35 @@ export function LocationFormView({
                     <LocationBasicSection
                       showOptionalWarning={getChapterStatus('basic') === 'warning'}
                       labels={{
-                        name: 'Название локации *',
-                        description: 'Описание локации',
                         type: 'Тип локации *',
-                        address: 'Адрес *',
-                      }}
-                      placeholders={{
-                        name: 'Введите название локации',
-                        description: 'Введите описание локации (необязательно)',
-                        address: 'Введите адрес локации',
                       }}
                     />
                   </div>
                 </div>
 
-                {/* Глава 2: Координаты и настройки */}
-                <div id='chapter-coordinates' className='relative flex flex-col gap-4'>
+                {/* Глава 2: Местоположение на карте */}
+                <div id='chapter-map' className='relative flex flex-col gap-4'>
                   <ChapterHeader
                     number={2}
-                    title='Координаты и настройки'
+                    title='Местоположение на карте'
+                    status={getChapterStatus('map')}
+                  />
+                  <div className='relative ml-12'>
+                    {/* Вертикальная линия */}
+                    <div className='absolute -left-8 top-0 bottom-0 w-0.5 border-l-2 border-dashed border-gray-300' />
+                    <LocationMapSection
+                      labels={{
+                        coordinates: 'Местоположение на карте *',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Глава 3: Настройки локации */}
+                <div id='chapter-settings' className='relative flex flex-col gap-4'>
+                  <ChapterHeader
+                    number={3}
+                    title='Настройки локации'
                     status={getChapterStatus('coordinates')}
                   />
                   <div className='relative ml-12'>
@@ -72,15 +82,8 @@ export function LocationFormView({
                     <div className='absolute -left-8 top-0 bottom-0 w-0.5 border-l-2 border-dashed border-gray-300' />
                     <LocationCoordinatesSection
                       labels={{
-                        latitude: 'Широта *',
-                        longitude: 'Долгота *',
                         isActive: 'Активная локация',
-                        popular: 'Популярная локация',
-                        popular2: 'Популярная локация 2',
-                      }}
-                      placeholders={{
-                        latitude: '42.8746',
-                        longitude: '74.5698',
+                        popular: 'Локация которая показывается в терминале в начале (Топ точки)',
                       }}
                     />
                   </div>

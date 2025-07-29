@@ -21,15 +21,7 @@ const carColorLabels: Record<CarColor, string> = {
   [CarColor.Orange]: 'Оранжевый',
   [CarColor.Brown]: 'Коричневый',
   [CarColor.Purple]: 'Фиолетовый',
-  [CarColor.Pink]: 'Розовый',
   [CarColor.Gold]: 'Золотой',
-  [CarColor.Beige]: 'Бежевый',
-  [CarColor.Maroon]: 'Бордовый',
-  [CarColor.Navy]: 'Темно-синий',
-  [CarColor.Teal]: 'Бирюзовый',
-  [CarColor.Lime]: 'Лайм',
-  [CarColor.Cyan]: 'Голубой',
-  [CarColor.Magenta]: 'Пурпурный',
   [CarColor.Other]: 'Другой',
 };
 
@@ -58,9 +50,9 @@ const serviceClassLabels: Record<ServiceClass, string> = {
 // Лейблы для статусов автомобиля
 const vehicleStatusLabels: Record<VehicleStatus, string> = {
   [VehicleStatus.Available]: 'Доступен',
-  [VehicleStatus.InUse]: 'В использовании',
   [VehicleStatus.Maintenance]: 'На обслуживании',
-  [VehicleStatus.OutOfService]: 'Не в эксплуатации',
+  [VehicleStatus.Repair]: 'На ремонте',
+  [VehicleStatus.Other]: 'Другое',
 };
 
 interface CarBasicSectionProps {
@@ -97,10 +89,7 @@ export function CarBasicSection({
     setValue,
   } = useFormContext<CarCreateFormData>();
 
-  const color = watch('color');
-  const type = watch('type');
-  const serviceClass = watch('serviceClass');
-  const status = watch('status');
+  const formData = watch();
 
   return (
     <div className="space-y-6">
@@ -165,8 +154,8 @@ export function CarBasicSection({
             {labels.color || 'Цвет автомобиля *'}
           </Label>
           <Select
-            value={color}
-            onValueChange={(value) => setValue('color', value as CarColor)}
+            value={formData.color || CarColor.White}
+            onValueChange={(value) => setValue('color', value as CarColor, { shouldValidate: true, shouldDirty: true })}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Выберите цвет" />
@@ -208,8 +197,8 @@ export function CarBasicSection({
             {labels.type || 'Тип автомобиля *'}
           </Label>
           <Select
-            value={type}
-            onValueChange={(value) => setValue('type', value as VehicleType)}
+            value={formData.type || VehicleType.Sedan}
+            onValueChange={(value) => setValue('type', value as VehicleType, { shouldValidate: true, shouldDirty: true })}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Выберите тип" />
@@ -232,8 +221,8 @@ export function CarBasicSection({
             {labels.serviceClass || 'Класс обслуживания *'}
           </Label>
           <Select
-            value={serviceClass}
-            onValueChange={(value) => setValue('serviceClass', value as ServiceClass)}
+            value={formData.serviceClass || ServiceClass.Economy}
+            onValueChange={(value) => setValue('serviceClass', value as ServiceClass, { shouldValidate: true, shouldDirty: true })}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Выберите класс" />
@@ -259,8 +248,8 @@ export function CarBasicSection({
             {labels.status || 'Статус автомобиля *'}
           </Label>
           <Select
-            value={status}
-            onValueChange={(value) => setValue('status', value as VehicleStatus)}
+            {...register('status')}
+            value={formData.status || VehicleStatus.Available}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Выберите статус" />
@@ -299,21 +288,6 @@ export function CarBasicSection({
           )}
         </div>
       </div>
-
-      {showOptionalWarning && (
-        <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                Внимание
-              </h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <p>Некоторые поля не заполнены, но это не критично для создания автомобиля.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

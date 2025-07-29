@@ -26,6 +26,24 @@ export const locationCreateSchema = z.object({
     .string()
     .min(1, { message: 'Адрес локации обязателен' })
     .max(255, { message: 'Адрес не должен превышать 255 символов' }),
+
+  country: z
+    .string()
+    .max(100, { message: 'Название страны не должно превышать 100 символов' })
+    .optional()
+    .or(z.literal('')),
+
+  region: z
+    .string()
+    .max(100, { message: 'Название региона не должно превышать 100 символов' })
+    .optional()
+    .or(z.literal('')),
+
+  city: z
+    .string()
+    .max(100, { message: 'Название города не должно превышать 100 символов' })
+    .optional()
+    .or(z.literal('')),
   
   latitude: z
     .number({
@@ -34,7 +52,7 @@ export const locationCreateSchema = z.object({
     })
     .min(-90, { message: 'Широта должна быть от -90 до 90' })
     .max(90, { message: 'Широта должна быть от -90 до 90' }),
-  
+
   longitude: z
     .number({
       required_error: 'Долгота обязательна',
@@ -52,12 +70,6 @@ export const locationCreateSchema = z.object({
   popular: z
     .boolean({
       required_error: 'Необходимо указать популярность',
-      invalid_type_error: 'Поле должно быть логическим значением',
-    }),
-  
-  popular2: z
-    .boolean({
-      required_error: 'Необходимо указать популярность 2',
       invalid_type_error: 'Поле должно быть логическим значением',
     }),
 });

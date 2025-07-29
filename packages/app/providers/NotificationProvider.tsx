@@ -56,16 +56,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   // Real-time счетчик для новых уведомлений
   const [realTimeUnreadCount, setRealTimeUnreadCount] = useState(0);
 
-  logger.info('🔄 NotificationProvider состояние:', {
-    notificationsCount: notifications.length,
-    isLoading,
-    isLoadingMore,
-    hasMore,
-    totalCount,
-    unreadCount,
-    realTimeUnreadCount
-  });
-
   // Дедуплицированные уведомления (убираем дубли по заказам)
   const deduplicatedNotifications = useCallback(() => {
     return deduplicateNotificationsByOrder(notifications);
@@ -176,7 +166,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Автоматическая загрузка при монтировании
   useEffect(() => {
-    logger.info('🚀 NotificationProvider: автоматическая загрузка уведомлений');
     loadNotifications(false);
   }, [loadNotifications]);
 

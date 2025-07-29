@@ -1,4 +1,5 @@
 import '@shared/styles/globals.css';
+import '@shared/styles/welcomePage.css';
 import 'sonner/dist/styles.css';
 import { Toaster } from 'sonner';
 

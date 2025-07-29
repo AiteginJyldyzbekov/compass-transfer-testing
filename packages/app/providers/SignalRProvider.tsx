@@ -5,6 +5,7 @@ import type { SignalREventHandler, SignalREventData, SignalRCallback } from '@sh
 import { SignalRContext, type SignalRContextType } from '@shared/hooks/signal/useSignalR';
 import { logger } from '@shared/lib/logger';
 import { notificationManager } from '@entities/notifications/services/NotificationManager';
+import WelcomeIcon from '@shared/icon/WelcomeIcon';
 
 export interface SignalRProviderProps {
   children: ReactNode;
@@ -16,6 +17,7 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWelcome, setShowWelcome] = useState<boolean>(true);
   const eventHandlers = useRef<Map<string, SignalRCallback[]>>(new Map());
 
   const setupNotificationHandlers = useCallback(() => {
@@ -169,6 +171,15 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
     }
   }, [accessToken, isConnected, isConnecting, connect]);
 
+  // Минимальное время показа WelcomeIcon (2 секунды)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcome(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // Логирование состояния подключения
   useEffect(() => {
     if (isConnected) {
@@ -189,14 +200,16 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
     off,
   };
 
-  // Показываем загрузку пока не подключились
-  if (!isConnected && !error) {
+  // Показываем загрузку пока не подключились или пока не прошло минимальное время
+  if ((!isConnected && !error) || showWelcome) {
     return (
       <SignalRContext.Provider value={value}>
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen bg-white">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4" />
-            <div >
+            <div className="mb-6">
+              <WelcomeIcon className="w-full h-full h-auto mx-auto animate-pulse" />
+            </div>
+            <div className="text-lg font-medium text-gray-700">
               {isConnecting ? 'Подключение к серверу...' : 'Инициализация...'}
             </div>
           </div>

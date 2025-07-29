@@ -1,13 +1,15 @@
 'use client';
 
+import { use } from 'react';
 import { TariffEditView } from '@pages/(admin)/tariffs/edit/tariff-edit-view';
 
 interface EditTariffPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function EditTariffPage({ params }: EditTariffPageProps) {
-  return <TariffEditView tariffId={params.id} />;
+  const { id } = use(params);
+  return <TariffEditView tariffId={id} />;
 }
