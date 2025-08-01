@@ -110,12 +110,12 @@ function Calendar({
             "text-muted-foreground rounded-md w-9 h-9 font-normal text-[0.8rem] flex items-center justify-center",
           row: "flex w-full mt-2",
           cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-          day: "h-9 w-9 p-0 font-normal rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors",
-          day_button: "h-full w-full rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors",
+          day: "h-9 w-9 p-0 font-normal rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors cursor-pointer",
+          day_button: "h-full w-full rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground transition-colors cursor-pointer",
           day_range_end: "day-range-end",
           day_selected:
-            "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-          day_today: "bg-accent text-accent-foreground font-semibold",
+            "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-bold scale-110 shadow-xl ring-4 ring-primary/50 ring-offset-2 border-2 border-white/30",
+          day_today: "bg-accent text-accent-foreground font-semibold hover:bg-accent/80 hover:scale-105 hover:shadow-md transition-all duration-200",
           day_outside:
             "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
           day_disabled: "text-muted-foreground opacity-50",

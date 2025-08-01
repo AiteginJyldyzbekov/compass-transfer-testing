@@ -115,14 +115,22 @@ export interface LeafletMapProps {
   onDriverSelect?: (driver: ActiveDriverDTO | string) => void;
   /** ID выбранного водителя для отображения состояния кнопки */
   selectedDriverId?: string;
+  /** ID водителя для автоматического открытия попапа */
+  openDriverPopupId?: string | null;
   /** Локации в пределах карты (не выбранные) */
   mapLocations?: GetLocationDTO[];
   /** Список ID выбранных локаций */
   selectedLocationIds?: string[];
   /** Callback для выбора/снятия выбора локации */
   onLocationToggle?: (location: GetLocationDTO, isSelected: boolean) => void;
+  /** Функция для определения возможности выбора локации */
+  canSelectLocation?: (location: GetLocationDTO) => boolean;
   /** Функция для получения полных данных водителя по ID */
   getDriverById?: (id: string) => Record<string, unknown> | null;
+  /** Функция для загрузки данных водителя */
+  loadDriverData?: (id: string) => Promise<void>;
+  /** Динамический центр карты для программного перемещения */
+  dynamicCenter?: { latitude: number; longitude: number } | null;
   /** Показать зону поиска водителей (для мгновенных заказов) */
   showDriverSearchZone?: boolean;
   /** Радиус зоны поиска в метрах (по умолчанию 2000м = 2км) */
@@ -143,4 +151,6 @@ export interface LeafletMapProps {
   routeDeviationThreshold?: number;
   /** Callback для уведомления об отклонении от маршрута */
   onRouteDeviation?: (isOffRoute: boolean, distance?: number) => void;
+  /** Callback для передачи расстояния маршрута в метрах */
+  onRouteDistanceChange?: (distance: number) => void;
 }

@@ -7,6 +7,15 @@ import type {
 } from '@entities/cars/enums';
 
 /**
+ * Интерфейс для связи водителя с автомобилем
+ */
+export interface CarDriverRelation {
+  driverId: string;
+  isActive: boolean;
+  assignedAt: string;
+}
+
+/**
  * Интерфейс для получения полной информации об автомобиле с ID и водителями
  * @interface GetCarDTO
  */
@@ -22,5 +31,5 @@ export interface GetCarDTO {
   passengerCapacity: number;
   features: CarFeature[];
   id: string;
-  drivers?: Array<string>;
+  drivers?: Array<CarDriverRelation>;
 }

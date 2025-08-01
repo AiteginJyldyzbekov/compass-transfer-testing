@@ -1,7 +1,3 @@
-/**
- * `Economy` = эконом-класс<br>`Comfort` = комфорт-класс<br>`ComfortPlus` = комфорт+<br>`Business` = бизнес-класс<br>`Premium` = премиум-класс<br>`Vip` = vip-класс<br>`Luxury` = люкс-класс
- * @enum
- */
 export enum ServiceClass {
   Economy = 'Economy',
   Comfort = 'Comfort',

@@ -15,81 +15,78 @@ export function SectionCards() {
       <Card className='bg-gradient-to-t from-primary/5 to-transparent shadow-sm rounded-2xl border'>
         <CardHeader className='pb-0'>
           <div className='flex items-center justify-between'>
-            <CardDescription>Total Revenue</CardDescription>
+            <CardDescription>Общий доход</CardDescription>
             <Badge variant='outline'>
               <IconTrendingUp />
-              +12.5%
+              0%
             </Badge>
           </div>
           <CardTitle className='text-3xl font-bold tabular-nums @[250px]/card:text-3xl pt-2'>
-            $1,250.00
+            $0
           </CardTitle>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
           <div className='line-clamp-1 flex gap-2 font-medium'>
-            Trending up this month <IconTrendingUp className='size-4' />
+            Тенденция к росту в этом месяце <IconTrendingUp className='size-4' />
           </div>
-          <div className='text-muted-foreground'>Visitors for the last 6 months</div>
         </CardFooter>
       </Card>
       <Card className='bg-gradient-to-t from-primary/5 to-transparent shadow-sm rounded-2xl border'>
         <CardHeader className='pb-0'>
           <div className='flex items-center justify-between'>
-            <CardDescription>New Customers</CardDescription>
+            <CardDescription>Новые пользователи</CardDescription>
             <Badge variant='outline'>
               <IconTrendingDown />
-              -20%
+              0%
             </Badge>
           </div>
           <CardTitle className='text-3xl font-bold tabular-nums @[250px]/card:text-3xl pt-2'>
-            1,234
+            0
           </CardTitle>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
           <div className='line-clamp-1 flex gap-2 font-medium'>
-            Down 20% this period <IconTrendingDown className='size-4' />
+            Рост на 0% за этот период<IconTrendingDown className='size-4' />
           </div>
-          <div className='text-muted-foreground'>Acquisition needs attention</div>
         </CardFooter>
       </Card>
       <Card className='bg-gradient-to-t from-primary/5 to-transparent shadow-sm rounded-2xl border'>
         <CardHeader className='pb-0'>
           <div className='flex items-center justify-between'>
-            <CardDescription>Active Accounts</CardDescription>
+            <CardDescription>Количество заказов</CardDescription>
             <Badge variant='outline'>
               <IconTrendingUp />
-              +12.5%
+              0%
             </Badge>
           </div>
           <CardTitle className='text-3xl font-bold tabular-nums @[250px]/card:text-3xl pt-2'>
-            45,678
+            0
           </CardTitle>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
           <div className='line-clamp-1 flex gap-2 font-medium'>
-            Strong user retention <IconTrendingUp className='size-4' />
+            Стабильное количество заказов <IconTrendingUp className='size-4' />
           </div>
-          <div className='text-muted-foreground'>Engagement exceed targets</div>
         </CardFooter>
       </Card>
       <Card className='bg-gradient-to-t from-primary/5 to-transparent shadow-sm rounded-2xl border'>
         <CardHeader className='pb-0'>
           <div className='flex items-center justify-between'>
-            <CardDescription>Growth Rate</CardDescription>
+            <CardDescription>Темпы роста</CardDescription>
             <Badge variant='outline'>
               <IconTrendingUp />
-              +4.5%
+              0%
             </Badge>
           </div>
           <CardTitle className='text-3xl font-bold tabular-nums @[250px]/card:text-3xl pt-2'>
-            4.5%
+            0%
           </CardTitle>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
           <div className='line-clamp-1 flex gap-2 font-medium'>
-            Steady performance increase <IconTrendingUp className='size-4' />
+            Устойчивый рост производительности <IconTrendingUp className='size-4' />
           </div>
-          <div className='text-muted-foreground'>Meets growth projections</div>
+          <div className='text-muted-foreground'>Соответствует прогнозам роста</div>
         </CardFooter>
       </Card>
     </div>

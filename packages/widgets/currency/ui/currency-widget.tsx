@@ -65,8 +65,8 @@ export function CurrencyWidget() {
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent className="w-80 p-0 max-h-[80vh] z-[9999]" align="end">
-        <div className="bg-gradient-to-br from-green-400 via-green-500 to-green-600 text-white rounded-lg overflow-hidden max-h-[80vh] flex flex-col">
+      <DropdownMenuContent className="w-80 p-0 max-h-[80vh] z-[1000]" align="end">
+        <div className="bg-green-600 text-white rounded-lg overflow-hidden max-h-[80vh] flex flex-col">
           {/* Заголовок - фиксированный */}
           <div className="flex-shrink-0 p-4 border-b border-green-300/30">
             <div className="flex items-center justify-between">

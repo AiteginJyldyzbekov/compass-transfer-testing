@@ -117,4 +117,9 @@ export interface GetOrderDTO {
    * Номер рейса (вылет)
    */
   flyReis?: string | null;
+
+  /**
+   * Комментарии к заказу
+   */
+  notes?: string | null;
 }

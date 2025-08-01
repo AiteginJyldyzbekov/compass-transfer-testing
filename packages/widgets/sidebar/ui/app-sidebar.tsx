@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import { usersApi } from '@shared/api/users';
+import { logger } from '@shared/lib'
 import { useSheet } from '@shared/lib/sheet-context';
 import {
   Sidebar,
@@ -16,7 +18,7 @@ import {
 import { NavMain, NavDocuments } from '@entities/navigation';
 import { NavUser } from '@entities/users';
 import { Role, ActivityStatus } from '@entities/users/enums';
-import type { GetUserSelfProfileDTO } from '@entities/users/interface';
+import type { GetUserSelfProfileDTO, GetDriverDTO } from '@entities/users/interface';
 import { getRoleDisplayName } from '@entities/users/utils';
 import { useDrivers, type SidebarDriver } from '@widgets/sidebar/hooks';
 import { sidebarData } from '@widgets/sidebar/mock-data';
@@ -196,10 +198,27 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
   // Получаем данные водителей только если нужно их показывать
   const { drivers, loading, error } = useDrivers(shouldShowDrivers);
   const [selectedDriver, setSelectedDriver] = React.useState<SidebarDriver | null>(null);
+  const [fullDriverData, setFullDriverData] = React.useState<GetDriverDTO | null>(null);
   const [activeDriverCategory, setActiveDriverCategory] = React.useState('main');
   const [activeOrderType, setActiveOrderType] = React.useState('scheduled');
+  const [_loadingDriverData, setLoadingDriverData] = React.useState(false);
 
   const { openSheet, closeSheet, isSheetOpen } = useSheet();
+
+  // Функция для загрузки полных данных драйвера
+  const loadFullDriverData = React.useCallback(async (driverId: string) => {
+    try {
+      setLoadingDriverData(true);
+      const driverData = await usersApi.getDriver(driverId);
+      
+      setFullDriverData(driverData);
+    } catch (error) {
+      logger.error('Ошибка при загрузке данных драйвера:', error);
+      setFullDriverData(null);
+    } finally {
+      setLoadingDriverData(false);
+    }
+  }, []);
 
   const openDriverSheet = (driver: SidebarDriver) => {
     // Если открываем того же водителя, просто переключаем состояние
@@ -212,6 +231,8 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
     } else {
       // Если открываем другого водителя, закрываем предыдущий и открываем новый
       setSelectedDriver(driver);
+      setFullDriverData(null); // Сбрасываем предыдущие данные
+      loadFullDriverData(driver.id); // Загружаем полные данные
       openSheet('driver');
       setActiveDriverCategory('main'); // Сбрасываем на основную категорию
     }
@@ -220,6 +241,7 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
   const closeDriverSheet = () => {
     closeSheet();
     setSelectedDriver(null);
+    setFullDriverData(null);
     setActiveDriverCategory('main');
   };
 
@@ -301,7 +323,7 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
       <DriverSheet
         isOpen={isSheetOpen('driver')}
         onClose={closeDriverSheet}
-        driver={selectedDriver}
+        driver={fullDriverData}
         activeCategory={activeDriverCategory}
         setActiveCategory={setActiveDriverCategory}
         activeOrderType={activeOrderType}

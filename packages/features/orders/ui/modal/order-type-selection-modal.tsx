@@ -39,33 +39,33 @@ const orderTypeOptions: OrderTypeOption[] = [
     color: 'bg-blue-100 text-blue-600',
     route: '/orders/create/scheduled',
   },
-  {
-    type: OrderType.Partner,
-    title: 'Партнерский заказ',
-    description: 'Заказ от партнерской организации',
-    icon: Users,
-    color: 'bg-purple-100 text-purple-600',
-    route: '/orders/create/partner',
-    disabled: true, // Пока не реализовано
-  },
-  {
-    type: OrderType.Shuttle,
-    title: 'Шаттл',
-    description: 'Заезд по регулярному маршруту',
-    icon: Truck,
-    color: 'bg-orange-100 text-orange-600',
-    route: '/orders/create/shuttle',
-    disabled: true, // Пока не реализовано
-  },
-  {
-    type: OrderType.Subscription,
-    title: 'Подписка',
-    description: 'Регулярные поездки по расписанию',
-    icon: Calendar,
-    color: 'bg-indigo-100 text-indigo-600',
-    route: '/orders/create/subscription',
-    disabled: true, // Пока не реализовано
-  },
+  // {
+  //   type: OrderType.Partner,
+  //   title: 'Партнерский заказ',
+  //   description: 'Заказ от партнерской организации',
+  //   icon: Users,
+  //   color: 'bg-purple-100 text-purple-600',
+  //   route: '/orders/create/partner',
+  //   disabled: true, // Пока не реализовано
+  // },
+  // {
+  //   type: OrderType.Shuttle,
+  //   title: 'Шаттл',
+  //   description: 'Заезд по регулярному маршруту',
+  //   icon: Truck,
+  //   color: 'bg-orange-100 text-orange-600',
+  //   route: '/orders/create/shuttle',
+  //   disabled: true, // Пока не реализовано
+  // },
+  // {
+  //   type: OrderType.Subscription,
+  //   title: 'Подписка',
+  //   description: 'Регулярные поездки по расписанию',
+  //   icon: Calendar,
+  //   color: 'bg-indigo-100 text-indigo-600',
+  //   route: '/orders/create/subscription',
+  //   disabled: true, // Пока не реализовано
+  // },
 ];
 
 interface OrderTypeSelectionModalProps {
@@ -85,7 +85,7 @@ export function OrderTypeSelectionModal({ isOpen, onClose }: OrderTypeSelectionM
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] z-[1000]">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
@@ -139,7 +139,7 @@ export function OrderTypeSelectionModal({ isOpen, onClose }: OrderTypeSelectionM
           </div>
         </div>
 
-        <div className="flex justify-end pt-4 border-t">
+        <div className="flex justify-end">
           <Button
             variant="outline"
             onClick={onClose}

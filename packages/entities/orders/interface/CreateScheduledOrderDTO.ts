@@ -40,4 +40,7 @@ export interface CreateScheduledOrderDTO {
 
   /** Информация о пассажирах */
   passengers: CreatePassengerDTO[];
+
+  /** Индексная сигнатура для совместимости с API */
+  [key: string]: unknown;
 }

@@ -2,7 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import { apiClient } from '@shared/api';
+import { logger } from '@shared/lib';
+import type { LocationType } from '@entities/locations/enums';
 import type { GetLocationDTO } from '@entities/locations/interface';
+
 
 /**
  * Хук для работы с локациями
@@ -32,16 +35,16 @@ export const useLocations = () => {
       // API возвращает объект с массивом data
       if (response.data && Array.isArray(response.data.data)) {
         setLocations(response.data.data);
-        console.log('Загружено локаций:', response.data.data.length);
+        logger.log('Загружено локаций:', response.data.data.length);
       } else {
-        console.warn('Неожиданный формат данных от API локаций:', response.data);
+        logger.warn('Неожиданный формат данных от API локаций:', response.data);
         setLocations([]);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка при загрузке локаций';
 
       setError(errorMessage);
-      console.error('Ошибка при загрузке локаций:', err);
+      logger.error('Ошибка при загрузке локаций:', err);
     } finally {
       setIsLoading(false);
     }
@@ -54,10 +57,11 @@ export const useLocations = () => {
   const searchLocations = async (
     query: string = '',
     bounds?: { latFrom: number; latTo: number; longFrom: number; longTo: number },
+    additionalParams?: Record<string, any>,
   ): Promise<GetLocationDTO[]> => {
     try {
       // Базовые параметры
-      const params: Record<string, string | number | boolean> = {
+      const params: Record<string, string | number | boolean | string[]> = {
         First: true,
       };
 
@@ -79,6 +83,11 @@ export const useLocations = () => {
         params['CoordinateBox.LongTo'] = bounds.longTo;
       }
 
+      // Дополнительные параметры
+      if (additionalParams) {
+        Object.assign(params, additionalParams);
+      }
+
       const response = await apiClient.get<{
         data: GetLocationDTO[];
         totalCount: number;
@@ -93,7 +102,7 @@ export const useLocations = () => {
 
       return results;
     } catch (err) {
-      console.error('Ошибка при поиске локаций через API:', err);
+      logger.error('Ошибка при поиске локаций через API:', err);
 
       return [];
     }
@@ -114,16 +123,124 @@ export const useLocations = () => {
       );
 
       if (response.error) {
-        console.error('Ошибка при получении локации:', response.error);
+        logger.error('Ошибка при получении локации:', response.error);
 
         return null;
       }
 
       return response.data as GetLocationDTO;
     } catch (error) {
-      console.error('Ошибка при получении локации по ID:', error);
+      logger.error('Ошибка при получении локации по ID:', error);
 
       return null;
+    }
+  }, []);
+
+  /**
+   * Получить локации по типу
+   */
+  const fetchLocationsByType = useCallback(async (locationType: LocationType): Promise<GetLocationDTO[]> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const params = {
+        First: true,
+        Size: 100, // Получаем больше локаций для конкретного типа
+        Type: locationType,
+      };
+
+      const response = await apiClient.get<{
+        data: GetLocationDTO[];
+        totalCount: number;
+        pageSize: number;
+        hasPrevious: boolean;
+        hasNext: boolean;
+      }>('/Location', { params });
+
+      if (response.error) {
+        throw new Error(response.error.message || `Ошибка при загрузке локаций типа ${locationType}`);
+      }
+
+      const results = Array.isArray(response.data?.data) ? response.data.data : [];
+
+      logger.log(`Загружено локаций типа ${locationType}:`, results.length);
+
+      return results;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : `Ошибка при загрузке локаций типа ${locationType}`;
+
+      setError(errorMessage);
+      logger.error(`Ошибка при загрузке локаций типа ${locationType}:`, err);
+
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  /**
+   * Загружает все локации в указанных границах для отображения на карте
+   */
+  const fetchLocationsInBounds = useCallback(async (bounds: {
+    latFrom: number;
+    latTo: number;
+    longFrom: number;
+    longTo: number;
+  }): Promise<GetLocationDTO[]> => {
+    try {
+      const params = {
+        First: true,
+        Size: 1000, // Большой размер для карты
+        'CoordinateBox.LatFrom': bounds.latFrom,
+        'CoordinateBox.LatTo': bounds.latTo,
+        'CoordinateBox.LongFrom': bounds.longFrom,
+        'CoordinateBox.LongTo': bounds.longTo,
+        IsActive: true, // Только активные локации
+      };
+
+      const response = await apiClient.get<{
+        data: GetLocationDTO[];
+        totalCount: number;
+      }>('/Location', { params });
+
+      const results = Array.isArray(response.data?.data) ? response.data.data : [];
+
+      logger.log(`Загружено локаций в границах карты:`, results.length);
+
+      return results;
+    } catch (error) {
+      logger.error('Ошибка загрузки локаций в границах:', error);
+      return [];
+    }
+  }, []);
+
+  /**
+   * Загружает ВСЕ локации без ограничений по координатам
+   */
+  const fetchAllLocations = useCallback(async (): Promise<GetLocationDTO[]> => {
+    try {
+      const params = {
+        First: true,
+        Size: 5000, // Большой размер для всех локаций
+        IsActive: true, // Только активные локации
+        // БЕЗ CoordinateBox - загружаем ВСЕ!
+      };
+
+      const response = await apiClient.get<{
+        data: GetLocationDTO[];
+        totalCount: number;
+      }>('/Location', { params });
+
+      const results = Array.isArray(response.data?.data) ? response.data.data : [];
+
+      logger.log(`Загружено ВСЕХ локаций:`, results.length);
+
+      return results;
+    } catch (err) {
+      logger.error('Ошибка загрузки всех локаций:', err);
+
+      return [];
     }
   }, []);
 
@@ -135,5 +252,8 @@ export const useLocations = () => {
     searchLocations,
     getLocationById,
     fetchLocationById,
+    fetchLocationsByType,
+    fetchLocationsInBounds,
+    fetchAllLocations, // Новая функция!
   };
 };

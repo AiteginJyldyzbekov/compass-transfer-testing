@@ -30,6 +30,7 @@ export function getBasicLocationDataStatus(
     if (!formData.description || formData.description.trim() === '') {
       return 'warning';
     }
+
     return 'complete';
   }
 
@@ -118,6 +119,7 @@ export function getBasicLocationDataStatusForUpdate(
     if (!formData.description || formData.description.trim() === '') {
       return 'warning';
     }
+    
     return 'complete';
   }
 

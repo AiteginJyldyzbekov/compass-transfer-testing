@@ -27,6 +27,7 @@ export const locationTypeHelpers = {
   // Безопасно получить тип или дефолт
   getSafeValue: (type: string | undefined | null): LocationType => {
     if (!type) return LocationType.Airport;
+    
     return locationTypeHelpers.isValid(type) ? (type as LocationType) : LocationType.Airport;
   },
 };

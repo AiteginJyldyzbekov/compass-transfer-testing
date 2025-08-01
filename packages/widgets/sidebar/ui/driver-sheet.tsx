@@ -5,6 +5,7 @@ import React from 'react';
 import { Button } from '@shared/ui/forms/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@shared/ui/modals/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@shared/ui/modals/tooltip';
+import type { GetDriverDTO } from '@entities/users/interface';
 import {
   DriverMainInfo,
   DriverPassportInfo,
@@ -15,17 +16,10 @@ import {
   DriverOrdersInfo,
 } from '@features/sheet/driver-sheet/ui';
 
-interface Driver {
-  id: string;
-  name: string;
-  phone: string;
-  carNumber: string;
-}
-
 interface DriverSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  driver: Driver | null;
+  driver: GetDriverDTO | null;
   activeCategory: string;
   setActiveCategory: (category: string) => void;
   activeOrderType: string;
@@ -90,18 +84,19 @@ export function DriverSheet({
       case 'main':
         return <DriverMainInfo driver={driver} />;
       case 'passport':
-        return <DriverPassportInfo />;
+        return <DriverPassportInfo driver={driver} />;
       case 'license':
-        return <DriverLicenseInfo />;
+        return <DriverLicenseInfo driver={driver} />;
       case 'personal':
-        return <DriverPersonalInfo />;
+        return <DriverPersonalInfo driver={driver} />;
       case 'cars':
         return <DriverCarsInfo driver={driver} />;
       case 'location':
-        return <DriverLocationInfo />;
+        return <DriverLocationInfo driver={driver} />;
       case 'orders':
         return (
           <DriverOrdersInfo
+            driver={driver}
             activeOrderType={activeOrderType}
             setActiveOrderType={setActiveOrderType}
           />

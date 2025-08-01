@@ -205,6 +205,8 @@ export function ProfileView({ userId, userRole }: ProfileViewProps) {
               showBackButton
               onBack={handleBackToList}
               hideLogout
+              targetUserId={userId}
+              targetUserRole={userRole}
             />
           </div>
         </div>

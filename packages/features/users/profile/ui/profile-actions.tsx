@@ -1,7 +1,9 @@
 'use client';
 
-import { Lock, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Lock, MessageCircle, ArrowLeft, Edit } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useIsAdmin } from '@shared/contexts';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout/card';
 import { LogoutButton } from '@features/auth';
@@ -12,21 +14,41 @@ interface ProfileActionsProps {
   showBackButton?: boolean; // Показать кнопку "Назад"
   onBack?: () => void; // Обработчик кнопки "Назад"
   hideLogout?: boolean; // Скрыть кнопку "Выйти"
+  // Для кнопки редактирования (только для админов)
+  targetUserId?: string; // ID пользователя, которого просматриваем
+  targetUserRole?: string; // Роль пользователя, которого просматриваем
 }
 
-export function ProfileActions({ 
-  hidePasswordChange = false, 
-  showBackButton = false, 
-  onBack, 
-  hideLogout = false 
+export function ProfileActions({
+  hidePasswordChange = false,
+  showBackButton = false,
+  onBack,
+  hideLogout = false,
+  targetUserId,
+  targetUserRole
 }: ProfileActionsProps) {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const router = useRouter();
+  const isAdmin = useIsAdmin();
 
   const handleChangePassword = () => {
     setIsChangePasswordOpen(true);
   };
 
   const handleSendMessage = () => {};
+
+  // Обработчик кнопки редактирования (только для админов)
+  const handleEditUser = () => {
+    if (targetUserId && targetUserRole) {
+      // Преобразуем роль в нижний регистр для URL
+      const roleForUrl = targetUserRole.toLowerCase();
+
+      router.push(`/users/edit/${roleForUrl}/${targetUserId}`);
+    }
+  };
+
+  // Показывать кнопку редактирования только админам и только если есть данные о целевом пользователе
+  const showEditButton = isAdmin && targetUserId && targetUserRole;
 
   return (
     <div className='sticky top-4'>
@@ -35,6 +57,18 @@ export function ProfileActions({
           <CardTitle className='text-lg'>Действия</CardTitle>
         </CardHeader>
         <CardContent className='flex flex-col gap-3 px-4 pb-4'>
+          {/* Кнопка редактирования (только для админов) */}
+          {showEditButton && (
+            <Button
+              onClick={handleEditUser}
+              className='w-full justify-start gap-2'
+              variant='default'
+            >
+              <Edit className='h-4 w-4' />
+              Редактировать профиль
+            </Button>
+          )}
+
           {!hidePasswordChange && (
             <Button
               onClick={handleChangePassword}

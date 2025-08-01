@@ -1,3 +1,5 @@
 export { useLocation } from './useLocation';
 export { useDeleteLocation } from './use-delete-location';
-export * from './useLocation'
+export { useLocations } from './useLocations';
+export { useAirportLocations } from './useAirportLocations';
+export * from './useLocation';

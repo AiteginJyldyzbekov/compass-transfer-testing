@@ -15,12 +15,13 @@ export enum CarType {
 /**
  * Массив всех значений CarType
  */
-export const CarTypeValues = [
-  CarType.Sedan,
-  CarType.Hatchback,
-  CarType.SUV,
-  CarType.Minivan,
-  CarType.Coupe,
-  CarType.Cargo,
-  CarType.Pickup,
-];
+export const CarTypeValues: Record<CarType, string> = {
+  [CarType.Sedan]: 'Седан',
+  [CarType.Hatchback]: 'Хэтчбек',
+  [CarType.SUV]: 'Внедорожник',
+  [CarType.Minivan]: 'Минивэн',
+  [CarType.Coupe]: 'Купе',
+  [CarType.Cargo]: 'Грузовой',
+  [CarType.Pickup]: 'Пикап',
+};
+

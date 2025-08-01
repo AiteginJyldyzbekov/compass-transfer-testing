@@ -69,7 +69,6 @@ const nextConfig: NextConfig = {
         pathname: '/uploads/**',
       },
     ],
-    domains: ['localhost', 'compass.local', 'example.com', 'funny.klev.club'],
   },
 
   // Добавляем настройку заголовков

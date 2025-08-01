@@ -110,7 +110,7 @@ export function CurrencyCalculatorModal({ isOpen, onClose, currencyData }: Curre
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md z-[1000]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />

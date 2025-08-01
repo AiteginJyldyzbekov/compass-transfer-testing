@@ -100,7 +100,7 @@ export function WeatherWidget() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-80 p-0 max-h-[80vh]" align="end">
+      <DropdownMenuContent className="w-80 p-0 max-h-[80vh] z-[1000]" align="end">
         <div className="bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white rounded-lg max-h-[80vh] flex flex-col overflow-auto">
           {/* Заголовок с выбором города - фиксированный */}
           <div className="flex-shrink-0 p-4 border-b border-blue-300/30">

@@ -11,15 +11,29 @@ export enum ServiceClass {
   Vip = 'Vip',
   Luxury = 'Luxury',
 }
+
 /**
- * Массив всех значений ServiceClass
+ * Переводы значений ServiceClass на русский язык
  */
-export const ServiceClassValues = [
-  ServiceClass.Economy,
-  ServiceClass.Comfort,
-  ServiceClass.ComfortPlus,
-  ServiceClass.Business,
-  ServiceClass.Premium,
-  ServiceClass.Vip,
-  ServiceClass.Luxury,
-];
+export const ServiceClassValues: Record<ServiceClass, string> = {
+  [ServiceClass.Economy]: 'Эконом',
+  [ServiceClass.Comfort]: 'Комфорт',
+  [ServiceClass.ComfortPlus]: 'Комфорт+',
+  [ServiceClass.Business]: 'Бизнес',
+  [ServiceClass.Premium]: 'Премиум',
+  [ServiceClass.Vip]: 'VIP',
+  [ServiceClass.Luxury]: 'Люкс',
+};
+
+/**
+ * Цвета для каждого класса обслуживания
+ */
+export const ServiceClassColors: Record<ServiceClass, string> = {
+  [ServiceClass.Economy]: 'bg-green-500 text-white',
+  [ServiceClass.Comfort]: 'bg-blue-500 text-white',
+  [ServiceClass.ComfortPlus]: 'bg-cyan-500 text-white',
+  [ServiceClass.Business]: 'bg-purple-500 text-white',
+  [ServiceClass.Premium]: 'bg-yellow-500 text-white',
+  [ServiceClass.Vip]: 'bg-pink-500 text-white',
+  [ServiceClass.Luxury]: 'bg-amber-500 text-white',
+};

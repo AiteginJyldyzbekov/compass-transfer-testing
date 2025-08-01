@@ -12,6 +12,7 @@ import {
 } from '@shared/ui/forms/select';
 import { TERMINAL_STATUS_OPTIONS } from '@entities/users/enums';
 import { type TerminalDataFields } from '@entities/users/model/validation/ui/terminal-data';
+import { useAirportLocations } from '@features/locations/hooks';
 
 export function TerminalDataSection() {
   const {
@@ -25,6 +26,9 @@ export function TerminalDataSection() {
     locationId: string;
   }>();
   const formData = watch();
+
+  // Получаем локации аэропортов
+  const { airportLocations, isLoading: isLoadingLocations, error: locationsError } = useAirportLocations();
 
   return (
     <div className='space-y-4'>
@@ -77,24 +81,38 @@ export function TerminalDataSection() {
         </div>
 
         <div className='space-y-2'>
-          <Label htmlFor='locationId'>Локация *</Label>
+          <Label htmlFor='locationId'>Локация (Аэропорт) *</Label>
           <Select
             value={formData.locationId}
             onValueChange={(value: string) => setValue('locationId', value)}
+            disabled={isLoadingLocations}
           >
             <SelectTrigger
               className={`focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0 hover:shadow-md focus:shadow-md focus-visible:shadow-md transition-shadow ${
                 errors.locationId ? 'border-red-500' : ''
               }`}
             >
-              <SelectValue placeholder='Выберите локацию' />
+              <SelectValue
+                placeholder={
+                  isLoadingLocations
+                    ? 'Загрузка аэропортов...'
+                    : airportLocations.length === 0
+                      ? 'Аэропорты не найдены'
+                      : 'Выберите аэропорт'
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='bishkek'>Бишкек</SelectItem>
-              <SelectItem value='osh'>Ош</SelectItem>
-              <SelectItem value='jalal-abad'>Джалал-Абад</SelectItem>
-              <SelectItem value='karakol'>Каракол</SelectItem>
-              <SelectItem value='naryn'>Нарын</SelectItem>
+              {airportLocations.map((location) => (
+                <SelectItem key={location.id} value={location.id}>
+                  {location.address}
+                </SelectItem>
+              ))}
+              {airportLocations.length === 0 && !isLoadingLocations && (
+                <SelectItem value='' disabled>
+                  Аэропорты не найдены
+                </SelectItem>
+              )}
             </SelectContent>
           </Select>
           {errors.locationId && (
@@ -102,6 +120,11 @@ export function TerminalDataSection() {
               {typeof errors.locationId.message === 'string'
                 ? errors.locationId.message
                 : 'Ошибка валидации'}
+            </p>
+          )}
+          {locationsError && (
+            <p className='text-sm text-red-500'>
+              Ошибка загрузки аэропортов: {locationsError}
             </p>
           )}
         </div>

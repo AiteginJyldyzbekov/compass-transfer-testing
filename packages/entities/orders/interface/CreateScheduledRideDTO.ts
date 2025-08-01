@@ -19,12 +19,15 @@ export interface RideWaypoint {
 export interface CreateScheduledRideDTO {
   /** ID водителя */
   driverId: string;
-  
+
   /** ID автомобиля */
   carId: string;
-  
+
   /** Промежуточные точки маршрута поездки */
   waypoints: RideWaypoint[];
+
+  /** Индексная сигнатура для совместимости с API */
+  [key: string]: unknown;
 }
 
 /**

@@ -2,16 +2,10 @@
 
 import { Edit } from 'lucide-react';
 import { Button } from '@shared/ui/forms/button';
-
-interface Driver {
-  id: string;
-  name: string;
-  phone: string;
-  carNumber: string;
-}
+import type { GetDriverDTO } from '@entities/users/interface';
 
 interface DriverMainInfoProps {
-  driver: Driver;
+  driver: GetDriverDTO;
 }
 
 export function DriverMainInfo({ driver }: DriverMainInfoProps) {
@@ -19,14 +13,22 @@ export function DriverMainInfo({ driver }: DriverMainInfoProps) {
     <div className='space-y-4'>
       <div className='flex items-center space-x-4 p-4 rounded-lg border bg-blue-50 border-blue-200 hover:bg-blue-100 dark:bg-blue-950 dark:border-blue-800 dark:hover:bg-blue-900'>
         <div className='w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-medium'>
-          {driver.name
-            .split(' ')
-            .map(n => n[0])
-            .join('')}
+          {driver.avatarUrl ? (
+            <img
+              src={driver.avatarUrl}
+              alt={driver.fullName}
+              className='w-full h-full rounded-full object-cover'
+            />
+          ) : (
+            driver.fullName
+              .split(' ')
+              .map(n => n[0])
+              .join('')
+          )}
         </div>
         <div className='flex-1 min-w-0'>
           <h3 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>
-            {driver.name}
+            {driver.fullName}
           </h3>
           <p className='text-sm text-muted-foreground'>Водитель</p>
         </div>
@@ -59,7 +61,7 @@ export function DriverMainInfo({ driver }: DriverMainInfoProps) {
             </div>
             <div className='flex-1 min-w-0'>
               <p className='text-sm text-muted-foreground'>Телефон</p>
-              <p className='font-medium text-foreground'>{driver.phone}</p>
+              <p className='font-medium text-foreground'>{driver.phoneNumber || 'Не указан'}</p>
             </div>
           </div>
         </div>
@@ -79,7 +81,7 @@ export function DriverMainInfo({ driver }: DriverMainInfoProps) {
             <div className='flex-1 min-w-0'>
               <p className='text-sm text-muted-foreground'>Номер машины</p>
               <p className='font-medium text-foreground font-mono'>
-                {driver.carNumber}
+                {driver.activeCar?.licensePlate || 'Не назначен'}
               </p>
             </div>
           </div>
@@ -91,10 +93,17 @@ export function DriverMainInfo({ driver }: DriverMainInfoProps) {
           Дополнительная информация
         </h4>
         <div className='space-y-2 text-sm text-muted-foreground'>
-          <p>• Водитель активен и доступен для заказов</p>
-          <p>• Рейтинг: ⭐⭐⭐⭐⭐ (5.0)</p>
-          <p>• Завершено заказов: 127</p>
-          <p>• Стаж работы: 2 года 3 месяца</p>
+          <p>• Статус: {driver.online ? 'Онлайн' : 'Оффлайн'}</p>
+          <p>• Доступность: {driver.isAvailable ? 'Доступен' : 'Недоступен'}</p>
+          <p>• Верификация: {driver.verificationStatus || 'Не указана'}</p>
+          <p>• Рейтинг: {driver.rating ? `⭐ ${driver.rating.toFixed(1)}` : 'Нет рейтинга'}</p>
+          <p>• Завершено поездок: {driver.profile.totalRides}</p>
+          <p>• Общий пробег: {driver.profile.totalDistance ? `${driver.profile.totalDistance} км` : 'Не указан'}</p>
+          <p>• Опыт вождения: {driver.profile.drivingExperience ? `${driver.profile.drivingExperience} лет` : 'Не указан'}</p>
+          {driver.profile.lastRideDate && (
+            <p>• Последняя поездка: {new Date(driver.profile.lastRideDate).toLocaleDateString('ru-RU')}</p>
+          )}
+          <p>• Обучение пройдено: {driver.profile.trainingCompleted ? 'Да' : 'Нет'}</p>
         </div>
       </div>
     </div>

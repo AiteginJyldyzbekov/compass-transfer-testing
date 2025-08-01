@@ -10,6 +10,7 @@ export function OverlayDebug() {
       // Ищем все элементы с fixed позиционированием и высоким z-index
       const fixedElements = Array.from(document.querySelectorAll('*')).filter(el => {
         const style = window.getComputedStyle(el);
+
         return style.position === 'fixed' && 
                (style.zIndex === '50' || style.zIndex === '100' || parseInt(style.zIndex) > 50);
       });
@@ -19,6 +20,7 @@ export function OverlayDebug() {
 
     // Проверяем каждые 2 секунды
     const interval = setInterval(checkOverlays, 2000);
+    
     checkOverlays(); // Первоначальная проверка
 
     return () => clearInterval(interval);

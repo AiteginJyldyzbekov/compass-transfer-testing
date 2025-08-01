@@ -6,6 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle } from 'react-
 import {
   MapClickHandler,
   MapBoundsHandler,
+  MapController,
   LocationMarker,
   DriverMarker,
   RouteMarker,
@@ -23,7 +24,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   latitude,
   longitude,
   zoom = 13,
-  height = '400px',
+  height = '100%',
   width = '100%',
   showMarker = true,
   markerText,
@@ -36,10 +37,14 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   onBoundsChange,
   onDriverSelect,
   selectedDriverId,
+  openDriverPopupId,
   mapLocations = [],
   selectedLocationIds = [],
   onLocationToggle,
+  canSelectLocation,
   getDriverById,
+  loadDriverData,
+  dynamicCenter,
   showDriverSearchZone = false,
   driverSearchRadius = 2000,
   currentDriverLocation,
@@ -50,6 +55,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   selectedEndLocation,
   onLocationSelect,
   isSelectingStart = true,
+  onRouteDistanceChange,
 }) => {
   const position: [number, number] = [latitude, longitude];
   const [isClient, setIsClient] = useState(false);
@@ -82,13 +88,20 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
 
   // Используем хуки
   const uiScale = useUIScale();
-  const routeCoordinates = useRouteBuilder(showRoute, routePoints);
+  const { routeCoordinates, routeDistance } = useRouteBuilder(showRoute, routePoints);
   const { isDriverOffRoute } = useDriverTracking({
     currentDriverLocation,
     routeCoordinates,
     routeDeviationThreshold,
     onRouteDeviation,
   });
+
+  // Передаем расстояние маршрута через колбэк
+  useEffect(() => {
+    if (onRouteDistanceChange && routeDistance > 0) {
+      onRouteDistanceChange(routeDistance);
+    }
+  }, [routeDistance, onRouteDistanceChange]);
 
   // Показываем загрузку пока не инициализирован клиент
   if (!isClient) {
@@ -108,16 +121,17 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     <div className={className} style={{ height, width }}>
       <style>{`
         .leaflet-popup-content-wrapper {
+          padding: 20px;
           font-size: 1rem !important;
         }
         .leaflet-popup-content {
-          margin: 0.75rem !important;
+            margin: 0 !important;
             font-size: inherit !important;
         }
         .leaflet-popup-close-button {
           font-size: 1.5rem !important;
-          padding: 0.25rem 0.5rem !important;
         }
+
       `}</style>
       <MapContainer
         center={position}
@@ -133,6 +147,13 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
 
         {/* Обработчик изменения границ карты */}
         {onBoundsChange && <MapBoundsHandler onBoundsChange={onBoundsChange} />}
+
+        {/* Контроллер для программного управления картой */}
+        <MapController
+          center={dynamicCenter}
+          zoom={dynamicCenter ? 16 : undefined}
+          openPopupDriverId={openDriverPopupId}
+        />
 
         {/* Основной маркер */}
         {showMarker && (
@@ -184,7 +205,9 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
                 heading={heading}
                 onDriverSelect={onDriverSelect}
                 getDriverById={getDriverById}
+                loadDriverData={loadDriverData}
                 uiScale={uiScale}
+                forceOpenPopup={openDriverPopupId === driver.id}
               />
             );
           })}
@@ -246,6 +269,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
         {mapLocations.map(location => {
           const icon = createPinIcon(getColorByType('location'), undefined, uiScale);
           const isSelected = selectedLocationIds.includes(location.id);
+          const canSelect = canSelectLocation ? canSelectLocation(location) : true;
 
           return (
             <LocationMarker
@@ -253,6 +277,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
               location={location}
               icon={icon}
               isSelected={isSelected}
+              canSelect={canSelect}
               onLocationToggle={onLocationToggle}
             />
           );

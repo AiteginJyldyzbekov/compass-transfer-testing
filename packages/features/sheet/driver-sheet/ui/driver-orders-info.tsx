@@ -1,13 +1,41 @@
 'use client';
 
 import React from 'react';
+import type { GetDriverDTO } from '@entities/users/interface';
+import { useDriverOrders } from '../hooks/use-driver-orders';
+import { orderStatusLabels } from '@entities/orders/constants/order-status-labels';
 
 interface DriverOrdersInfoProps {
+  driver: GetDriverDTO;
   activeOrderType: string;
   setActiveOrderType: (type: string) => void;
 }
 
-export function DriverOrdersInfo({ activeOrderType, setActiveOrderType }: DriverOrdersInfoProps) {
+export function DriverOrdersInfo({ driver, activeOrderType, setActiveOrderType }: DriverOrdersInfoProps) {
+  const { orders, loading, error } = useDriverOrders(driver.id);
+
+  if (loading) {
+    return (
+      <div className='space-y-4'>
+        <h3 className='text-lg font-semibold'>Заказы</h3>
+        <div className='flex items-center justify-center p-8'>
+          <div className='text-muted-foreground'>Загрузка заказов...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='space-y-4'>
+        <h3 className='text-lg font-semibold'>Заказы</h3>
+        <div className='flex items-center justify-center p-8'>
+          <div className='text-red-500'>Ошибка загрузки: {error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='space-y-4'>
       <h3 className='text-lg font-semibold'>Заказы</h3>
@@ -49,176 +77,164 @@ export function DriverOrdersInfo({ activeOrderType, setActiveOrderType }: Driver
       {/* Контент для запланированных заказов */}
       {activeOrderType === 'scheduled' && (
         <div className='space-y-3'>
-          <div className='p-4 rounded-lg border bg-green-50 border-green-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h4 className='font-medium text-green-800'>Заказ #1234</h4>
-              <span className='text-sm text-green-600 font-medium bg-green-100 px-2 py-1 rounded'>
-                Запланирован
-              </span>
+          {orders.scheduled.length > 0 ? (
+            <>
+              {orders.scheduled.map((order) => (
+                <div key={order.id} className='p-4 rounded-lg border bg-green-50 border-green-200'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <h4 className='font-medium text-green-800'>Заказ #{order.id.slice(-8)}</h4>
+                    <span className='text-sm text-green-600 font-medium bg-green-100 px-2 py-1 rounded'>
+                      {orderStatusLabels[order.status]}
+                    </span>
+                  </div>
+                  <div className='space-y-2 text-sm'>
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>Дата создания:</span>
+                      <span className='font-medium'>
+                        {new Date(order.createdAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>Время:</span>
+                      <span className='font-medium'>
+                        {new Date(order.createdAt).toLocaleTimeString('ru-RU', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>Тип:</span>
+                      <span className='font-medium'>{order.type}</span>
+                    </div>
+                    {order.totalPrice && (
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Стоимость:</span>
+                        <span className='font-medium text-green-600'>{order.totalPrice} сом</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div className='text-center p-4'>
+                <p className='text-sm text-muted-foreground'>
+                  Всего запланировано заказов: <span className='font-medium'>{orders.scheduled.length}</span>
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className='text-center p-8'>
+              <p className='text-muted-foreground'>Нет запланированных заказов</p>
             </div>
-            <div className='space-y-2 text-sm'>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Дата:</span>
-                <span className='font-medium'>15.12.2024</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Время:</span>
-                <span className='font-medium'>14:30</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Маршрут:</span>
-                <span className='font-medium'>Аэропорт → Центр города</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Стоимость:</span>
-                <span className='font-medium text-green-600'>1500 сом</span>
-              </div>
-            </div>
-          </div>
-
-          <div className='p-4 rounded-lg border bg-blue-50 border-blue-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h4 className='font-medium text-blue-800'>Заказ #1235</h4>
-              <span className='text-sm text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded'>
-                Запланирован
-              </span>
-            </div>
-            <div className='space-y-2 text-sm'>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Дата:</span>
-                <span className='font-medium'>16.12.2024</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Время:</span>
-                <span className='font-medium'>09:00</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Маршрут:</span>
-                <span className='font-medium'>Отель → Железнодорожный вокзал</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Стоимость:</span>
-                <span className='font-medium text-blue-600'>800 сом</span>
-              </div>
-            </div>
-          </div>
-
-          <div className='text-center p-4'>
-            <p className='text-sm text-muted-foreground'>
-              Всего запланировано заказов: <span className='font-medium'>2</span>
-            </p>
-          </div>
+          )}
         </div>
       )}
 
       {/* Контент для активных заказов */}
       {activeOrderType === 'active' && (
         <div className='space-y-3'>
-          <div className='p-4 rounded-lg border bg-orange-50 border-orange-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h4 className='font-medium text-orange-800'>Заказ #1237</h4>
-              <span className='text-sm text-orange-600 font-medium bg-orange-100 px-2 py-1 rounded'>
-                В пути
-              </span>
+          {orders.active.length > 0 ? (
+            <>
+              {orders.active.map((order) => (
+                <div key={order.id} className='p-4 rounded-lg border bg-orange-50 border-orange-200'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <h4 className='font-medium text-orange-800'>Заказ #{order.id.slice(-8)}</h4>
+                    <span className='text-sm text-orange-600 font-medium bg-orange-100 px-2 py-1 rounded'>
+                      {orderStatusLabels[order.status]}
+                    </span>
+                  </div>
+                  <div className='space-y-2 text-sm'>
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>Время создания:</span>
+                      <span className='font-medium'>
+                        {new Date(order.createdAt).toLocaleTimeString('ru-RU', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>Тип:</span>
+                      <span className='font-medium'>{order.type}</span>
+                    </div>
+                    {order.totalPrice && (
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Стоимость:</span>
+                        <span className='font-medium text-orange-600'>{order.totalPrice} сом</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div className='text-center p-4'>
+                <p className='text-sm text-muted-foreground'>
+                  Активных заказов: <span className='font-medium'>{orders.active.length}</span>
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className='text-center p-8'>
+              <p className='text-muted-foreground'>Нет активных заказов</p>
             </div>
-            <div className='space-y-2 text-sm'>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Время начала:</span>
-                <span className='font-medium'>13:15</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Маршрут:</span>
-                <span className='font-medium'>Центр города → Аэропорт</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Прогресс:</span>
-                <span className='font-medium text-orange-600'>65%</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Стоимость:</span>
-                <span className='font-medium text-orange-600'>1200 сом</span>
-              </div>
-            </div>
-          </div>
-
-          <div className='text-center p-4'>
-            <p className='text-sm text-muted-foreground'>
-              Активных заказов: <span className='font-medium'>1</span>
-            </p>
-          </div>
+          )}
         </div>
       )}
 
       {/* Контент для завершенных заказов */}
       {activeOrderType === 'completed' && (
         <div className='space-y-3'>
-          <div className='p-4 rounded-lg border bg-gray-50 border-gray-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h4 className='font-medium text-gray-800'>Заказ #1230</h4>
-              <span className='text-sm text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded'>
-                Завершен
-              </span>
+          {orders.completed.length > 0 ? (
+            <>
+              {orders.completed.map((order) => (
+                <div key={order.id} className='p-4 rounded-lg border bg-gray-50 border-gray-200'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <h4 className='font-medium text-gray-800'>Заказ #{order.id.slice(-8)}</h4>
+                    <span className='text-sm text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded'>
+                      {orderStatusLabels[order.status]}
+                    </span>
+                  </div>
+                  <div className='space-y-2 text-sm'>
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>Дата:</span>
+                      <span className='font-medium'>
+                        {new Date(order.createdAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                    {order.completedAt && (
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Завершен:</span>
+                        <span className='font-medium'>
+                          {new Date(order.completedAt).toLocaleTimeString('ru-RU', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    <div className='flex justify-between'>
+                      <span className='text-muted-foreground'>Тип:</span>
+                      <span className='font-medium'>{order.type}</span>
+                    </div>
+                    {order.totalPrice && (
+                      <div className='flex justify-between'>
+                        <span className='text-muted-foreground'>Стоимость:</span>
+                        <span className='font-medium text-gray-600'>{order.totalPrice} сом</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div className='text-center p-4'>
+                <p className='text-sm text-muted-foreground'>
+                  Завершенных заказов: <span className='font-medium'>{orders.completed.length}</span>
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className='text-center p-8'>
+              <p className='text-muted-foreground'>Нет завершенных заказов</p>
             </div>
-            <div className='space-y-2 text-sm'>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Дата:</span>
-                <span className='font-medium'>14.12.2024</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Время:</span>
-                <span className='font-medium'>10:30 - 11:15</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Маршрут:</span>
-                <span className='font-medium'>Аэропорт → Отель</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Стоимость:</span>
-                <span className='font-medium text-gray-600'>1000 сом</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Рейтинг:</span>
-                <span className='font-medium text-yellow-600'>⭐⭐⭐⭐⭐</span>
-              </div>
-            </div>
-          </div>
-
-          <div className='p-4 rounded-lg border bg-gray-50 border-gray-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h4 className='font-medium text-gray-800'>Заказ #1229</h4>
-              <span className='text-sm text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded'>
-                Завершен
-              </span>
-            </div>
-            <div className='space-y-2 text-sm'>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Дата:</span>
-                <span className='font-medium'>13.12.2024</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Время:</span>
-                <span className='font-medium'>15:00 - 15:45</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Маршрут:</span>
-                <span className='font-medium'>ТЦ Дордой → Центр города</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Стоимость:</span>
-                <span className='font-medium text-gray-600'>600 сом</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-muted-foreground'>Рейтинг:</span>
-                <span className='font-medium text-yellow-600'>⭐⭐⭐⭐</span>
-              </div>
-            </div>
-          </div>
-
-          <div className='text-center p-4'>
-            <p className='text-sm text-muted-foreground'>
-              Завершенных заказов: <span className='font-medium'>2</span>
-            </p>
-          </div>
+          )}
         </div>
       )}
     </div>

@@ -17,6 +17,8 @@
     "@my/pages": "workspace:*",
     "@my/shared": "workspace:*",
     "@my/widgets": "workspace:*",
+    "@tanstack/react-query": "^5.59.0",
+    "@tanstack/react-query-devtools": "^5.59.0",
     "react-hook-form": "^7.56.2",
     "sonner": "^2.0.6"
   }

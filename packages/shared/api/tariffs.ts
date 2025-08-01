@@ -63,7 +63,7 @@ interface TariffFilters {
 }
 
 interface TariffApiResponse {
-  data: GetTariffDTO[];
+  data: GetTariffDTOWithArchived[];
   totalCount: number;
   pageSize: number;
   hasPrevious: boolean;

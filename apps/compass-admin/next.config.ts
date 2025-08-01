@@ -100,14 +100,30 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-    ],
-    domains: [
-      'localhost',
-      'compass.local',
-      'example.com',
-      'pixabay.com',
-      'cdn.pixabay.com',
-      'images.pexels.com',
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'compass.local',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'compass.local',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 

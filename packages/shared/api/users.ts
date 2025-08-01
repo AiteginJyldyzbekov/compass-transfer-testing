@@ -337,6 +337,17 @@ export const usersApi = {
     return result.data!;
   },
 
+  // Получение профиля пользователя по ID
+  getUserProfile: async (uuid: string): Promise<GetUserBasicDTO> => {
+    const result = await apiGet<GetUserBasicDTO>(`/User/${uuid}/profile`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data!;
+  },
+
   // Получение списка пользователей
   getUsers: async (params?: UserFilters): Promise<UserApiResponse> => {
     const result = await apiGet<UserApiResponse>('/User', { params });

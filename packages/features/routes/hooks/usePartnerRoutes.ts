@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { logger } from '@shared/lib';
-import { getMockPartnerRoutes, type PartnerRouteDTO } from '@entities/routes/mock-data/partner-routes-mock';
+import { routesApi } from '@shared/api/routes';
+import type { PartnerRouteDTO } from '@entities/routes/interface/PartnerRouteDTO';
 
 /**
  * Хук для получения маршрутов партнера
@@ -30,24 +31,16 @@ export const usePartnerRoutes = (partnerId: string | null): {
     setError(null);
 
     try {
-      // В реальном приложении здесь будет вызов API
-      // const response = await fetch(`/api/routes/partner/${partnerId}`);
-      // const data = await response.json();
-      
-      const data = await getMockPartnerRoutes(partnerId);
-      
+      const data = await routesApi.getPartnerRoutes(partnerId);
       setRoutes(data);
     } catch (err) {
-      const errorMessage = err instanceof Error 
-        ? err.message 
+      const errorMessage = err instanceof Error
+        ? err.message
         : 'Произошла ошибка при загрузке маршрутов';
-      
+
       setError(errorMessage);
       setRoutes([]);
-      
-      if (process.env.NODE_ENV !== 'production') {
-        logger.error('Ошибка загрузки маршрутов партнера:', err);
-      }
+      logger.error('Ошибка загрузки маршрутов партнера:', err);
     } finally {
       setIsLoading(false);
     }

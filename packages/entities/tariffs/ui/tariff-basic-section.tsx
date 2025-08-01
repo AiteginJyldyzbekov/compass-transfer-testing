@@ -4,32 +4,9 @@ import { useFormContext } from 'react-hook-form';
 import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
-import { cn } from '@shared/lib/utils';
-import { ServiceClass, ServiceClassValues } from '../enums/ServiceClass.enum';
-import { CarType, CarTypeValues } from '../enums/CarType.enum';
+import { CarTypeValues, type CarType } from '../enums/CarType.enum';
+import { ServiceClassValues, type ServiceClass } from '../enums/ServiceClass.enum';
 import type { TariffCreateFormData } from '../schemas/tariffCreateSchema';
-
-// Лейблы для классов обслуживания
-const serviceClassLabels: Record<ServiceClass, string> = {
-  [ServiceClass.Economy]: 'Эконом',
-  [ServiceClass.Comfort]: 'Комфорт',
-  [ServiceClass.ComfortPlus]: 'Комфорт+',
-  [ServiceClass.Business]: 'Бизнес',
-  [ServiceClass.Premium]: 'Премиум',
-  [ServiceClass.Vip]: 'VIP',
-  [ServiceClass.Luxury]: 'Люкс',
-};
-
-// Лейблы для типов автомобилей
-const carTypeLabels: Record<CarType, string> = {
-  [CarType.Sedan]: 'Седан',
-  [CarType.Hatchback]: 'Хэтчбек',
-  [CarType.SUV]: 'Внедорожник',
-  [CarType.Minivan]: 'Минивэн',
-  [CarType.Coupe]: 'Купе',
-  [CarType.Cargo]: 'Грузовой',
-  [CarType.Pickup]: 'Пикап',
-};
 
 interface TariffBasicSectionProps {
   showOptionalWarning?: boolean;
@@ -44,7 +21,7 @@ interface TariffBasicSectionProps {
 }
 
 export function TariffBasicSection({
-  showOptionalWarning = false,
+  showOptionalWarning: _showOptionalWarning = false,
   labels = {},
   placeholders = {},
 }: TariffBasicSectionProps) {
@@ -89,9 +66,9 @@ export function TariffBasicSection({
             <SelectValue placeholder="Выберите класс обслуживания" />
           </SelectTrigger>
           <SelectContent>
-            {ServiceClassValues.map((serviceClassValue) => (
+            {Object.keys(ServiceClassValues).map((serviceClassValue) => (
               <SelectItem key={serviceClassValue} value={serviceClassValue}>
-                {serviceClassLabels[serviceClassValue]}
+                {ServiceClassValues[serviceClassValue as ServiceClass]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -114,9 +91,9 @@ export function TariffBasicSection({
             <SelectValue placeholder="Выберите тип автомобиля" />
           </SelectTrigger>
           <SelectContent>
-            {CarTypeValues.map((carTypeValue) => (
+            {Object.keys(CarTypeValues).map((carTypeValue) => (
               <SelectItem key={carTypeValue} value={carTypeValue}>
-                {carTypeLabels[carTypeValue]}
+                {CarTypeValues[carTypeValue as CarType]}
               </SelectItem>
             ))}
           </SelectContent>

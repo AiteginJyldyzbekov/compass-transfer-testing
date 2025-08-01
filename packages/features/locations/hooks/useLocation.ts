@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { locationsApi } from '@shared/api/locations';
 import { logger } from '@shared/lib';
 import type { LocationDTO } from '@entities/locations/interface/LocationDTO';
-import { getMockLocationById } from '@entities/locations/mock-data/terminal-location-mock';
 
 interface UseLocationResult {
   location: LocationDTO | null;
@@ -20,7 +20,7 @@ export const useLocation = (locationId: string | null): UseLocationResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLocation = async () => {
+  const fetchLocation = useCallback(async () => {
     if (!locationId) {
       setLocation(null);
       setIsLoading(false);
@@ -33,33 +33,24 @@ export const useLocation = (locationId: string | null): UseLocationResult => {
     setError(null);
 
     try {
-      // TODO: Заменить на реальный API вызов GET /Location/{uuid}
-      const locationData = await getMockLocationById(locationId);
+      const locationData = await locationsApi.getLocationById(locationId);
 
-      if (locationData) {
-        setLocation(locationData);
-      } else {
-        setError('Локация не найдена');
-        setLocation(null);
-      }
+      setLocation(locationData);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Произошла ошибка при загрузке локации';
 
       setError(errorMessage);
       setLocation(null);
-
-      if (process.env.NODE_ENV !== 'production') {
-        logger.error('Ошибка загрузки локации:', err);
-      }
+      logger.error('Ошибка загрузки локации:', err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [locationId]);
 
   useEffect(() => {
     fetchLocation();
-  }, [locationId, fetchLocation]);
+  }, [fetchLocation]);
 
   const refetch = async () => {
     await fetchLocation();
@@ -73,8 +64,12 @@ export const useLocation = (locationId: string | null): UseLocationResult => {
   };
 };
 
+// Глобальный кэш для локаций
+const locationsCache = new Map<string, LocationDTO>();
+const loadingPromises = new Map<string, Promise<LocationDTO>>();
+
 /**
- * Хук для получения нескольких локаций по массиву ID
+ * Хук для получения нескольких локаций по массиву ID с кэшированием
  */
 export const useLocations = (
   locationIds: string[],
@@ -88,7 +83,7 @@ export const useLocations = (
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     if (!locationIds.length) {
       setLocations([]);
       setIsLoading(false);
@@ -101,17 +96,68 @@ export const useLocations = (
     setError(null);
 
     try {
-      // Получаем все локации параллельно
-      const locationPromises = locationIds.map(id => getMockLocationById(id));
-      const locationResults = await Promise.all(locationPromises);
+      const results: LocationDTO[] = [];
+      const toFetch: string[] = [];
 
-      // Фильтруем null значения
-      const validLocations = locationResults.filter((loc): loc is LocationDTO => loc !== null);
+      // Проверяем кэш и собираем ID для загрузки
+      for (const id of locationIds) {
+        const cached = locationsCache.get(id);
 
-      setLocations(validLocations);
+        if (cached) {
+          results.push(cached);
+        } else if (loadingPromises.has(id)) {
+          // Если уже загружается, ждем результат
+          try {
+            const location = await loadingPromises.get(id)!;
 
-      if (validLocations.length !== locationIds.length) {
-        setError(`Найдено ${validLocations.length} из ${locationIds.length} локаций`);
+            results.push(location);
+          } catch {
+            // Игнорируем ошибки отдельных локаций
+          }
+        } else {
+          toFetch.push(id);
+        }
+      }
+
+      // Загружаем недостающие локации
+      if (toFetch.length > 0) {
+        const fetchPromises = toFetch.map(async (id) => {
+          const promise = locationsApi.getLocationById(id);
+
+          loadingPromises.set(id, promise);
+
+          try {
+            const location = await promise;
+
+            locationsCache.set(id, location);
+            loadingPromises.delete(id);
+
+            return location;
+          } catch (error) {
+            loadingPromises.delete(id);
+            throw error;
+          }
+        });
+
+        const fetchResults = await Promise.allSettled(fetchPromises);
+        
+        // Добавляем успешно загруженные локации
+        fetchResults.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            results.push(result.value);
+          }
+        });
+      }
+
+      // Сортируем результаты в том же порядке, что и входные ID
+      const sortedLocations = locationIds
+        .map(id => results.find(loc => loc.id === id))
+        .filter((loc): loc is LocationDTO => loc !== undefined);
+
+      setLocations(sortedLocations);
+
+      if (sortedLocations.length !== locationIds.length) {
+        setError(`Найдено ${sortedLocations.length} из ${locationIds.length} локаций`);
       }
     } catch (err) {
       const errorMessage =
@@ -119,22 +165,22 @@ export const useLocations = (
 
       setError(errorMessage);
       setLocations([]);
-
-      if (process.env.NODE_ENV !== 'production') {
-        logger.error('Ошибка загрузки локаций:', err);
-      }
+      logger.error('Ошибка загрузки локаций:', err);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const locationIdsString = locationIds.join(',');
+  }, [locationIds]);
 
   useEffect(() => {
     fetchLocations();
-  }, [locationIdsString, fetchLocations]);
+  }, [fetchLocations]);
 
   const refetch = async () => {
+    // Очищаем кэш для этих локаций при принудительном обновлении
+    locationIds.forEach(id => {
+      locationsCache.delete(id);
+      loadingPromises.delete(id);
+    });
     await fetchLocations();
   };
 

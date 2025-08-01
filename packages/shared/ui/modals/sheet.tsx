@@ -29,7 +29,7 @@ const Sheet = ({ children, open, onOpenChange }: SheetProps) => {
 
   return (
     <div
-      className='fixed inset-0 z-50 pointer-events-auto'
+      className='fixed inset-0 z-[1000] pointer-events-auto'
       onClick={(e) => {
         // Закрываем Sheet при клике на overlay
         if (e.target === e.currentTarget && onOpenChange) {

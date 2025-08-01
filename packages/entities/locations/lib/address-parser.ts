@@ -49,6 +49,7 @@ export function parseAddress(fullAddress: string): AddressComponents {
       if (/^\d+/.test(part)) {
         // Начинается с цифры - это номер дома + улица
         const match = part.match(/^(\d+[а-яА-Я]?)\s*,?\s*(.+)/);
+
         if (match) {
           houseNumber = match[1];
           street = match[2];
@@ -120,6 +121,7 @@ export function formatAddress(components: Partial<AddressComponents>): string {
   
   if (components.city) {
     const cityPart = components.city.includes('город') ? components.city : `город ${components.city}`;
+    
     parts.push(cityPart);
   }
   

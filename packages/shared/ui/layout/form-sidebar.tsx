@@ -299,7 +299,7 @@ export function FormSidebar({
             {isSubmitting ? (
               <>
                 <Loader2 className='h-5 w-5 mr-2 animate-spin' />
-                Обновление...
+                Обновление...SidebarFooter
               </>
             ) : (
               <>

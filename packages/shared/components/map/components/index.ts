@@ -1,5 +1,6 @@
 export { MapClickHandler } from './MapClickHandler';
 export { MapBoundsHandler } from './MapBoundsHandler';
+export { MapController } from './MapController';
 export { LocationMarker } from './LocationMarker';
 export { DriverMarker } from './DriverMarker';
 export { RouteMarker } from './RouteMarker';

@@ -6,4 +6,5 @@ import type { TariffBaseDTO } from './TariffBaseDTO';
  */
 export interface GetTariffDTO extends TariffBaseDTO {
   id: string;
+  archived: boolean;
 }

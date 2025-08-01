@@ -72,8 +72,31 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'compass.local',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'compass.local',
+        port: '',
+        pathname: '/**',
+      },
     ],
-    domains: ['localhost', 'compass.local', 'example.com', 'funny.klev.club'],
   },
 
   // Добавляем настройку заголовков

@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
+import { SignalRProvider, NotificationProvider, QueryClientProvider } from '@app/providers';
 import { SheetProvider } from '@shared/lib';
 import { getUserFromCookie, getRawCookie } from '@shared/lib/parse-cookie';
 import { SidebarInset, SidebarProvider } from '@shared/ui/layout';
+import { UserRoleProvider } from '@shared/contexts';
 import type { Role } from '@entities/users/enums';
 import { SiteHeader } from '@widgets/header';
 import { AppSidebar } from '@widgets/sidebar';
-import { SignalRProvider, NotificationProvider } from '@app/providers';
+import { AppFooter } from '@widgets/footer';
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
@@ -49,54 +51,42 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       : null;
 
   return (
-    <SignalRProvider accessToken={accessToken || undefined}>
-      <NotificationProvider>
-        <div
-          className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-gray-100`}
-        >
-          <SheetProvider>
-            <SidebarProvider defaultOpen={defaultOpen}>
-              <AppSidebar currentUser={currentUser} />
-              <SidebarInset>
-                <SiteHeader />
-                <div className='flex flex-1 overflow-hidden'>
-                  <div className='flex-1 overflow-hidden h-full'>{children}</div>
-                </div>
-                <footer className='pt-2'>
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center space-x-6'>
-                      <a
-                        href='/support'
-                        className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                      >
-                        Техническая поддержка
-                      </a>
-                      <a
-                        href='/documentation'
-                        className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                      >
-                        Документация
-                      </a>
-                      <a
-                        href='/offer'
-                        className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                      >
-                        Оферта
-                      </a>
-                      <a
-                        href='/privacy'
-                        className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                      >
-                        Конфиденциальность
-                      </a>
-                    </div>
+    <QueryClientProvider>
+      <SignalRProvider accessToken={accessToken || undefined}>
+        <NotificationProvider>
+          <UserRoleProvider
+            userRole={userRole}
+            userId={userId}
+            userFullName={userFullName}
+          >
+          <div
+            className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-gray-100`}
+          >
+            <SheetProvider>
+              <SidebarProvider defaultOpen={defaultOpen}>
+                <AppSidebar currentUser={currentUser} />
+                <SidebarInset>
+                  <SiteHeader />
+                  <div className='flex flex-1 overflow-hidden'>
+                    <div className='flex-1 overflow-hidden h-full'>{children}</div>
                   </div>
-                </footer>
+                <AppFooter
+                  footerLinks={[
+                    { name: 'Техническая поддержка', href: '/support' },
+                    { name: 'Документация', href: '/documentation' },
+                    { name: 'Оферта', href: '/offer' },
+                    { name: 'Конфиденциальность', href: '/privacy' },
+                    { name: 'О нас', href: '/about' },
+                  ]}
+                  className='pt-2'
+                />
               </SidebarInset>
             </SidebarProvider>
           </SheetProvider>
         </div>
+        </UserRoleProvider>
       </NotificationProvider>
     </SignalRProvider>
+    </QueryClientProvider>
   );
 }

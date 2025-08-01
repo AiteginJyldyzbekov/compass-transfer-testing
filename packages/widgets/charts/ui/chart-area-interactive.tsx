@@ -64,8 +64,8 @@ export function ChartAreaInteractive() {
     <Card>
       <CardHeader className='flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row'>
         <div className='grid flex-1 gap-1 text-center sm:text-left'>
-          <CardTitle>Посетители по дням</CardTitle>
-          <CardDescription>График посетителей за выбранный период</CardDescription>
+          <CardTitle>Количество заказов по дням</CardTitle>
+          <CardDescription>График заказов за выбранный период</CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className='w-[160px] rounded-lg sm:ml-auto' aria-label='Select a value'>
