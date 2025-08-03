@@ -9,5 +9,3 @@ services:
       - NODE_ENV=production
     command: >
       sh -c "yarn install"
-    networks:
-      - compass-network
