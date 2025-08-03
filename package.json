@@ -14,7 +14,7 @@
   "author": "Valentin Krivich",
   "license": "MIT",
   "description": "Compass Traansfer KYRGYZSTAN",
-  "scripts": {
+yarn workspaces info  "scripts": {
     "dev:admin": "yarn workspace compass-admin dev",
     "dev:terminal": "yarn workspace compass-terminal dev",
     "dev:driver": "yarn workspace compass-driver dev",

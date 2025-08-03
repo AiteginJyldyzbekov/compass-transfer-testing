@@ -9,3 +9,13 @@ services:
       - NODE_ENV=production
     command: >
       sh -c "yarn install"
+    networks:
+      - compass-network
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+networks:
+  compass-network:
+    name: compass_default
+    external: true
