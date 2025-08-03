@@ -13,8 +13,8 @@ interface LoginFormProps extends React.ComponentProps<'form'> {
 }
 
 export function LoginForm({ className, ...props }: LoginFormProps) {
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
