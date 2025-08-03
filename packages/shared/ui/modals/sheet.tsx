@@ -51,7 +51,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
     <div
       ref={ref}
       className={cn(
-        'fixed inset-y-0 right-0 z-50 h-full w-3/4 border-l bg-background px-2 py-2 shadow-lg transition-all duration-300 ease-out pointer-events-auto transform animate-slide-in-right',
+        'fixed inset-y-0 right-0 z-[1003] h-full w-3/4 border-l bg-background px-2 py-2 shadow-lg transition-all duration-300 ease-out pointer-events-auto transform animate-slide-in-right',
         side === 'right' && 'translate-x-0',
         side === 'left' && 'left-0 translate-x-0',
         side === 'top' && 'top-0 inset-x-0 h-3/4 translate-y-0',

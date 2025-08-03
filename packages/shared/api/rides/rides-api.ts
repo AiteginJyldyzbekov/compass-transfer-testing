@@ -4,6 +4,17 @@ import type {
   ScheduledRidesResponse,
   ScheduledRidesParams
 } from '@entities/rides/interface';
+
+// Интерфейс для ответа API с правильной структурой пагинации
+interface RidesApiResponse {
+  data: GetRideDTO[];
+  totalCount: number;
+  pageSize: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+  startCursor?: string;
+  endCursor?: string;
+}
 import apiClient from '../client';
 
 /**
@@ -74,9 +85,9 @@ export const ridesApi = {
   /**
    * Получить поездки конкретного пользователя
    */
-  async getUserRides(userId: string, params?: GetMyRidesParams): Promise<PaginatedRidesResponse> {
+  async getUserRides(userId: string, params?: GetMyRidesParams): Promise<RidesApiResponse> {
     // Используем общий эндпоинт /Ride с фильтрацией по DriverId
-    const result = await apiClient.get<PaginatedRidesResponse>('/Ride', {
+    const result = await apiClient.get<RidesApiResponse>('/Ride', {
       params: {
         ...params,
         DriverId: userId, // Фильтруем по водителю

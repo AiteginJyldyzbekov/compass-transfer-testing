@@ -1,9 +1,8 @@
 'use client';
 
 import { useFormContext } from 'react-hook-form';
-import { Input } from '@shared/ui/forms/input';
-import { Label } from '@shared/ui/forms/label';
 import { Checkbox } from '@shared/ui/forms/checkbox';
+import { Label } from '@shared/ui/forms/label';
 import type { LocationCreateFormData } from '../schemas/locationCreateSchema';
 
 interface LocationCoordinatesSectionProps {

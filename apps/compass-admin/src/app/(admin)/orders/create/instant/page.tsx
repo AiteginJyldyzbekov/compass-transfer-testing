@@ -1,7 +1,7 @@
-import { OrderPage } from '@pages/(admin)/orders';
+import { InstantOrderPage } from '@pages/(admin)/orders';
 
 export default function CreateInstantOrderPage() {
-  return <OrderPage mode="create" />;
+  return <InstantOrderPage mode="create" />;
 }
 
 export const metadata = {

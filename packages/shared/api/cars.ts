@@ -156,6 +156,33 @@ export const carsApi = {
       throw new Error(result.error.message);
     }
   },
+
+  // Назначить водителя на автомобиль
+  assignDriver: async (carId: string, driverId: string): Promise<void> => {
+    const result = await apiPost(`/Car/${carId}/drivers/${driverId}`, true);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
+
+  // Обновить привязку водителя
+  updateDriverAssignment: async (carId: string, driverId: string, isActive: boolean = true): Promise<void> => {
+    const result = await apiPut(`/Car/${carId}/drivers/${driverId}`, isActive);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
+
+  // Удалить привязку водителя
+  removeDriver: async (carId: string, driverId: string): Promise<void> => {
+    const result = await apiDelete(`/Car/${carId}/drivers/${driverId}`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
 };
 
 export type { CarFilters, CarApiResponse, CreateCarDTO, UpdateCarDTO };

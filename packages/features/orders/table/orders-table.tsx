@@ -43,6 +43,7 @@ export function OrdersTable({
     setShowAdvancedFilters,
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleTypeFilterChange,
@@ -128,6 +129,7 @@ export function OrdersTable({
         currentPageNumber={currentPageNumber}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
+        handleFirstPage={handleFirstPage}
       />
     </div>
   );

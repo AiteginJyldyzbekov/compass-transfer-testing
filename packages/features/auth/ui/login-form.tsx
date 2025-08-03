@@ -83,7 +83,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
           />
         </div>
         <div className='grid gap-3'>
-          <div className='flex items-center'>
+          {/* <div className='flex items-center'>
             <Label htmlFor='password'>Пароль</Label>
             <a
               href='/forgot-password'
@@ -91,7 +91,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
             >
               Забыли пароль?
             </a>
-          </div>
+          </div> */}
           <Input
             id='password'
             type='password'
@@ -106,12 +106,12 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
         </Button>
       </div>
 
-      <div className='text-center text-sm'>
+      {/* <div className='text-center text-sm'>
         Нужна помощь?{' '}
         <a href='/support' className='underline underline-offset-4'>
           Обратитесь в поддержку
         </a>
-      </div>
+      </div> */}
     </form>
   );
 }

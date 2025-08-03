@@ -46,7 +46,7 @@ const userRoles: Role[] = [
   },
   {
     id: 'Partner',
-    label: 'Партнер',
+    label: 'Контр-агент',
     icon: FileText,
     color: 'bg-orange-500',
     description: 'Предоставляет услуги и сотрудничает с сервисом',

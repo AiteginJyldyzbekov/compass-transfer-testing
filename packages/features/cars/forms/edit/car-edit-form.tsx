@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { carsApi } from '@shared/api/cars';
 import { logger } from '@shared/lib';
-import { CarColor, VehicleType, ServiceClass, VehicleStatus, CarFeature } from '@entities/cars/enums';
+import { CarColor, VehicleType, ServiceClass, VehicleStatus, CarFeature, VEHICLE_TYPE_CAPACITY } from '@entities/cars/enums';
 import {
   getBasicCarDataStatusForUpdate,
   getFeaturesCarDataStatusForUpdate,

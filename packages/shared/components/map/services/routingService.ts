@@ -141,15 +141,8 @@ export class RoutingService {
       }
     }
 
-    // Если все провайдеры не сработали - fallback на прямую линию
-
-    return {
-      type: routeType,
-      coordinates: points.map(point => [point.latitude, point.longitude]),
-      distance: this.calculateStraightLineDistance(points),
-      duration: 0,
-      info: ROUTE_TYPE_CONFIG[routeType],
-    };
+    // Если все провайдеры не сработали - НЕ ИСПОЛЬЗУЕМ ПРЯМУЮ ЛИНИЮ!
+    throw new Error('❌ Все провайдеры роутинга недоступны - невозможно построить маршрут по дорогам');
   }
 
   /**
@@ -164,8 +157,8 @@ export class RoutingService {
     const realRoutes = await this.getRealAlternativeRoutes(points);
 
     if (realRoutes.length === 0) {
-      // Fallback к прямой линии если API недоступен
-      return this.createFallbackRoutes(points);
+      // НЕ ИСПОЛЬЗУЕМ ПРЯМУЮ ЛИНИЮ! Возвращаем пустой массив если API недоступен
+      throw new Error('❌ API роутинга недоступен - невозможно построить альтернативные маршруты');
     }
 
     // Назначаем типы реальным маршрутам
@@ -267,21 +260,7 @@ export class RoutingService {
     };
   }
 
-  /**
-   * Создает fallback маршруты если API недоступен
-   */
-  private createFallbackRoutes(points: RoutePoint[]): RouteResult[] {
-    const straightLineDistance = this.calculateStraightLineDistance(points);
-    const baseRoute: RouteResult = {
-      type: RouteType.FASTEST,
-      coordinates: points.map(point => [point.latitude, point.longitude]),
-      distance: straightLineDistance,
-      duration: Math.round((straightLineDistance / 50) * 3.6), // ~50 км/ч
-      info: ROUTE_TYPE_CONFIG[RouteType.FASTEST],
-    };
-
-    return [baseRoute];
-  }
+  // Удалили createFallbackRoutes - не используем прямые линии
 
   /**
    * Вычисляет расстояние по прямой линии между точками

@@ -47,6 +47,7 @@ export function TariffsTable({
     setShowAdvancedFilters,
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleServiceClassFilterChange,
@@ -157,6 +158,7 @@ export function TariffsTable({
         currentPageNumber={currentPageNumber}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
+        handleFirstPage={handleFirstPage}
       />
 
       {/* Модальное окно удаления */}

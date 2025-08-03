@@ -82,7 +82,7 @@ export function UsersTableFilters({
               <SelectItem value={UserRole.Operator}>Оператор</SelectItem>
               <SelectItem value={UserRole.Driver}>Водитель</SelectItem>
               <SelectItem value={UserRole.Customer}>Клиент</SelectItem>
-              <SelectItem value={UserRole.Partner}>Партнер</SelectItem>
+              <SelectItem value={UserRole.Partner}>Контр-агент</SelectItem>
               <SelectItem value={UserRole.Terminal}>Терминал</SelectItem>
             </SelectContent>
           </Select>

@@ -48,7 +48,7 @@ export const availableRoles = [
   { role: Role.Admin, label: 'Администратор' },
   { role: Role.Driver, label: 'Водитель' },
   { role: Role.Operator, label: 'Оператор' },
-  { role: Role.Partner, label: 'Партнер' },
+  { role: Role.Partner, label: 'Контр-агент' },
   { role: Role.Terminal, label: 'Терминал' },
   { role: Role.Customer, label: 'Клиент' },
 ] as const;

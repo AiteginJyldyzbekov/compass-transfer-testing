@@ -1,7 +1,3 @@
-/**
- * `Unknown` = Не задан<br>`Customer` = Клиент<br>`Admin` = Администратор<br>`Driver` = Водитель<br>`Operator` = Оператор<br>`Partner` = Партнер<br>`Terminal` = Терминал
- * @enum
- */
 export enum Role {
   Unknown = 'Unknown',
   Customer = 'Customer',

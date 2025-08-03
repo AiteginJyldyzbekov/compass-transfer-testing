@@ -1,7 +1,5 @@
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@shared/ui/forms/button';
 import { CarsTable } from '@features/cars';
+import { CreateCarButton } from './create-car-button';
 
 export default async function CarsPage({
   searchParams,
@@ -25,15 +23,7 @@ export default async function CarsPage({
             <p className='text-muted-foreground'>Управление автопарком системы</p>
           </div>
 
-          <Button
-            asChild
-            className='w-full md:w-auto focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0 hover:shadow-md focus:shadow-md focus-visible:shadow-md transition-shadow'
-          >
-            <Link href='/cars/create'>
-              <Plus className='mr-2 h-4 w-4' />
-              Добавить автомобиль
-            </Link>
-          </Button>
+          <CreateCarButton />
         </div>
 
         <CarsTable initialFilters={params} />

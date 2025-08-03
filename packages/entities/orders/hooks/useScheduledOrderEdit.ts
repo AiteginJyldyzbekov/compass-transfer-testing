@@ -60,9 +60,18 @@ export function useGetScheduledOrder(
         throw new Error('Order ID is required');
       }
 
+      // eslint-disable-next-line no-console
+      console.log('🔄 useGetScheduledOrder: Делаем запрос на получение заказа', { orderId });
+
       return OrdersApi.getScheduledOrder(orderId);
     },
     enabled: enabled && !!orderId,
+    // Всегда делаем свежий запрос при монтировании компонента
+    refetchOnMount: 'always',
+    // Данные считаются устаревшими сразу, чтобы всегда делать запрос
+    staleTime: 0,
+    // Не кэшируем данные долго для режима редактирования
+    gcTime: 5 * 60 * 1000, // 5 минут
   });
 
   // Обрабатываем успех и ошибки через useEffect

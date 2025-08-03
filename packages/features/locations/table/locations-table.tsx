@@ -55,6 +55,7 @@ export function LocationsTable({
     setShowAdvancedFilters,
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleTypeFilterChange,
@@ -160,6 +161,7 @@ export function LocationsTable({
         hasPrevious={hasPrevious}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
+        handleFirstPage={handleFirstPage}
       />
 
       {/* Модальное окно удаления */}

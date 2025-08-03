@@ -74,13 +74,13 @@ export function usePartnerEditFormLogic({
         const result = await usersApi.updatePartner(partnerId, apiData);
 
         if (result && result.fullName) {
-          toast.success(`Партнер ${result.fullName} успешно обновлен!`);
+          toast.success(`Контр-агент ${result.fullName} успешно обновлен!`);
         } else {
-          toast.success('Партнер успешно обновлен!');
+          toast.success('Контр-агент успешно обновлен!');
         }
         onSuccess();
       } catch (error) {
-        logger.warn('Ошибка обновления партнера:', error);
+        logger.warn('Ошибка обновления Контр-агент:', error);
         if (error instanceof Error && 'response' in error) {
           const axiosError = error as AxiosError<ApiError>;
 

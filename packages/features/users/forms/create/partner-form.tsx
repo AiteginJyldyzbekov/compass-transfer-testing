@@ -123,13 +123,12 @@ export function usePartnerFormLogic({
         const result = await usersApi.createPartner(apiData);
 
         if (result && result.fullName) {
-          toast.success(`Партнер ${result.fullName} успешно создан!`);
+          toast.success(`Контр-агент ${result.fullName} успешно создан!`);
         } else {
-          toast.success('Партнер успешно создан!');
+          toast.success('Контр-агент успешно создан!');
         }
         onSuccess();
       } catch (error) {
-        logger.warn('Ошибка создания партнера:', error);
         if (error instanceof Error && 'response' in error) {
           const axiosError = error as AxiosError<ApiError>;
 

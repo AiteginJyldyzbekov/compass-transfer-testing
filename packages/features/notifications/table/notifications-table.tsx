@@ -45,6 +45,7 @@ export function NotificationsTable({
     setShowAdvancedFilters,
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleTypeFilterChange,
@@ -162,6 +163,7 @@ export function NotificationsTable({
         hasPrevious={hasPrevious}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
+        handleFirstPage={handleFirstPage}
       />
 
       {/* Модальное окно удаления */}

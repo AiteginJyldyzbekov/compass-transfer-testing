@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { usersApi } from '@shared/api/users';
+import { carsApi } from '@shared/api/cars';
 import {
   getRoleLabel,
   getPageTitle,
@@ -26,6 +27,8 @@ import {
   ProfileTabs,
   type ProfileTab
 } from '@features/users';
+import { AssignCarModal } from './components/assign-car-modal';
+import { ManageDriverCarsModal } from './components/manage-driver-cars-modal';
 
 type UserData = GetOperatorDTO | GetDriverDTO | GetCustomerDTO | GetAdminDTO | GetPartnerDTO | GetTerminalDTO;
 
@@ -39,6 +42,10 @@ export function ProfileView({ userId, userRole }: ProfileViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>('basic');
+
+  // Состояния для модальных окон управления автомобилями
+  const [isAssignCarModalOpen, setIsAssignCarModalOpen] = useState(false);
+  const [isManageCarsModalOpen, setIsManageCarsModalOpen] = useState(false);
 
   // Загрузка данных пользователя
   useEffect(() => {
@@ -108,6 +115,35 @@ export function ProfileView({ userId, userRole }: ProfileViewProps) {
     }
   };
 
+  // Обработчики для работы с автомобилями водителя
+  const handleAssignCar = async (carId: string) => {
+    if (!user || user.role !== 'Driver') return;
+
+    try {
+      await carsApi.assignDriver(carId, userId);
+      toast.success('Автомобиль успешно назначен водителю');
+
+      // Перезагружаем данные пользователя
+      const updatedUser = await usersApi.getDriver(userId);
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Ошибка назначения автомобиля:', error);
+      toast.error(error instanceof Error ? error.message : 'Ошибка назначения автомобиля');
+      throw error;
+    }
+  };
+
+  const handleRefreshDriverData = async () => {
+    if (!user || user.role !== 'Driver') return;
+
+    try {
+      const updatedUser = await usersApi.getDriver(userId);
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Ошибка обновления данных водителя:', error);
+    }
+  };
+
   // Функция для рендера роль-специфичной секции
   const renderRoleSpecificSection = () => {
     if (!user) return null;
@@ -115,7 +151,13 @@ export function ProfileView({ userId, userRole }: ProfileViewProps) {
     // Проверяем роль напрямую через userRole пропс
     switch (userRole) {
       case 'Driver':
-        return <DriverSection profile={user} openMapSheet={openMapSheet} />;
+        return (
+          <DriverSection
+            profile={user}
+            openMapSheet={openMapSheet}
+            onAssignCar={() => setIsAssignCarModalOpen(true)}
+          />
+        );
       case 'Admin':
         return <AdminSection profile={user} />;
       case 'Operator':
@@ -207,10 +249,36 @@ export function ProfileView({ userId, userRole }: ProfileViewProps) {
               hideLogout
               targetUserId={userId}
               targetUserRole={userRole}
+              onManageDriverCars={userRole === 'Driver' ? () => setIsManageCarsModalOpen(true) : undefined}
             />
           </div>
         </div>
       </div>
+
+      {/* Модальные окна для управления автомобилями водителя */}
+      {user && user.role === 'Driver' && (
+        <>
+          <AssignCarModal
+            isOpen={isAssignCarModalOpen}
+            onClose={() => setIsAssignCarModalOpen(false)}
+            onAssignCar={handleAssignCar}
+            driverId={userId}
+            driverName={user.fullName}
+          />
+
+          <ManageDriverCarsModal
+            isOpen={isManageCarsModalOpen}
+            onClose={() => setIsManageCarsModalOpen(false)}
+            driverId={userId}
+            driverName={user.fullName}
+            onAssignCar={() => {
+              setIsManageCarsModalOpen(false);
+              setIsAssignCarModalOpen(true);
+            }}
+            onRefresh={handleRefreshDriverData}
+          />
+        </>
+      )}
     </div>
   );
 }

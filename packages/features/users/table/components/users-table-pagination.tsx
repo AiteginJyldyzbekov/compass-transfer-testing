@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft } from 'lucide-react';
 import { Button } from '@shared/ui/forms/button';
 import { type UserApi } from '@entities/users';
 
@@ -14,67 +9,75 @@ interface UsersTablePaginationProps {
   filteredUsers: UserApi[];
   currentPage: number;
   totalPages: number;
+  totalCount: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
   handlePageChange: (page: number) => void;
+  handleNextPage: () => void;
+  handlePrevPage: () => void;
+  handleFirstPage: () => void;
 }
 
 export function UsersTablePagination({
   paginatedUsers,
-  filteredUsers,
+  filteredUsers: _filteredUsers,
   currentPage,
   totalPages,
-  handlePageChange,
+  totalCount,
+  hasNext,
+  hasPrevious,
+  handlePageChange: _handlePageChange,
+  handleNextPage,
+  handlePrevPage,
+  handleFirstPage,
 }: UsersTablePaginationProps) {
   return (
-    <div className='flex items-center justify-between'>
+    <div className='flex items-center justify-between px-2'>
       <div className='text-sm text-muted-foreground'>
-        Показано {paginatedUsers.length} из {filteredUsers.length} пользователей (страница{' '}
-        {currentPage} из {totalPages})
+        Показано {paginatedUsers.length} из {totalCount} пользователей
+        {totalPages > 1 && (
+          <span className='ml-2'>
+            (страница {currentPage} из {totalPages})
+          </span>
+        )}
       </div>
-      <div className='flex items-center gap-2'>
+
+      <div className='flex items-center space-x-2'>
         <Button
           variant='outline'
           size='sm'
-          onClick={() => handlePageChange(1)}
+          onClick={handleFirstPage}
           disabled={currentPage === 1}
+          className='h-8 px-2'
+          title='В начало'
         >
           <ChevronsLeft className='h-4 w-4' />
         </Button>
+
         <Button
           variant='outline'
           size='sm'
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          onClick={handlePrevPage}
+          disabled={!hasPrevious}
+          className='h-8 px-3'
         >
-          <ChevronLeft className='h-4 w-4' />
+          <ChevronLeft className='h-4 w-4 mr-1' />
+          Назад
         </Button>
-        <div className='flex items-center gap-1'>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <Button
-              key={page}
-              variant={currentPage === page ? 'default' : 'outline'}
-              size='sm'
-              className='h-8 w-8'
-              onClick={() => handlePageChange(page)}
-            >
-              {page}
-            </Button>
-          ))}
-        </div>
+
+        <span className='text-sm text-muted-foreground px-2'>
+          {totalPages > 1 && `${currentPage} / ${totalPages}`}
+        </span>
+
         <Button
           variant='outline'
           size='sm'
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          onClick={handleNextPage}
+          disabled={!hasNext}
+          className='h-8 px-3'
         >
-          <ChevronRight className='h-4 w-4' />
-        </Button>
-        <Button
-          variant='outline'
-          size='sm'
-          onClick={() => handlePageChange(totalPages)}
-          disabled={currentPage === totalPages}
-        >
-          <ChevronsRight className='h-4 w-4' />
+          Вперед
+          <ChevronRight className='h-4 w-4 ml-1' />
         </Button>
       </div>
     </div>

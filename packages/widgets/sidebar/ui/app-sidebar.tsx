@@ -25,6 +25,18 @@ import { sidebarData } from '@widgets/sidebar/mock-data';
 import { DriverSheet } from './driver-sheet';
 import { DriversList } from './drivers-list';
 
+// Функция для фильтрации пунктов меню в зависимости от роли
+const filterMenuItemsByRole = (items: typeof sidebarData.navMain, userRole: Role) => {
+  return items.filter(item => {
+    // Для роли Operator убираем "Уведомления"
+    if (userRole === Role.Operator && item.title === 'Уведомления') {
+      return false;
+    }
+
+    return true;
+  });
+};
+
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   currentUser?: {
     id: string;
@@ -192,6 +204,9 @@ const guestUser: GetUserSelfProfileDTO = {
 export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
   const userRole = currentUser ? currentUser.role : Role.Unknown;
 
+  // Фильтруем пункты меню в зависимости от роли пользователя
+  const filteredNavMain = filterMenuItemsByRole(sidebarData.navMain, userRole);
+
   // Определяем, нужно ли показывать список водителей для данной роли
   const shouldShowDrivers = ![Role.Partner, Role.Driver, Role.Customer].includes(userRole);
 
@@ -295,7 +310,7 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className='overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent group-data-[collapsible=icon]:scrollbar-hide group-data-[collapsible=icon]:overflow-y-auto group-data-[collapsible=icon]:overflow-x-hidden h-full'>
-        <NavMain items={sidebarData.navMain} />
+        <NavMain items={filteredNavMain} />
         <NavDocuments items={sidebarData.documents} />
 
         {/* Группа водителей - показываем только для Admin, Operator, Terminal */}

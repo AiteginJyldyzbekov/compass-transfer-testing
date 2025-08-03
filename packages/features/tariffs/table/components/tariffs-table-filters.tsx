@@ -62,16 +62,7 @@ interface TariffsTableFiltersProps {
   justSavedFilters?: boolean;
 }
 
-// Переводы для типов автомобилей
-const carTypeLabels: Record<CarType, string> = {
-  [CarType.Sedan]: 'Седан',
-  [CarType.Hatchback]: 'Хэтчбек',
-  [CarType.SUV]: 'Внедорожник',
-  [CarType.Minivan]: 'Минивэн',
-  [CarType.Coupe]: 'Купе',
-  [CarType.Cargo]: 'Грузовой',
-  [CarType.Pickup]: 'Пикап',
-};
+
 
 export function TariffsTableFilters({
   searchTerm,
@@ -341,15 +332,15 @@ export function TariffsTableFilters({
             <div>
               <Label className='text-sm font-medium'>Класс обслуживания</Label>
               <div className='mt-2 space-y-2 max-h-40 overflow-y-auto'>
-                {ServiceClassValues.map((serviceClass) => (
+                {Object.keys(ServiceClassValues).map((serviceClass) => (
                   <div key={serviceClass} className='flex items-center space-x-2'>
                     <Checkbox
                       id={`serviceClass-${serviceClass}`}
-                      checked={serviceClassFilter.includes(serviceClass)}
-                      onCheckedChange={(checked) => handleServiceClassChange(serviceClass, !!checked)}
+                      checked={serviceClassFilter.includes(serviceClass as ServiceClass)}
+                      onCheckedChange={(checked) => handleServiceClassChange(serviceClass as ServiceClass, !!checked)}
                     />
                     <Label htmlFor={`serviceClass-${serviceClass}`} className='text-sm'>
-                      {getServiceClassLabel(serviceClass)}
+                      {getServiceClassLabel(serviceClass as ServiceClass)}
                     </Label>
                   </div>
                 ))}
@@ -360,15 +351,15 @@ export function TariffsTableFilters({
             <div>
               <Label className='text-sm font-medium'>Тип автомобиля</Label>
               <div className='mt-2 space-y-2 max-h-40 overflow-y-auto'>
-                {CarTypeValues.map((carType) => (
+                {Object.keys(CarTypeValues).map((carType) => (
                   <div key={carType} className='flex items-center space-x-2'>
                     <Checkbox
                       id={`carType-${carType}`}
-                      checked={carTypeFilter.includes(carType)}
-                      onCheckedChange={(checked) => handleCarTypeChange(carType, !!checked)}
+                      checked={carTypeFilter.includes(carType as CarType)}
+                      onCheckedChange={(checked) => handleCarTypeChange(carType as CarType, !!checked)}
                     />
                     <Label htmlFor={`carType-${carType}`} className='text-sm'>
-                      {carTypeLabels[carType]}
+                      {CarTypeValues[carType as CarType]}
                     </Label>
                   </div>
                 ))}

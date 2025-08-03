@@ -100,7 +100,7 @@ export const sidebarData = {
           url: '/users?role=Operator',
         },
         {
-          title: 'Партнеры',
+          title: 'Контр-агенты',
           url: '/users?role=Partner',
         },
         {

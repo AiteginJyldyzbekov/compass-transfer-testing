@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { LeafletLocationMap } from '@shared/ui/maps/leaflet-location-map';
 import { Label } from '@shared/ui/forms/label';
+import { LeafletLocationMap } from '@shared/ui/maps/leaflet-location-map';
 import type { LocationCreateFormData } from '../schemas/locationCreateSchema';
 
 interface LocationMapSectionProps {
@@ -76,16 +76,27 @@ export function LocationMapSection({
 
   // Обработчик изменения адреса и названия
   const handleAddressChange = (addressData: any) => {
+    const currentName = watch('name');
+    const currentAddress = watch('address');
+
     // Обновляем поля формы структурированными данными
     setValue('address', addressData.fullAddress);
-    setValue('name', addressData.fullAddress); // Дублируем адрес в название
+
+    // Заполняем название только если:
+    // 1. Поле пустое, ИЛИ
+    // 2. Текущее название совпадает с предыдущим адресом (автозаполненное)
+    if (!currentName || currentName === currentAddress) {
+      setValue('name', addressData.fullAddress);
+    }
+
     setValue('country', addressData.country);
     setValue('region', addressData.region);
     setValue('city', addressData.city);
 
     console.log('Обновляем поля формы:', {
       address: addressData.fullAddress,
-      name: addressData.fullAddress,
+      name: (!currentName || currentName === currentAddress) ? addressData.fullAddress : currentName,
+      nameUpdated: (!currentName || currentName === currentAddress),
       country: addressData.country,
       region: addressData.region,
       city: addressData.city

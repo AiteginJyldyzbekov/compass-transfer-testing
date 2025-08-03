@@ -13,15 +13,56 @@ import type {
 export interface CreateScheduledOrderRequest extends CreateScheduledOrderDTO {
   /** Описание заказа */
   description?: string | null;
-  
+
   /** Номер рейса */
   airFlight?: string | null;
-  
+
   /** Номер FlyReis */
   flyReis?: string | null;
-  
+
   /** Комментарии к заказу */
   notes?: string | null;
+}
+
+/**
+ * Интерфейс для создания моментального заказа оператором
+ */
+export interface CreateInstantOrderRequest {
+  /** ID тарифа */
+  tariffId: string;
+
+  /** ID шаблона маршрута (опционально) */
+  routeId?: string | null;
+
+  /** ID начальной точки */
+  startLocationId?: string | null;
+
+  /** ID конечной точки */
+  endLocationId?: string | null;
+
+  /** Промежуточные точки */
+  additionalStops: string[];
+
+  /** Дополнительные услуги */
+  services: Array<{
+    serviceId: string;
+    quantity: number;
+    notes?: string | null;
+  }>;
+
+  /** Предварительная стоимость */
+  initialPrice: number;
+
+  /** Пассажиры */
+  passengers: Array<{
+    customerId?: string | null;
+    firstName: string;
+    lastName?: string | null;
+    isMainPassenger: boolean;
+  }>;
+
+  /** ID платежа (опционально) */
+  paymentId?: string | null;
 }
 
 /**
@@ -37,6 +78,42 @@ export class OrdersApi {
 
     if (response.error) {
       throw new Error(response.error.message || 'Failed to create scheduled order');
+    }
+
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Получение мгновенного заказа по ID
+   * GET /Order/instant/{uuid}
+   */
+  static async getInstantOrderById(id: string): Promise<GetOrderDTO> {
+    const response = await apiGet<GetOrderDTO>(`/Order/instant/${id}`);
+
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to get instant order');
+    }
+
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Создание моментального заказа оператором
+   * POST /Order/instant/by-operator
+   */
+  static async createInstantOrder(data: CreateInstantOrderRequest): Promise<GetOrderDTO> {
+    const response = await apiPost<GetOrderDTO>('/Order/instant/by-operator', data);
+
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to create instant order');
     }
 
     if (!response.data) {

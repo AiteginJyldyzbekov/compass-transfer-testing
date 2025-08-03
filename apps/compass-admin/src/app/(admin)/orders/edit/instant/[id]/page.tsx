@@ -1,4 +1,4 @@
-import { OrderPage } from '@pages/(admin)/orders';
+import { InstantOrderPage } from '@pages/(admin)/orders';
 
 interface EditInstantOrderPageProps {
   params: Promise<{
@@ -9,7 +9,7 @@ interface EditInstantOrderPageProps {
 export default async function EditInstantOrderPage({ params }: EditInstantOrderPageProps) {
   const { id } = await params;
   
-  return <OrderPage mode="edit" id={id} />;
+  return <InstantOrderPage mode="edit" id={id} />;
 }
 
 export async function generateMetadata({ params }: EditInstantOrderPageProps) {

@@ -1,11 +1,11 @@
 'use client';
 
-import { IconCirclePlusFilled, IconMail } from '@tabler/icons-react';
+import { IconCirclePlusFilled } from '@tabler/icons-react';
 import { MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Button } from '@shared/ui/forms/button';
+import { useUserRole } from '@shared/contexts';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
+import { Role } from '@entities/users/enums';
 import { OrderTypeSelectionModal } from '@features/orders';
 
 // Тип для элемента меню
@@ -56,30 +57,50 @@ export function NavMain({ items }: { items: MenuItem[] }) {
   const { isMobile } = useSidebar();
   const pathname = usePathname();
   const [isOrderTypeModalOpen, setIsOrderTypeModalOpen] = useState(false);
+  const { userRole } = useUserRole();
+
+  // Операторы могут создавать заказы, но не пользователей
+  const canCreateOrders = true; // Все роли могут создавать заказы
+
+  // Функция для фильтрации подпунктов меню в зависимости от роли пользователя
+  const filterMenuItems = (menuItems: { title: string; url: string }[] | undefined) => {
+    if (!menuItems) return [];
+
+    return menuItems.filter(subItem => {
+      // Скрываем "Создать пользователя" для операторов
+      if (subItem.title === 'Создать пользователя' && userRole === Role.Operator) {
+        return false;
+      }
+
+      return true;
+    });
+  };
 
   return (
     <SidebarGroup>
       <SidebarGroupContent className='flex flex-col gap-2'>
-        <SidebarMenu>
-          <SidebarMenuItem className='flex items-center gap-2'>
-            <SidebarMenuButton
-              tooltip='Создать заказ'
-              className='bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear'
-              onClick={() => setIsOrderTypeModalOpen(true)}
-            >
-              <IconCirclePlusFilled />
-              <span className='group-data-[collapsible=icon]:hidden'>Создать Заказ</span>
-            </SidebarMenuButton>
-            <Button
-              size='icon'
-              className='size-8 group-data-[collapsible=icon]:opacity-0'
-              variant='outline'
-            >
-              <IconMail />
-              <span className='sr-only'>Inbox</span>
-            </Button>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        {canCreateOrders && (
+          <SidebarMenu>
+            <SidebarMenuItem className='flex items-center gap-2'>
+              <SidebarMenuButton
+                tooltip='Создать заказ'
+                className='bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear'
+                onClick={() => setIsOrderTypeModalOpen(true)}
+              >
+                <IconCirclePlusFilled />
+                <span className='group-data-[collapsible=icon]:hidden'>Создать Заказ</span>
+              </SidebarMenuButton>
+              {/* <Button
+                size='icon'
+                className='size-8 group-data-[collapsible=icon]:opacity-0'
+                variant='outline'
+              >
+                <IconMail />
+                <span className='sr-only'>Inbox</span>
+              </Button> */}
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
         <SidebarMenu>
           {items.map(item => {
             const href = getRouteForItem(item.title, item.url);
@@ -94,45 +115,47 @@ export function NavMain({ items }: { items: MenuItem[] }) {
                   </Link>
                 </SidebarMenuButton>
 
-                <DropdownMenu
-                  modal={false}
-                  onOpenChange={open => {
-                    // Убираем focus когда dropdown закрывается
-                    if (!open) {
-                      setTimeout(() => {
-                        const button = document.querySelector(
-                          '[data-state="closed"][data-sidebar="menu-action"]',
-                        ) as HTMLButtonElement;
+                {item.title !== 'Дашборд' && (
+                  <DropdownMenu
+                    modal={false}
+                    onOpenChange={open => {
+                      // Убираем focus когда dropdown закрывается
+                      if (!open) {
+                        setTimeout(() => {
+                          const button = document.querySelector(
+                            '[data-state="closed"][data-sidebar="menu-action"]',
+                          ) as HTMLButtonElement;
 
-                        if (button) button.blur();
-                      }, 0);
-                    }
-                  }}
-                >
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuAction
-                      showOnHover
-                      className='data-[state=open]:bg-accent rounded-sm focus-visible:ring-0 focus:ring-0'
-                      onBlur={(e: React.FocusEvent<HTMLButtonElement>) => e.target.blur()}
-                    >
-                      <MoreHorizontal />
-                      <span className='sr-only'>More</span>
-                    </SidebarMenuAction>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className='w-48 rounded-lg'
-                    side={isMobile ? 'bottom' : 'right'}
-                    align={isMobile ? 'end' : 'start'}
+                          if (button) button.blur();
+                        }, 0);
+                      }
+                    }}
                   >
-                    {item.items?.map((subItem: { title: string; url: string }) => (
-                      <DropdownMenuItem key={subItem.title} asChild>
-                        <Link href={subItem.url} prefetch>
-                          <span>{subItem.title}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuAction
+                        showOnHover
+                        className='data-[state=open]:bg-accent rounded-sm focus-visible:ring-0 focus:ring-0'
+                        onBlur={(e: React.FocusEvent<HTMLButtonElement>) => e.target.blur()}
+                      >
+                        <MoreHorizontal />
+                        <span className='sr-only'>More</span>
+                      </SidebarMenuAction>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className='w-48 rounded-lg'
+                      side={isMobile ? 'bottom' : 'right'}
+                      align={isMobile ? 'end' : 'start'}
+                    >
+                      {filterMenuItems(item.items).map((subItem: { title: string; url: string }) => (
+                        <DropdownMenuItem key={subItem.title} asChild>
+                          <Link href={subItem.url} prefetch>
+                            <span>{subItem.title}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </SidebarMenuItem>
             );
           })}

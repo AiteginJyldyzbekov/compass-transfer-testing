@@ -85,7 +85,7 @@ export function OrderTypeSelectionModal({ isOpen, onClose }: OrderTypeSelectionM
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px] z-[1000]">
+      <DialogContent className="sm:max-w-[600px] z-[1001]">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">

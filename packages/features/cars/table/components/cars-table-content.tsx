@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
+import { useUserRole } from '@shared/contexts';
 import {
   CarColor,
   VehicleType,
@@ -18,6 +19,7 @@ import {
   VehicleStatus,
   CarFeature,
 } from '@entities/cars/enums';
+import { Role } from '@entities/users/enums';
 import type { GetCarDTO } from '@entities/cars/interface';
 
 interface ColumnVisibility {
@@ -130,6 +132,11 @@ export function CarsTableContent({
   handleSort,
   onDeleteCar,
 }: CarsTableContentProps) {
+  const { userRole } = useUserRole();
+
+  // Проверяем, может ли пользователь редактировать и удалять автомобили (все роли кроме Operator)
+  const canEditCars = userRole !== Role.Operator;
+  const canDeleteCars = userRole !== Role.Operator;
   const SortableHeader = ({ field, children }: { field: string; children: React.ReactNode }) => {
     const isActive = sortBy === field;
 
@@ -247,14 +254,18 @@ export function CarsTableContent({
                       <Eye className='mr-2 h-4 w-4' />
                       Просмотр
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push(`/cars/edit/${car.id}`)}>
-                      <Edit className='mr-2 h-4 w-4' />
-                      Редактировать
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onDeleteCar(car)} className='text-red-600'>
-                      <Trash2 className='mr-2 h-4 w-4' />
-                      Удалить
-                    </DropdownMenuItem>
+                    {canEditCars && (
+                      <DropdownMenuItem onClick={() => router.push(`/cars/edit/${car.id}`)}>
+                        <Edit className='mr-2 h-4 w-4' />
+                        Редактировать
+                      </DropdownMenuItem>
+                    )}
+                    {canDeleteCars && (
+                      <DropdownMenuItem onClick={() => onDeleteCar(car)} className='text-red-600'>
+                        <Trash2 className='mr-2 h-4 w-4' />
+                        Удалить
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

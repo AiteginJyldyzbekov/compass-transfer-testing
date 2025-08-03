@@ -15,7 +15,6 @@ import {
 import { useRouteBuilder, useDriverTracking, useUIScale } from './hooks';
 import { createPinIcon, getColorByType } from './icons';
 import type { LeafletMapProps } from './types';
-import { calculateHeading } from './utils';
 
 /**
  * Компонент карты на основе React-Leaflet и OpenStreetMap
@@ -88,7 +87,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
 
   // Используем хуки
   const uiScale = useUIScale();
-  const { routeCoordinates, routeDistance } = useRouteBuilder(showRoute, routePoints);
+  const { routeCoordinates, routeDistance, routeStatus } = useRouteBuilder(showRoute, routePoints);
   const { isDriverOffRoute } = useDriverTracking({
     currentDriverLocation,
     routeCoordinates,
@@ -98,10 +97,21 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
 
   // Передаем расстояние маршрута через колбэк
   useEffect(() => {
-    if (onRouteDistanceChange && routeDistance > 0) {
-      onRouteDistanceChange(routeDistance);
+    // eslint-disable-next-line no-console
+    console.log('🗺️ LeafletMap routeDistance изменилось:', routeDistance, 'routeStatus:', routeStatus, 'onRouteDistanceChange:', !!onRouteDistanceChange);
+
+    if (onRouteDistanceChange) {
+      if (routeStatus === 'success' && routeDistance > 0) {
+        // eslint-disable-next-line no-console
+        console.log('🚀 Вызываем onRouteDistanceChange с:', routeDistance);
+        onRouteDistanceChange(routeDistance);
+      } else if (routeStatus === 'error') {
+        // eslint-disable-next-line no-console
+        console.log('❌ Маршрут не построен - передаем 0');
+        onRouteDistanceChange(0);
+      }
     }
-  }, [routeDistance, onRouteDistanceChange]);
+  }, [routeDistance, routeStatus, onRouteDistanceChange]);
 
   // Показываем загрузку пока не инициализирован клиент
   if (!isClient) {
@@ -178,39 +188,19 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
 
         {/* Маркеры активных водителей */}
         {showActiveDrivers &&
-          activeDrivers.map(driver => {
-            // Вычисляем направление движения водителя к ближайшей точке маршрута
-            let heading = 0;
-
-            if (routePoints.length > 0) {
-              const routeLocations = routePoints.filter(p => p.type !== 'driver');
-
-              if (routeLocations.length > 0) {
-                const nearestPoint = routeLocations[0];
-
-                heading = calculateHeading(
-                  driver.currentLocation.latitude,
-                  driver.currentLocation.longitude,
-                  nearestPoint.latitude,
-                  nearestPoint.longitude,
-                );
-              }
-            }
-
-            return (
-              <DriverMarker
-                key={`driver-${driver.id}`}
-                driver={driver}
-                isSelected={selectedDriverId === driver.id}
-                heading={heading}
-                onDriverSelect={onDriverSelect}
-                getDriverById={getDriverById}
-                loadDriverData={loadDriverData}
-                uiScale={uiScale}
-                forceOpenPopup={openDriverPopupId === driver.id}
-              />
-            );
-          })}
+          activeDrivers.map(driver => (
+            <DriverMarker
+              key={`driver-${driver.id}`}
+              driver={driver}
+              isSelected={selectedDriverId === driver.id}
+              heading={0}
+              onDriverSelect={onDriverSelect}
+              getDriverById={getDriverById}
+              loadDriverData={loadDriverData}
+              uiScale={uiScale}
+              forceOpenPopup={openDriverPopupId === driver.id}
+            />
+          ))}
 
         {/* Дорожный маршрут */}
         {showRoute && routeCoordinates.length >= 2 && (
@@ -265,8 +255,18 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
             />
           )}
 
-        {/* Маркеры доступных локаций */}
-        {mapLocations.map(location => {
+        {/* Маркеры доступных локаций - исключаем те, что уже показаны как RouteMarker */}
+        {mapLocations
+          .filter(location => {
+            // Исключаем локации, которые уже показаны как точки маршрута
+            const isUsedInRoute = routePoints.some(rp =>
+              rp.id === location.id ||
+              (rp.latitude === location.latitude && rp.longitude === location.longitude)
+            );
+
+            return !isUsedInRoute;
+          })
+          .map(location => {
           const icon = createPinIcon(getColorByType('location'), undefined, uiScale);
           const isSelected = selectedLocationIds.includes(location.id);
           const canSelect = canSelectLocation ? canSelectLocation(location) : true;

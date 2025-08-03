@@ -1,7 +1,5 @@
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@shared/ui/forms/button';
 import { ServicesTable } from '@features/services';
+import { CreateServiceButton } from './create-service-button';
 
 export default async function ServicesPage({
   searchParams,
@@ -24,15 +22,7 @@ export default async function ServicesPage({
             <p className='text-muted-foreground'>Управление услугами системы</p>
           </div>
 
-          <Button
-            asChild
-            className='w-full md:w-auto focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0 hover:shadow-md focus:shadow-md focus-visible:shadow-md transition-shadow'
-          >
-            <Link href='/services/create'>
-              <Plus className='mr-2 h-4 w-4' />
-              Добавить услугу
-            </Link>
-          </Button>
+          <CreateServiceButton />
         </div>
 
         <ServicesTable initialFilters={params} />

@@ -1,19 +1,23 @@
-'use client';
+import { notFound } from 'next/navigation';
+import { ServiceView } from '@pages/(admin)/services/view';
 
-interface ViewServicePageProps {
-  params: {
+interface ServiceViewPageProps {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default function ViewServicePage({ params }: ViewServicePageProps) {
-  return (
-    <div className='flex items-center justify-center min-h-screen'>
-      <div className='text-center'>
-        <h1 className='text-2xl font-bold mb-4'>Просмотр услуги</h1>
-        <p className='text-muted-foreground mb-4'>ID услуги: {params.id}</p>
-        <p className='text-blue-600'>Страница просмотра услуг находится в разработке</p>
-      </div>
-    </div>
-  );
+export default async function ServiceViewPage({ params }: ServiceViewPageProps) {
+  const { id: serviceId } = await params;
+
+  if (!serviceId) {
+    notFound();
+  }
+
+  return <ServiceView serviceId={serviceId} />;
 }
+
+export const metadata = {
+  title: 'Просмотр услуги | Compass Admin',
+  description: 'Просмотр информации об услуге',
+};

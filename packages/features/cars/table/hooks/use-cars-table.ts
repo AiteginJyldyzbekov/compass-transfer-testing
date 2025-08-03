@@ -74,10 +74,11 @@ export function useCarsTable() {
   const [featuresFilter, setFeaturesFilter] = useState<CarFeature[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Пагинация (cursor-based)
+  // Пагинация (cursor-based с историей)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [cursorsHistory, setCursorsHistory] = useState<(string | null)[]>([]);
 
   // Инициализируем pageSize из localStorage синхронно
   const [pageSize, setPageSize] = useState(() => {
@@ -334,6 +335,8 @@ export function useCarsTable() {
       // Используем ID последнего элемента как курсор
       const lastCar = cars[cars.length - 1];
 
+      // Сохраняем текущий cursor в историю
+      setCursorsHistory(prev => [...prev, currentCursor]);
       setCurrentCursor(lastCar.id);
       setIsFirstPage(false);
       setCurrentPageNumber(prev => prev + 1);
@@ -341,6 +344,20 @@ export function useCarsTable() {
   };
 
   const handlePrevPage = () => {
+    if (cursorsHistory.length > 0) {
+      // Берем предыдущий cursor из истории
+      const newHistory = [...cursorsHistory];
+      const prevCursor = newHistory.pop();
+
+      setCursorsHistory(newHistory);
+      setCurrentCursor(prevCursor || null);
+      setIsFirstPage(prevCursor === null);
+      setCurrentPageNumber(prev => prev - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -349,6 +366,7 @@ export function useCarsTable() {
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     // Сбрасываем на первую страницу
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -509,6 +527,7 @@ export function useCarsTable() {
     // Обработчики
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleSort,
     handleColumnVisibilityChange,

@@ -8,21 +8,95 @@ import {
   BookOpen,
   Award,
   FileText,
+  AlertCircle,
 } from 'lucide-react';
 import { Badge } from '@shared/ui/data-display/badge';
+import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout/card';
 import { formatDate } from '@entities/my-profile';
 import type { GetDriverDTO } from '@entities/users/interface';
 import type { SectionWithMapProps } from '@entities/users/ui/profile-sections/types';
 import { getServiceClassLabel, getLicenseCategoryLabel, getCitizenshipLabel } from '@entities/users/utils';
 import { getLanguageLabel } from '@entities/users/utils/language-utils';
+import { CarColor, VehicleType, ServiceClass, VehicleStatus, CarFeature } from '@entities/cars/enums';
+
+// Переводы для цветов автомобилей
+const carColorLabels: Record<CarColor, string> = {
+  [CarColor.White]: 'Белый',
+  [CarColor.Black]: 'Черный',
+  [CarColor.Silver]: 'Серебристый',
+  [CarColor.Gray]: 'Серый',
+  [CarColor.Red]: 'Красный',
+  [CarColor.Blue]: 'Синий',
+  [CarColor.Green]: 'Зеленый',
+  [CarColor.Yellow]: 'Желтый',
+  [CarColor.Orange]: 'Оранжевый',
+  [CarColor.Brown]: 'Коричневый',
+  [CarColor.Purple]: 'Фиолетовый',
+  [CarColor.Gold]: 'Золотой',
+  [CarColor.Other]: 'Другой',
+};
+
+// Переводы для типов автомобилей
+const vehicleTypeLabels: Record<VehicleType, string> = {
+  [VehicleType.Sedan]: 'Седан',
+  [VehicleType.Hatchback]: 'Хэтчбек',
+  [VehicleType.SUV]: 'Внедорожник',
+  [VehicleType.Minivan]: 'Минивэн',
+  [VehicleType.Coupe]: 'Купе',
+  [VehicleType.Cargo]: 'Грузовой',
+  [VehicleType.Pickup]: 'Пикап',
+};
+
+// Переводы для статусов автомобилей
+const vehicleStatusLabels: Record<VehicleStatus, string> = {
+  [VehicleStatus.Available]: 'Доступен',
+  [VehicleStatus.Maintenance]: 'На обслуживании',
+  [VehicleStatus.Repair]: 'На ремонте',
+  [VehicleStatus.Other]: 'Другое',
+};
+
+// Переводы опций автомобиля
+const carFeatureLabels: Record<CarFeature, string> = {
+  [CarFeature.AirConditioning]: 'Кондиционер',
+  [CarFeature.ClimateControl]: 'Климат-контроль',
+  [CarFeature.LeatherSeats]: 'Кожаные сидения',
+  [CarFeature.HeatedSeats]: 'Подогрев сидений',
+  [CarFeature.Bluetooth]: 'Bluetooth',
+  [CarFeature.USBPort]: 'USB-порт',
+  [CarFeature.AuxInput]: 'AUX-вход',
+  [CarFeature.Navigation]: 'Навигация',
+  [CarFeature.BackupCamera]: 'Камера заднего вида',
+  [CarFeature.ParkingSensors]: 'Парковочные датчики',
+  [CarFeature.Sunroof]: 'Люк',
+  [CarFeature.PanoramicRoof]: 'Панорамная крыша',
+  [CarFeature.ThirdRowSeats]: 'Третий ряд сидений',
+  [CarFeature.ChildSeat]: 'Детское кресло',
+  [CarFeature.WheelchairAccess]: 'Доступ для инвалидных колясок',
+  [CarFeature.Wifi]: 'Wi-Fi',
+  [CarFeature.PremiumAudio]: 'Премиальная аудиосистема',
+  [CarFeature.AppleCarplay]: 'Apple CarPlay',
+  [CarFeature.AndroidAuto]: 'Android Auto',
+  [CarFeature.SmokingAllowed]: 'Разрешено курение',
+  [CarFeature.PetFriendly]: 'Дружелюбно к питомцам',
+  [CarFeature.LuggageCarrier]: 'Багажник на крыше',
+  [CarFeature.BikeRack]: 'Велосипедная стойка',
+};
 
 // Type guard для проверки водителя
 function isDriverData(profile: SectionWithMapProps['profile']): profile is GetDriverDTO {
   return 'role' in profile && profile.role === 'Driver';
 }
 
-export function DriverSection({ profile, openMapSheet: _openMapSheet }: SectionWithMapProps) {
+interface DriverSectionProps extends SectionWithMapProps {
+  onAssignCar?: () => void;
+}
+
+export function DriverSection({
+  profile,
+  openMapSheet: _openMapSheet,
+  onAssignCar
+}: DriverSectionProps) {
   if (!isDriverData(profile)) return null;
 
   const driverProfile = profile.profile;
@@ -84,6 +158,116 @@ export function DriverSection({ profile, openMapSheet: _openMapSheet }: SectionW
               ))}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Активный автомобиль */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-center justify-between'>
+            <CardTitle className='flex items-center gap-2'>
+              <Car className='h-5 w-5' />
+              Активный автомобиль
+            </CardTitle>
+            {onAssignCar && !profile.activeCar && (
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={onAssignCar}
+                className='flex items-center gap-2'
+              >
+                <Car className='h-4 w-4' />
+                Назначить автомобиль
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {profile.activeCar ? (
+            <div className='space-y-4'>
+              {/* Основная информация об автомобиле */}
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                <div className='border-l-4 border-blue-200 pl-4 flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-muted-foreground'>Марка и модель</label>
+                  <p className='text-sm font-medium'>
+                    {profile.activeCar.make} {profile.activeCar.model} ({profile.activeCar.year})
+                  </p>
+                </div>
+
+                <div className='border-l-4 border-green-200 pl-4 flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-muted-foreground'>Номерной знак</label>
+                  <p className='text-sm font-mono font-medium'>{profile.activeCar.licensePlate}</p>
+                </div>
+
+                <div className='border-l-4 border-purple-200 pl-4 flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-muted-foreground'>Цвет</label>
+                  <p className='text-sm'>{carColorLabels[profile.activeCar.color]}</p>
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                <div className='border-l-4 border-orange-200 pl-4 flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-muted-foreground'>Тип автомобиля</label>
+                  <p className='text-sm'>{vehicleTypeLabels[profile.activeCar.type]}</p>
+                </div>
+
+                <div className='border-l-4 border-teal-200 pl-4 flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-muted-foreground'>Класс обслуживания</label>
+                  <p className='text-sm'>{getServiceClassLabel(profile.activeCar.serviceClass)}</p>
+                </div>
+
+                <div className='border-l-4 border-indigo-200 pl-4 flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-muted-foreground'>Пассажировместимость</label>
+                  <p className='text-sm'>{profile.activeCar.passengerCapacity} мест</p>
+                </div>
+              </div>
+
+              <div className='border-l-4 border-pink-200 pl-4 flex flex-col gap-2'>
+                <label className='text-sm font-medium text-muted-foreground'>Статус</label>
+                <Badge
+                  variant={profile.activeCar.status === VehicleStatus.Available ? 'default' :
+                          profile.activeCar.status === VehicleStatus.Maintenance ? 'secondary' :
+                          profile.activeCar.status === VehicleStatus.Repair ? 'destructive' : 'outline'}
+                  className='w-fit'
+                >
+                  {vehicleStatusLabels[profile.activeCar.status]}
+                </Badge>
+              </div>
+
+              {/* Дополнительные опции */}
+              {profile.activeCar.features && profile.activeCar.features.length > 0 && (
+                <div className='border-l-4 border-yellow-200 pl-4 flex flex-col gap-2'>
+                  <label className='text-sm font-medium text-muted-foreground'>Дополнительные опции</label>
+                  <div className='flex flex-wrap gap-1'>
+                    {profile.activeCar.features.map((feature) => (
+                      <Badge key={feature} variant='outline' className='text-xs'>
+                        {carFeatureLabels[feature as CarFeature] || feature}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className='text-center py-8'>
+              <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <AlertCircle className='h-8 w-8 text-gray-400' />
+              </div>
+              <p className='text-gray-500 text-sm mb-4'>
+                У водителя нет активного автомобиля
+              </p>
+              {onAssignCar && (
+                <Button
+                  variant='outline'
+                  onClick={onAssignCar}
+                  className='flex items-center gap-2'
+                >
+                  <Car className='h-4 w-4' />
+                  Назначить автомобиль
+                </Button>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 

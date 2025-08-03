@@ -28,16 +28,28 @@ export const MapController: React.FC<MapControllerProps> = ({ center, zoom = 16,
   // Открываем popup водителя
   useEffect(() => {
     if (openPopupDriverId) {
+      // eslint-disable-next-line no-console
+      console.log('🔍 MapController: Ищем маркер водителя', { openPopupDriverId });
+
       // Если есть центр (карта перемещается), ждем завершения анимации
       const delay = center ? 1100 : 100; // Если карта не перемещается, открываем сразу
 
       const timer = setTimeout(() => {
+        let found = false;
         // Ищем маркер водителя по ID и открываем его popup
         map.eachLayer((layer: any) => {
           if (layer.options && layer.options.driverId === openPopupDriverId) {
+            // eslint-disable-next-line no-console
+            console.log('✅ MapController: Найден маркер водителя, открываем popup', { driverId: openPopupDriverId });
             layer.openPopup();
+            found = true;
           }
         });
+
+        if (!found) {
+          // eslint-disable-next-line no-console
+          console.log('❌ MapController: Маркер водителя не найден', { openPopupDriverId });
+        }
       }, delay);
 
       return () => clearTimeout(timer);

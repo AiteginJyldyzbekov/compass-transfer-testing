@@ -34,7 +34,16 @@ export function useUsersTable() {
 
   const [onlineFilter, setOnlineFilter] = useState<'all' | 'online' | 'offline'>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+
+  // Пагинация (cursor-based с историей для кнопки "Назад")
+  const [currentCursor, setCurrentCursor] = useState<string | null>(null);
+  const [isFirstPage, setIsFirstPage] = useState(true);
+  const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [cursorsHistory, setCursorsHistory] = useState<(string | null)[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   // Инициализируем pageSize из localStorage синхронно
   const [pageSize, setPageSize] = useState(() => {
@@ -84,14 +93,20 @@ export function useUsersTable() {
       setLoading(true);
       setError(null);
 
-      // Создаем параметры поиска
-      const params: Record<string, string | number | undefined> = {
+      // Создаем параметры поиска (cursor-based)
+      const params: Record<string, string | number | boolean | undefined> = {
         role: roleFilter === 'all' ? undefined : roleFilter,
-        page: currentPage,
         size: pageSize,
         sortBy,
         sortOrder,
       };
+
+      // Добавляем cursor-based параметры
+      if (isFirstPage) {
+        params.first = true;
+      } else if (currentCursor) {
+        params.after = currentCursor;
+      }
 
       // Добавляем поиск по имени (основной поиск)
       if (searchTerm) {
@@ -114,6 +129,19 @@ export function useUsersTable() {
       const response = await usersApi.getUsers(params);
 
       setUsers(response.data);
+
+      // Обновляем информацию о пагинации
+      setTotalCount(response.totalCount || response.data.length);
+      setTotalPages(Math.ceil((response.totalCount || response.data.length) / pageSize));
+
+      // Определяем hasNext и hasPrevious на основе данных
+      const hasNextPage = response.hasNext !== undefined ? response.hasNext : response.data.length === pageSize;
+      const hasPrevPage = response.hasPrevious !== undefined ? response.hasPrevious : currentPageNumber > 1;
+
+
+
+      setHasNext(hasNextPage);
+      setHasPrevious(hasPrevPage);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки пользователей';
 
@@ -122,7 +150,7 @@ export function useUsersTable() {
     } finally {
       setLoading(false);
     }
-  }, [roleFilter, searchTerm, emailFilter, phoneFilter, currentPage, pageSize, sortBy, sortOrder]);
+  }, [roleFilter, searchTerm, emailFilter, phoneFilter, currentPageNumber, isFirstPage, currentCursor, pageSize, sortBy, sortOrder]);
 
   // Клиентская фильтрация только для онлайн статуса (если нужно)
   const filteredUsers = users.filter(user => {
@@ -136,15 +164,52 @@ export function useUsersTable() {
 
   // Данные уже приходят с сервера с пагинацией
   const paginatedUsers = filteredUsers;
-  const totalPages = Math.ceil(filteredUsers.length / pageSize); // Это нужно будет получать с сервера
+
+  // Обработчики пагинации (cursor-based с историей)
+  const handleNextPage = () => {
+    if (hasNext && users.length > 0) {
+      const lastUser = users[users.length - 1];
+
+      // Сохраняем текущий cursor в историю
+      setCursorsHistory(prev => [...prev, currentCursor]);
+      setCurrentCursor(lastUser.id);
+      setIsFirstPage(false);
+      setCurrentPageNumber(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (cursorsHistory.length > 0) {
+      // Берем предыдущий cursor из истории
+      const newHistory = [...cursorsHistory];
+      const prevCursor = newHistory.pop();
+
+      setCursorsHistory(newHistory);
+      setCurrentCursor(prevCursor || null);
+      setIsFirstPage(prevCursor === null);
+      setCurrentPageNumber(prev => prev - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCursorsHistory([]);
+    setCurrentCursor(null);
+    setIsFirstPage(true);
+    setCurrentPageNumber(1);
+  };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (page === 1) {
+      handleFirstPage();
+    }
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
-    setCurrentPage(1); // Сбрасываем на первую страницу
+    setCursorsHistory([]);
+    setCurrentCursor(null);
+    setIsFirstPage(true);
+    setCurrentPageNumber(1);
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('users-page-size', newPageSize.toString());
@@ -164,6 +229,11 @@ export function useUsersTable() {
   // Обработка изменений фильтра роли с обновлением URL
   const handleRoleFilterChange = (value: UserRoleType | 'all') => {
     setRoleFilter(value);
+    setCursorsHistory([]);
+    setCurrentCursor(null);
+    setIsFirstPage(true);
+    setCurrentPageNumber(1);
+
     const params = new URLSearchParams(searchParams.toString());
 
     if (value === 'all') {
@@ -185,6 +255,12 @@ export function useUsersTable() {
       setSortBy(field);
       setSortOrder('Asc');
     }
+
+    // Сбрасываем пагинацию при изменении сортировки
+    setCursorsHistory([]);
+    setCurrentCursor(null);
+    setIsFirstPage(true);
+    setCurrentPageNumber(1);
   };
 
   // Синхронизация roleFilter с URL параметрами
@@ -223,20 +299,54 @@ export function useUsersTable() {
     roleFilter,
     onlineFilter,
     showAdvancedFilters,
-    currentPage,
+    // Пагинация
+    currentCursor,
+    isFirstPage,
+    currentPageNumber,
+    currentPage: currentPageNumber, // Для совместимости
     pageSize,
     columnVisibility,
     totalPages,
+    totalCount,
+    hasNext,
+    hasPrevious,
     sortBy,
     sortOrder,
 
     // Handlers
-    setSearchTerm,
-    setEmailFilter,
-    setPhoneFilter,
-    setOnlineFilter,
+    setSearchTerm: (term: string) => {
+      setSearchTerm(term);
+      setCursorsHistory([]);
+      setCurrentCursor(null);
+      setIsFirstPage(true);
+      setCurrentPageNumber(1);
+    },
+    setEmailFilter: (email: string) => {
+      setEmailFilter(email);
+      setCursorsHistory([]);
+      setCurrentCursor(null);
+      setIsFirstPage(true);
+      setCurrentPageNumber(1);
+    },
+    setPhoneFilter: (phone: string) => {
+      setPhoneFilter(phone);
+      setCursorsHistory([]);
+      setCurrentCursor(null);
+      setIsFirstPage(true);
+      setCurrentPageNumber(1);
+    },
+    setOnlineFilter: (filter: 'all' | 'online' | 'offline') => {
+      setOnlineFilter(filter);
+      setCursorsHistory([]);
+      setCurrentCursor(null);
+      setIsFirstPage(true);
+      setCurrentPageNumber(1);
+    },
     setShowAdvancedFilters,
     handlePageChange,
+    handleNextPage,
+    handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleRoleFilterChange,

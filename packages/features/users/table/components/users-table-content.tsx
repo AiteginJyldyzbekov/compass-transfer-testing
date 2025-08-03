@@ -18,7 +18,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
+import { useUserRole } from '@shared/contexts';
 import { UserRole, type UserApi, getRoleDisplayName, getRoleColor, getInitials } from '@entities/users';
+import { Role } from '@entities/users/enums';
 
 interface Router {
   push: (url: string) => void;
@@ -76,6 +78,12 @@ export function UsersTableContent({
   handleSort,
   onDeleteUser,
 }: UsersTableContentProps) {
+  const { userRole } = useUserRole();
+
+  // Проверяем, может ли пользователь редактировать и удалять других пользователей (все роли кроме Operator)
+  const canEditUsers = userRole !== Role.Operator;
+  const canDeleteUsers = userRole !== Role.Operator;
+
   return (
     <div className='rounded-md border'>
       <Table>
@@ -166,25 +174,29 @@ export function UsersTableContent({
                         <Eye className='mr-2 h-4 w-4' />
                         Просмотр
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          // Правильная обработка ролей для URL редактирования
-                          const rolePath = user.role === UserRole.Terminal ? 'terminal' : user.role.toLowerCase();
-                          const editPath = `/users/edit/${rolePath}/${user.id}`;
-                          
-                          router.push(editPath);
-                        }}
-                      >
-                        <Edit className='mr-2 h-4 w-4' />
-                        Редактировать
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className='text-red-600'
-                        onClick={() => onDeleteUser(user)}
-                      >
-                        <Trash2 className='mr-2 h-4 w-4' />
-                        Удалить
-                      </DropdownMenuItem>
+                      {canEditUsers && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            // Правильная обработка ролей для URL редактирования
+                            const rolePath = user.role === UserRole.Terminal ? 'terminal' : user.role.toLowerCase();
+                            const editPath = `/users/edit/${rolePath}/${user.id}`;
+
+                            router.push(editPath);
+                          }}
+                        >
+                          <Edit className='mr-2 h-4 w-4' />
+                          Редактировать
+                        </DropdownMenuItem>
+                      )}
+                      {canDeleteUsers && (
+                        <DropdownMenuItem
+                          className='text-red-600'
+                          onClick={() => onDeleteUser(user)}
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          Удалить
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -1,7 +1,3 @@
-/**
- * `Sedan` = седан<br>`Hatchback` = хэтчбек<br>`SUV` = внедорожник<br>`Minivan` = минивэн<br>`Coupe` = купе<br>`Cargo` = грузовой<br>`Pickup` = пикап
- * @enum
- */
 export enum CarType {
   Sedan = 'Sedan',
   Hatchback = 'Hatchback',
@@ -25,3 +21,13 @@ export const CarTypeValues: Record<CarType, string> = {
   [CarType.Pickup]: 'Пикап',
 };
 
+// Маппинг вместимости по типам автомобилей
+export const CAR_TYPE_CAPACITY: Record<CarType, number> = {
+  [CarType.Sedan]: 4,
+  [CarType.Hatchback]: 4,
+  [CarType.SUV]: 5,
+  [CarType.Minivan]: 8,
+  [CarType.Coupe]: 2,
+  [CarType.Cargo]: 2,
+  [CarType.Pickup]: 3,
+};

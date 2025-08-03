@@ -1,22 +1,23 @@
-'use client';
+import { notFound } from 'next/navigation';
+import { TariffView } from '@pages/(admin)/tariffs/view';
 
-import { use } from 'react';
-
-interface ViewTariffPageProps {
+interface TariffViewPageProps {
   params: Promise<{
     id: string;
   }>;
 }
 
-export default function ViewTariffPage({ params }: ViewTariffPageProps) {
-  const { id } = use(params);
-  return (
-    <div className='flex items-center justify-center min-h-screen'>
-      <div className='text-center'>
-        <h1 className='text-2xl font-bold mb-4'>Просмотр тарифа</h1>
-        <p className='text-muted-foreground mb-4'>ID тарифа: {id}</p>
-        <p className='text-blue-600'>Страница просмотра тарифов находится в разработке</p>
-      </div>
-    </div>
-  );
+export default async function TariffViewPage({ params }: TariffViewPageProps) {
+  const { id: tariffId } = await params;
+
+  if (!tariffId) {
+    notFound();
+  }
+
+  return <TariffView tariffId={tariffId} />;
 }
+
+export const metadata = {
+  title: 'Просмотр тарифа | Compass Admin',
+  description: 'Просмотр информации о тарифе',
+};

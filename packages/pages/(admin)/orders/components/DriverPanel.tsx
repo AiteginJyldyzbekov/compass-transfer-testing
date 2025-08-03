@@ -17,9 +17,10 @@ interface DriverPanelProps {
   onClose: () => void;
   activeDrivers?: Array<{ id: string; currentLocation?: { latitude: number; longitude: number } }>; // Активные водители с карты
   getDriverById?: (id: string) => Record<string, unknown> | null; // Функция для получения полных данных водителя
+  isInstantOrder?: boolean; // Флаг для моментальных заказов - отключает выбор водителей
 }
 
-export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDrivers = [], getDriverById }: DriverPanelProps) {
+export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDrivers = [], getDriverById, isInstantOrder = false }: DriverPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(true); // По умолчанию скрыта
@@ -55,6 +56,11 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
   const displayDrivers = searchQuery.trim().length >= 2 ? (drivers || []) : (allDrivers || []);
 
   const handleDriverClick = (driver: Driver) => {
+    // В моментальных заказах не разрешаем выбор водителей
+    if (isInstantOrder) {
+      return;
+    }
+
     // Ищем координаты водителя в разных источниках данных
     let location = null;
 
@@ -69,7 +75,7 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
     if (!location) {
       const driverWithLocation = allDrivers.find(d => d.id === driver.id) ||
                                 drivers.find(d => d.id === driver.id);
-                                
+
       location = (driverWithLocation as Driver & { currentLocation?: { latitude: number; longitude: number } })?.currentLocation;
     }
 
@@ -148,46 +154,59 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={onClose}
-                    className="p-1 rounded-full hover:bg-blue-100 transition-colors"
-                    title="Отменить выбор водителя"
-                  >
-                    <X className="h-4 w-4 text-gray-500" />
-                  </button>
+                  {!isInstantOrder && (
+                    <button
+                      onClick={onClose}
+                      className="p-1 rounded-full hover:bg-blue-100 transition-colors"
+                      title="Отменить выбор водителя"
+                    >
+                      <X className="h-4 w-4 text-gray-500" />
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })()}
 
-          {/* Поиск водителей */}
+          {/* Поиск водителей или информация о моментальном заказе */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Начните вводить имя водителя..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-10"
-                />
+            {isInstantOrder ? (
+              <div className="text-center py-4 px-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="text-sm text-blue-800 font-medium mb-1">
+                  Моментальный заказ
+                </div>
+                <div className="text-xs text-blue-600">
+                  Система автоматически найдет подходящего водителя
+                </div>
               </div>
-
+            ) : (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 whitespace-nowrap">
-                  {displayDrivers.length} водителей
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="h-10 px-3"
-                  title={isCollapsed ? "Показать список водителей" : "Скрыть список водителей"}
-                >
-                  {isCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Начните вводить имя водителя..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500 whitespace-nowrap">
+                    {displayDrivers.length} водителей
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="h-10 px-3"
+                    title={isCollapsed ? "Показать список водителей" : "Скрыть список водителей"}
+                  >
+                    {isCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Список водителей */}
             <div className={`transition-all duration-300 overflow-y-auto ${
@@ -216,12 +235,14 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
                   return (
                     <div
                       key={driver.id}
-                      className={`p-2.5 border rounded-lg cursor-pointer transition-all duration-200 ${
-                        selectedDriver?.id === driver.id
-                          ? 'border-blue-500 bg-blue-50 shadow-sm'
-                          : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      className={`p-2.5 border rounded-lg transition-all duration-200 ${
+                        isInstantOrder
+                          ? 'border-gray-200 bg-gray-50 cursor-default' // Для моментальных заказов - неактивный вид
+                          : selectedDriver?.id === driver.id
+                            ? 'border-blue-500 bg-blue-50 shadow-sm cursor-pointer'
+                            : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300 cursor-pointer'
                       }`}
-                      onClick={() => handleDriverClick(driver)}
+                      onClick={() => !isInstantOrder && handleDriverClick(driver)}
                     >
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 mt-0.5">

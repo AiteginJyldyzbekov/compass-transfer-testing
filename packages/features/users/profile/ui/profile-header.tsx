@@ -16,8 +16,6 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
-  console.log('ProfileHeader - profile.online:', profile.online);
-  console.log('ProfileHeader - profile data:', JSON.stringify(profile, null, 2));
 
   return (
     <Card>

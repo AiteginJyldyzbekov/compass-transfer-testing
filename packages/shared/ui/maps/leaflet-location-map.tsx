@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { MapClickHandler } from '@shared/components/map/components';
 import { MapSearch } from './components/map-search';
 import L from 'leaflet';
@@ -70,6 +70,22 @@ const getAddressByCoordinates = async (lat: number, lon: number): Promise<Addres
   }
 };
 
+// Компонент для управления картой без перерендера
+const MapController: React.FC<{ coordinates: [number, number] | null }> = ({ coordinates }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (coordinates && map) {
+      // Получаем текущий зум карты
+      const currentZoom = map.getZoom();
+      // Плавно перемещаем карту к новым координатам, сохраняя текущий зум
+      map.setView(coordinates, currentZoom, { animate: true });
+    }
+  }, [coordinates, map]);
+
+  return null;
+};
+
 // Иконка маркера
 const createMarkerIcon = () => {
   return L.divIcon({
@@ -97,18 +113,10 @@ export const LeafletLocationMap: React.FC<LeafletLocationMapProps> = ({
   className = '',
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [mapKey, setMapKey] = useState(0);
   const [currentAddress, setCurrentAddress] = useState<string>(initialAddress);
 
   // Центр карты - Бишкек по умолчанию
   const center: [number, number] = coordinates || [42.856219, 74.603967];
-
-  // Принудительно перерисовываем карту при изменении координат
-  useEffect(() => {
-    if (coordinates) {
-      setMapKey(prev => prev + 1);
-    }
-  }, [coordinates]);
 
   // Обработчик клика по карте
   const handleMapClick = useCallback(async (lat: number, lng: number) => {
@@ -167,7 +175,6 @@ export const LeafletLocationMap: React.FC<LeafletLocationMapProps> = ({
       </div>
 
       <MapContainer
-        key={mapKey}
         center={center}
         zoom={coordinates ? 15 : 10}
         style={{ height: '100%', width: '100%', minHeight: height }}
@@ -181,7 +188,8 @@ export const LeafletLocationMap: React.FC<LeafletLocationMapProps> = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        
+
+        <MapController coordinates={coordinates} />
         <MapClickHandler onMapClick={handleMapClick} />
         
         {coordinates && (

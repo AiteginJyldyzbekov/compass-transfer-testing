@@ -1,6 +1,6 @@
 'use client';
 
-import { Lock, MessageCircle, ArrowLeft, Edit } from 'lucide-react';
+import { Lock, MessageCircle, ArrowLeft, Edit, Car } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useIsAdmin } from '@shared/contexts';
@@ -17,6 +17,8 @@ interface ProfileActionsProps {
   // Для кнопки редактирования (только для админов)
   targetUserId?: string; // ID пользователя, которого просматриваем
   targetUserRole?: string; // Роль пользователя, которого просматриваем
+  // Для управления автомобилями водителя (только для водителей)
+  onManageDriverCars?: () => void; // Обработчик кнопки "Управление автомобилями"
 }
 
 export function ProfileActions({
@@ -25,7 +27,8 @@ export function ProfileActions({
   onBack,
   hideLogout = false,
   targetUserId,
-  targetUserRole
+  targetUserRole,
+  onManageDriverCars
 }: ProfileActionsProps) {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const router = useRouter();
@@ -66,6 +69,18 @@ export function ProfileActions({
             >
               <Edit className='h-4 w-4' />
               Редактировать профиль
+            </Button>
+          )}
+
+          {/* Кнопка управления автомобилями (только для водителей) */}
+          {targetUserRole === 'Driver' && onManageDriverCars && (
+            <Button
+              onClick={onManageDriverCars}
+              className='w-full justify-start gap-2'
+              variant='outline'
+            >
+              <Car className='h-4 w-4' />
+              Управление автомобилями
             </Button>
           )}
 

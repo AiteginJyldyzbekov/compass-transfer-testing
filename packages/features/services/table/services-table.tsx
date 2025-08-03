@@ -41,6 +41,7 @@ export function ServicesTable({
     setShowAdvancedFilters,
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleIsQuantifiableFilterChange,
@@ -131,6 +132,7 @@ export function ServicesTable({
         currentPageNumber={currentPageNumber}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
+        handleFirstPage={handleFirstPage}
       />
 
       {/* Модальное окно удаления */}

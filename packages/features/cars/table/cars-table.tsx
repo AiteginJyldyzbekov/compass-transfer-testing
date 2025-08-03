@@ -49,6 +49,7 @@ export function CarsTable({
     setShowAdvancedFilters,
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleColorFilterChange,
@@ -154,6 +155,7 @@ export function CarsTable({
         currentPageNumber={currentPageNumber}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
+        handleFirstPage={handleFirstPage}
       />
 
       {/* Модальное окно удаления */}

@@ -5,7 +5,7 @@ import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
 import { cn } from '@shared/lib/utils';
-import { CarColor, VehicleType, ServiceClass, VehicleStatus } from '../enums';
+import { CarColor, VehicleType, ServiceClass, VehicleStatus, VEHICLE_TYPE_CAPACITY } from '../enums';
 import type { CarCreateFormData } from '../schemas/carCreateSchema';
 
 // Лейблы для цветов автомобилей
@@ -198,7 +198,13 @@ export function CarBasicSection({
           </Label>
           <Select
             value={formData.type || VehicleType.Sedan}
-            onValueChange={(value) => setValue('type', value as VehicleType, { shouldValidate: true, shouldDirty: true })}
+            onValueChange={(value) => {
+              const vehicleType = value as VehicleType;
+              setValue('type', vehicleType, { shouldValidate: true, shouldDirty: true });
+              // Автоматически устанавливаем пассажировместимость в зависимости от типа
+              const capacity = VEHICLE_TYPE_CAPACITY[vehicleType];
+              setValue('passengerCapacity', capacity, { shouldValidate: true, shouldDirty: true });
+            }}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Выберите тип" />
@@ -271,18 +277,25 @@ export function CarBasicSection({
           <Label htmlFor="passengerCapacity" className="text-sm font-medium">
             {labels.passengerCapacity || 'Пассажировместимость *'}
           </Label>
-          <Input
-            id="passengerCapacity"
-            type="number"
-            min="1"
-            max="50"
-            placeholder={placeholders.passengerCapacity || '4'}
-            className="w-full"
-            {...register('passengerCapacity', {
-              valueAsNumber: true,
-              setValueAs: (value) => value === '' ? undefined : parseInt(value)
-            })}
-          />
+          <div className="relative">
+            <Input
+              id="passengerCapacity"
+              type="number"
+              value={formData.passengerCapacity || VEHICLE_TYPE_CAPACITY[formData.type || VehicleType.Sedan]}
+              readOnly
+              className="w-full bg-gray-50 cursor-not-allowed"
+              {...register('passengerCapacity', {
+                valueAsNumber: true,
+                setValueAs: (value) => value === '' ? undefined : parseInt(value)
+              })}
+            />
+            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+              <span className="text-xs text-gray-500">Автоматически</span>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500">
+            Пассажировместимость устанавливается автоматически в зависимости от типа автомобиля
+          </p>
           {errors.passengerCapacity && (
             <p className="text-sm text-red-600">{errors.passengerCapacity.message}</p>
           )}

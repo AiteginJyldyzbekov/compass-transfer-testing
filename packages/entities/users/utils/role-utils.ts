@@ -43,7 +43,7 @@ export const getRoleDisplayName = (role: keyof typeof Role): string => {
     [Role.Driver]: 'Водитель',
     [Role.Customer]: 'Клиент',
     [Role.Admin]: 'Администратор',
-    [Role.Partner]: 'Партнер',
+    [Role.Partner]: 'Контр-агент',
     [Role.Terminal]: 'Терминал',
     [Role.Unknown]: 'Пользователь',
   };

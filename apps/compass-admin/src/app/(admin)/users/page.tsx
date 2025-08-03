@@ -1,7 +1,5 @@
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@shared/ui/forms/button';
 import { UsersTable } from '@features/users';
+import { CreateUserButton } from './create-user-button';
 
 export default async function UsersPage({
   searchParams,
@@ -19,15 +17,7 @@ export default async function UsersPage({
             <p className='text-muted-foreground'>Управление пользователями системы</p>
           </div>
 
-          <Button
-            asChild
-            className='w-full md:w-auto focus-visible:ring-0 focus:ring-0 focus-visible:ring-offset-0 hover:shadow-md focus:shadow-md focus-visible:shadow-md transition-shadow'
-          >
-            <Link href='/users/create'>
-              <Plus className='mr-2 h-4 w-4' />
-              Создать пользователя
-            </Link>
-          </Button>
+          <CreateUserButton />
         </div>
 
         <UsersTable initialRoleFilter={params.role} />

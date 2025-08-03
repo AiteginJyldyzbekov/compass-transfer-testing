@@ -1,15 +1,17 @@
 'use client';
 
 import { useFormContext } from 'react-hook-form';
+import { cn } from '@shared/lib/utils';
+import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
-import { cn } from '@shared/lib/utils';
 import { locationTypeHelpers } from '../helpers/location-type-helpers';
-import { LocationType } from '../enums';
 import type { LocationCreateFormData } from '../schemas/locationCreateSchema';
+import { LocationType } from '../enums';
 
 interface LocationBasicSectionProps {
   labels?: {
+    name?: string;
     type?: string;
   };
 }
@@ -30,6 +32,25 @@ export function LocationBasicSection({
     <div className="space-y-6">
       {/* Скрытое поле для регистрации в форме */}
       <input type="hidden" {...register('type')} />
+
+      {/* Название локации */}
+      <div className="space-y-2">
+        <Label htmlFor="name" className="text-sm font-medium">
+          {labels.name || 'Название локации *'}
+        </Label>
+        <Input
+          id="name"
+          {...register('name')}
+          placeholder="Введите название локации"
+          className="w-full"
+        />
+        {errors.name && (
+          <p className="text-sm text-red-600">{errors.name.message}</p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Название автоматически заполняется при выборе адреса на карте, но вы можете его изменить
+        </p>
+      </div>
 
       {/* Описание */}
       <div className="space-y-2">

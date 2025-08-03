@@ -61,7 +61,6 @@ export function CarFormView({
                         model: 'Camry',
                         year: '2022',
                         licensePlate: '01KG123ABC',
-                        passengerCapacity: '4',
                       }}
                     />
                   </div>

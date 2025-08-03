@@ -12,7 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
+import { useUserRole } from '@shared/contexts';
 import { getServiceClassLabel } from '@entities/users/utils/service-class-utils';
+import { Role } from '@entities/users/enums';
 
 interface ColumnVisibility {
   name: boolean;
@@ -90,7 +92,11 @@ export function TariffsTableContent({
   onToggleArchive,
   isArchiving,
 }: TariffsTableContentProps) {
+  const { userRole } = useUserRole();
 
+  // Проверяем, может ли пользователь редактировать и архивировать тарифы (все роли кроме Operator)
+  const canEditTariffs = userRole !== Role.Operator;
+  const canArchiveTariffs = userRole !== Role.Operator;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -203,24 +209,30 @@ export function TariffsTableContent({
                         <Eye className='mr-2 h-4 w-4' />
                         Просмотр
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(`/tariffs/edit/${tariff.id}`)}>
-                        <Edit className='mr-2 h-4 w-4' />
-                        Редактировать
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onToggleArchive(tariff)}
-                        disabled={isArchiving}
-                      >
-                        {tariff.archived ? <ArchiveRestore className='mr-2 h-4 w-4' /> : <Archive className='mr-2 h-4 w-4' />}
-                        {tariff.archived ? 'Разархивировать' : 'Архивировать'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className='text-red-600'
-                        onClick={() => onDeleteTariff(tariff)}
-                      >
-                        <Trash2 className='mr-2 h-4 w-4' />
-                        Удалить
-                      </DropdownMenuItem>
+                      {canEditTariffs && (
+                        <DropdownMenuItem onClick={() => router.push(`/tariffs/edit/${tariff.id}`)}>
+                          <Edit className='mr-2 h-4 w-4' />
+                          Редактировать
+                        </DropdownMenuItem>
+                      )}
+                      {canArchiveTariffs && (
+                        <DropdownMenuItem
+                          onClick={() => onToggleArchive(tariff)}
+                          disabled={isArchiving}
+                        >
+                          {tariff.archived ? <ArchiveRestore className='mr-2 h-4 w-4' /> : <Archive className='mr-2 h-4 w-4' />}
+                          {tariff.archived ? 'Разархивировать' : 'Архивировать'}
+                        </DropdownMenuItem>
+                      )}
+                      {canEditTariffs && (
+                        <DropdownMenuItem
+                          className='text-red-600'
+                          onClick={() => onDeleteTariff(tariff)}
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          Удалить
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

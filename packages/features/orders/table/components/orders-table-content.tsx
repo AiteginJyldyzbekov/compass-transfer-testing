@@ -13,7 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
+import { useUserRole } from '@shared/contexts';
 import { type GetOrderDTO, type OrderStatus, type OrderSubStatus, type OrderType, orderTypeLabels, orderStatusLabels, orderSubStatusLabels, orderStatusColors, getOrderEditRoute, getOrderViewRoute } from '@entities/orders';
+import { Role } from '@entities/users/enums';
 import { useDeleteOrder } from '@features/orders/hooks/use-delete-order';
 
 interface ColumnVisibility {
@@ -81,6 +83,7 @@ export function OrdersTableContent({
   onDeleteOrder,
   onRefetch,
 }: OrdersTableContentProps) {
+  const { userRole } = useUserRole();
   const {
     isModalOpen,
     orderToDelete,
@@ -94,6 +97,9 @@ export function OrdersTableContent({
       onRefetch?.();
     },
   });
+
+  // Проверяем, может ли пользователь удалять заказы (все роли кроме Operator)
+  const canDeleteOrders = userRole !== Role.Operator;
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
@@ -195,7 +201,7 @@ export function OrdersTableContent({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
-                      <DropdownMenuItem onClick={() => router.push(getOrderViewRoute(order.id))}>
+                      <DropdownMenuItem onClick={() => router.push(getOrderViewRoute(order.id, order.type as OrderType))}>
                         <Eye className='mr-2 h-4 w-4' />
                         Просмотр
                       </DropdownMenuItem>
@@ -203,13 +209,15 @@ export function OrdersTableContent({
                         <Edit className='mr-2 h-4 w-4' />
                         Редактировать
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className='text-red-600'
-                        onClick={() => openDeleteModal(order)}
-                      >
-                        <Trash2 className='mr-2 h-4 w-4' />
-                        Удалить
-                      </DropdownMenuItem>
+                      {canDeleteOrders && (
+                        <DropdownMenuItem
+                          className='text-red-600'
+                          onClick={() => openDeleteModal(order)}
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          Удалить
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -3,9 +3,10 @@
 import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { SignalREventHandler, SignalREventData, SignalRCallback } from '@shared/hooks/signal/types';
 import { SignalRContext, type SignalRContextType } from '@shared/hooks/signal/useSignalR';
+import WelcomeIcon from '@shared/icon/WelcomeIcon';
 import { logger } from '@shared/lib/logger';
 import { notificationManager } from '@entities/notifications/services/NotificationManager';
-import WelcomeIcon from '@shared/icon/WelcomeIcon';
+
 
 export interface SignalRProviderProps {
   children: ReactNode;
@@ -43,7 +44,6 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
 
     notificationTypes.forEach(type => {
       const handleNotification = (data: SignalREventData) => {
-        logger.info(`WebSocket уведомление [${type}]:`, data);
         notificationManager.handleNotification(type, data);
       };
       const handlers = eventHandlers.current.get(type) || [];
@@ -51,7 +51,6 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
       handlers.push(handleNotification);
       eventHandlers.current.set(type, handlers);
     });
-    logger.info('Подписка на уведомления активирована');
   }, []);
 
   const connect = useCallback(async (): Promise<void> => {
@@ -67,19 +66,16 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
       const newConnection = new WebSocket(wsUrl);
 
       newConnection.onopen = () => {
-        logger.info('WebSocket подключен');
         newConnection.send('{"protocol":"json","version":1}\x1e');
         setConnection(newConnection);
         setIsConnected(true);
         setIsConnecting(false);
       };
-      newConnection.onclose = (event) => {
-        logger.info('WebSocket соединение закрыто:', event);
+      newConnection.onclose = () => {
         setIsConnected(false);
         setConnection(null);
       };
-      newConnection.onerror = (error) => {
-        logger.error('Ошибка WebSocket:', error);
+      newConnection.onerror = () => {
         setError('Ошибка подключения к WebSocket');
         setIsConnecting(false);
       };
@@ -91,7 +87,6 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
 
           // Пропускаем пустые сообщения и handshake
           if (!cleanData || cleanData === '{}') {
-            logger.info('Handshake успешно завершен');
 
             return;
           }
@@ -164,9 +159,7 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
   // Автоматическое подключение при монтировании
   useEffect(() => {
     if (accessToken && !isConnected && !isConnecting) {
-      logger.info('Автоматическое подключение к WebSocket...');
-      connect().catch((error) => {
-        logger.error('Ошибка автоподключения к WebSocket:', error);
+      connect().catch(() => {
       });
     }
   }, [accessToken, isConnected, isConnecting, connect]);
@@ -183,9 +176,7 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
   // Логирование состояния подключения
   useEffect(() => {
     if (isConnected) {
-      logger.info('WebSocket подключен и готов к работе');
     } else if (error) {
-      logger.error('Ошибка WebSocket:', error);
     }
   }, [isConnected, error]);
 

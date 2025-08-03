@@ -22,10 +22,13 @@ export function UsersTable({
     roleFilter,
     onlineFilter,
     showAdvancedFilters,
-    currentPage,
+    currentPageNumber,
     pageSize,
     columnVisibility,
     totalPages,
+    totalCount,
+    hasNext,
+    hasPrevious,
     sortBy,
     sortOrder,
     setSearchTerm,
@@ -34,6 +37,9 @@ export function UsersTable({
     setOnlineFilter,
     setShowAdvancedFilters,
     handlePageChange,
+    handleNextPage,
+    handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleRoleFilterChange,
@@ -109,9 +115,15 @@ export function UsersTable({
       <UsersTablePagination
         paginatedUsers={paginatedUsers}
         filteredUsers={filteredUsers}
-        currentPage={currentPage}
+        currentPage={currentPageNumber}
         totalPages={totalPages}
+        totalCount={totalCount}
+        hasNext={hasNext}
+        hasPrevious={hasPrevious}
         handlePageChange={handlePageChange}
+        handleNextPage={handleNextPage}
+        handlePrevPage={handlePrevPage}
+        handleFirstPage={handleFirstPage}
       />
 
       {/* Модальное окно удаления */}

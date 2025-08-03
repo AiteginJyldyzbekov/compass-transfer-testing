@@ -382,8 +382,26 @@ export const usersApi = {
   // Получение списка водителей
   getDrivers: async (params?: {
     first?: boolean;
+    before?: string;
+    after?: string;
+    last?: boolean;
     size?: number;
+    vehicleServiceClass?: string[];
+    licenseCategories?: string[];
+    drivingExperience?: number;
+    drivingExperienceOp?: 'GreaterThan' | 'GreaterThanOrEqual' | 'Equal' | 'LessThanOrEqual' | 'LessThan';
+    preferredWorkZone?: string[];
+    languages?: string[];
+    email?: string;
+    emailOp?: 'Equals' | 'NotEquals' | 'Contains' | 'NotContains' | 'StartsWith' | 'EndsWith' | 'IsEmpty' | 'IsNotEmpty';
+    fullName?: string;
+    fullNameOp?: 'Equals' | 'NotEquals' | 'Contains' | 'NotContains' | 'StartsWith' | 'EndsWith' | 'IsEmpty' | 'IsNotEmpty';
+    phoneNumber?: string;
+    phoneNumberOp?: 'Equals' | 'NotEquals' | 'Contains' | 'NotContains' | 'StartsWith' | 'EndsWith' | 'IsEmpty' | 'IsNotEmpty';
     online?: boolean;
+    role?: string[];
+    sortBy?: string;
+    sortOrder?: 'Asc' | 'Desc';
   }): Promise<DriversApiResponse> => {
     const result = await apiGet<DriversApiResponse>('/User/Driver', { params });
 

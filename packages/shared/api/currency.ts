@@ -29,8 +29,8 @@ export const MAIN_CURRENCIES = [
 // Функция для получения курсов валют относительно сома
 export async function getCurrencyRates(): Promise<CurrencyData> {
   try {
-    // Получаем курсы относительно KGS (кыргызский сом)
-    const response = await fetch(`${CURRENCY_API_BASE}/KGS`);
+    // Получаем курсы относительно USD (доллар США)
+    const response = await fetch(`${CURRENCY_API_BASE}/USD`);
 
     if (!response.ok) {
       throw new Error('Ошибка получения курсов валют');
@@ -40,14 +40,38 @@ export async function getCurrencyRates(): Promise<CurrencyData> {
 
     // Обрабатываем данные для нужных валют
     const rates: CurrencyRate[] = MAIN_CURRENCIES.map(currency => {
-      const rate = data.rates[currency.code];
-      
-      return {
-        code: currency.code,
-        name: currency.name,
-        rate: rate ? parseFloat((1 / rate).toFixed(4)) : 0, // Инвертируем курс (сколько сомов за 1 единицу валюты)
-        flag: currency.flag,
-      };
+      if (currency.code === 'USD') {
+        // Для USD курс равен курсу KGS из ответа API
+        const kgsRate = data.rates['KGS'];
+        return {
+          code: currency.code,
+          name: currency.name,
+          rate: kgsRate || 0, // Сколько сомов за 1 доллар
+          flag: currency.flag,
+        };
+      } else {
+        // Для других валют нужно пересчитать через USD
+        const currencyToUsdRate = data.rates[currency.code];
+        const kgsToUsdRate = data.rates['KGS'];
+
+        if (currencyToUsdRate && kgsToUsdRate) {
+          // Сколько сомов за 1 единицу валюты = (KGS за USD) / (валюта за USD)
+          const rate = kgsToUsdRate / currencyToUsdRate;
+          return {
+            code: currency.code,
+            name: currency.name,
+            rate: rate,
+            flag: currency.flag,
+          };
+        } else {
+          return {
+            code: currency.code,
+            name: currency.name,
+            rate: 0,
+            flag: currency.flag,
+          };
+        }
+      }
     }).filter(rate => rate.rate > 0); // Убираем валюты без курса
 
     return {

@@ -50,7 +50,7 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
         setError(null);
 
         // Используем cursor-based пагинацию
-        const result: NotificationApiResponse = await notificationsApi.getNotifications({
+        const result: NotificationApiResponse = await notificationsApi.getMyNotifications({
           size: pageSize,
           after: append ? lastCursorRef.current : undefined,
         });

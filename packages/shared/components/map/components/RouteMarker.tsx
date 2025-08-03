@@ -2,11 +2,10 @@
 
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
-import type L from 'leaflet';
-import type { RoutePoint } from '../types';
-import type { GetLocationDTO } from '@entities/locations/interface';
 import { LocationType } from '@entities/locations/enums';
+import type { GetLocationDTO } from '@entities/locations/interface';
 import { createDriverIcon, createPinIcon, getColorByType } from '../icons';
+import type { RoutePoint } from '../types';
 
 interface RouteMarkerProps {
   point: RoutePoint;
@@ -59,11 +58,22 @@ export const RouteMarker: React.FC<RouteMarkerProps> = ({
   }
 
   // Для точек маршрута используем правильные буквы A, B, C...
-  // Считаем только точки маршрута (исключаем водителей) до текущего индекса
-  const routePointsBeforeIndex = routePoints
-    .slice(0, index)
-    .filter(p => p.type !== 'driver').length;
-  const label = String.fromCharCode(65 + routePointsBeforeIndex); // A, B, C ...
+  // Определяем букву на основе типа точки
+  let label: string;
+
+  if (point.type === 'start') {
+    label = 'A';
+  } else if (point.type === 'end') {
+    label = 'B';
+  } else {
+    // Для всех остальных типов (waypoint, intermediate, etc.) считаем по порядку
+    // Исключаем водителей и считаем только точки маршрута
+    const routePointsBeforeIndex = routePoints
+      .slice(0, index)
+      .filter(p => p.type !== 'driver').length;
+
+    label = String.fromCharCode(65 + routePointsBeforeIndex); // A, B, C ...
+  }
 
   const colorFill = getColorByType(point.type);
 

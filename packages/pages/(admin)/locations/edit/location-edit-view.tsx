@@ -135,8 +135,8 @@ function LocationEditFormView({
                     {/* Вертикальная линия */}
                     <div className='absolute -left-8 top-0 bottom-0 w-0.5 border-l-2 border-dashed border-gray-300' />
                     <LocationBasicSection
-                      showOptionalWarning={getChapterStatus('basic') === 'warning'}
                       labels={{
+                        name: 'Название локации *',
                         type: 'Тип локации *',
                       }}
                     />

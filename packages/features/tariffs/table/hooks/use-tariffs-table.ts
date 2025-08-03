@@ -52,9 +52,10 @@ export function useTariffsTable() {
   const [archivedFilter, setArchivedFilter] = useState<boolean | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Пагинация (cursor-based)
+  // Пагинация (cursor-based с историей)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
+  const [cursorsHistory, setCursorsHistory] = useState<(string | null)[]>([]);
 
   // Инициализируем pageSize из localStorage синхронно
   const [pageSize, setPageSize] = useState(() => {
@@ -256,6 +257,8 @@ export function useTariffsTable() {
     if (tariffs.length > 0) {
       const lastTariff = tariffs[tariffs.length - 1];
 
+      // Сохраняем текущий cursor в историю
+      setCursorsHistory(prev => [...prev, currentCursor]);
       setCurrentCursor(lastTariff.id);
       setIsFirstPage(false);
       setCurrentPageNumber(prev => prev + 1);
@@ -263,6 +266,20 @@ export function useTariffsTable() {
   };
 
   const handlePrevPage = () => {
+    if (cursorsHistory.length > 0) {
+      // Берем предыдущий cursor из истории
+      const newHistory = [...cursorsHistory];
+      const prevCursor = newHistory.pop();
+
+      setCursorsHistory(newHistory);
+      setCurrentCursor(prevCursor || null);
+      setIsFirstPage(prevCursor === null);
+      setCurrentPageNumber(prev => prev - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -270,6 +287,7 @@ export function useTariffsTable() {
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -305,6 +323,7 @@ export function useTariffsTable() {
 
   const handleServiceClassFilterChange = (classes: ServiceClass[]) => {
     setServiceClassFilter(classes);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -312,6 +331,7 @@ export function useTariffsTable() {
 
   const handleCarTypeFilterChange = (types: CarType[]) => {
     setCarTypeFilter(types);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -356,36 +376,42 @@ export function useTariffsTable() {
     // Сеттеры
     setSearchTerm: (term: string) => {
       setSearchTerm(term);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setNameFilter: (name: string) => {
       setNameFilter(name);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setBasePriceFromFilter: (price: string) => {
       setBasePriceFromFilter(price);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setBasePriceToFilter: (price: string) => {
       setBasePriceToFilter(price);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setMinutePriceFromFilter: (price: string) => {
       setMinutePriceFromFilter(price);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setMinutePriceToFilter: (price: string) => {
       setMinutePriceToFilter(price);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -393,6 +419,7 @@ export function useTariffsTable() {
     setArchivedFilter: useCallback((archived: boolean | null) => {
       // Обновляем состояние
       setArchivedFilter(archived);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -401,6 +428,7 @@ export function useTariffsTable() {
     // Функция для обработки изменения статуса
     handleArchivedFilterChange: useCallback((archived: boolean | null) => {
       setArchivedFilter(archived);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -411,6 +439,7 @@ export function useTariffsTable() {
     // Обработчики
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleSort,
     handleColumnVisibilityChange,

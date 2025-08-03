@@ -11,7 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
+import { useUserRole } from '@shared/contexts';
 import type { GetServiceDTO } from '@entities/services/interface/GetServiceDTO';
+import { Role } from '@entities/users/enums';
 
 interface ColumnVisibility {
   name: boolean;
@@ -69,7 +71,11 @@ export function ServicesTableContent({
   handleSort,
   onDeleteService,
 }: ServicesTableContentProps) {
+  const { userRole } = useUserRole();
 
+  // Проверяем, может ли пользователь редактировать и удалять услуги (все роли кроме Operator)
+  const canEditServices = userRole !== Role.Operator;
+  const canDeleteServices = userRole !== Role.Operator;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -159,17 +165,21 @@ export function ServicesTableContent({
                         <Eye className='mr-2 h-4 w-4' />
                         Просмотр
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(`/services/edit/${service.id}`)}>
-                        <Edit className='mr-2 h-4 w-4' />
-                        Редактировать
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className='text-red-600'
-                        onClick={() => onDeleteService(service)}
-                      >
-                        <Trash2 className='mr-2 h-4 w-4' />
-                        Удалить
-                      </DropdownMenuItem>
+                      {canEditServices && (
+                        <DropdownMenuItem onClick={() => router.push(`/services/edit/${service.id}`)}>
+                          <Edit className='mr-2 h-4 w-4' />
+                          Редактировать
+                        </DropdownMenuItem>
+                      )}
+                      {canDeleteServices && (
+                        <DropdownMenuItem
+                          className='text-red-600'
+                          onClick={() => onDeleteService(service)}
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          Удалить
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

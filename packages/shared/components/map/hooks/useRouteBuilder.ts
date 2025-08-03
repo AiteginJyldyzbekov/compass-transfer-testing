@@ -9,6 +9,7 @@ import type { RoutePoint } from '../types';
 export const useRouteBuilder = (showRoute: boolean, routePoints: RoutePoint[]) => {
   const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([]);
   const [routeDistance, setRouteDistance] = useState<number>(0); // в метрах
+  const [routeStatus, setRouteStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   // Мемоизируем точки с локациями для предотвращения лишних перерасчетов
   const validRoutePoints = useMemo(() => {
@@ -31,6 +32,7 @@ export const useRouteBuilder = (showRoute: boolean, routePoints: RoutePoint[]) =
     if (!showRoute || validRoutePoints.length < 2) {
       setRouteCoordinates([]);
       setRouteDistance(0);
+      setRouteStatus('idle');
 
       return;
     }
@@ -40,8 +42,9 @@ export const useRouteBuilder = (showRoute: boolean, routePoints: RoutePoint[]) =
 
     const buildRoute = async (signal: AbortSignal) => {
       try {
-        // Сразу очищаем старый маршрут
+        // Сразу очищаем старый маршрут и показываем загрузку
         setRouteCoordinates([]);
+        setRouteStatus('loading');
 
         // Используем улучшенный сервис роутинга
         const { routingService } = await import('../services/routingService');
@@ -52,18 +55,16 @@ export const useRouteBuilder = (showRoute: boolean, routePoints: RoutePoint[]) =
         if (!signal.aborted && !isCancelled) {
           setRouteCoordinates(routeResult.coordinates);
           setRouteDistance(routeResult.distance); // сохраняем расстояние в метрах
+          setRouteStatus('success');
         }
       } catch (error) {
-        console.warn('Ошибка построения маршрута:', error);
+        console.error('❌ Ошибка построения маршрута:', error);
 
         if (!signal.aborted && !isCancelled) {
-          // Fallback к простой линии только в случае ошибки всех API
-          const coordinates: [number, number][] = validRoutePoints.map(point => [
-            point.latitude,
-            point.longitude,
-          ]);
-
-          setRouteCoordinates(coordinates);
+          // НЕ ИСПОЛЬЗУЕМ ПРЯМУЮ ЛИНИЮ! Оставляем пустой маршрут при ошибке
+          setRouteCoordinates([]);
+          setRouteDistance(0);
+          setRouteStatus('error');
         }
       }
     };
@@ -76,5 +77,5 @@ export const useRouteBuilder = (showRoute: boolean, routePoints: RoutePoint[]) =
     };
   }, [showRoute, validRoutePoints, coordinatesKey]);
 
-  return { routeCoordinates, routeDistance };
+  return { routeCoordinates, routeDistance, routeStatus };
 };

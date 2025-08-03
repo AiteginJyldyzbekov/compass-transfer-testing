@@ -43,8 +43,29 @@ export function getOrderEditRoute(orderId: string, orderType: OrderType): string
 }
 
 /**
- * Получить маршрут для просмотра заказа
+ * Получить маршрут для просмотра заказа по типу
  */
-export function getOrderViewRoute(orderId: string): string {
+export function getOrderViewRoute(orderId: string, orderType: OrderType): string {
+  switch (orderType) {
+    case OrderType.Instant:
+      return `/orders/instant/${orderId}`;
+    case OrderType.Scheduled:
+      return `/orders/scheduled/${orderId}`;
+    case OrderType.Partner:
+      return `/orders/partner/${orderId}`;
+    case OrderType.Shuttle:
+      return `/orders/shuttle/${orderId}`;
+    case OrderType.Subscription:
+      return `/orders/subscription/${orderId}`;
+    case OrderType.Unknown:
+    default:
+      return `/orders/instant/${orderId}`; // Fallback на мгновенный заказ
+  }
+}
+
+/**
+ * Получить маршрут для просмотра заказа (legacy, без типа)
+ */
+export function getOrderViewRouteLegacy(orderId: string): string {
   return `/orders/${orderId}`;
 }

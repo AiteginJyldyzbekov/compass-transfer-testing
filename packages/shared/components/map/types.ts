@@ -53,7 +53,7 @@ export interface RoutePoint {
   latitude: number;
   longitude: number;
   name?: string;
-  type?: 'start' | 'end' | 'driver' | 'waypoint';
+  type?: 'start' | 'end' | 'driver' | 'waypoint' | 'intermediate';
   id?: string; // Добавляем опциональный ID для локаций
   heading?: number; // Направление движения для водителя
 }

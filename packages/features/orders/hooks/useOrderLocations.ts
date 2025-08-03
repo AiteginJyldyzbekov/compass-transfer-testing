@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import apiClient from '@shared/api/client';
 import { usersApi } from '@shared/api/users';
 import type { MapBounds } from '@shared/components/map/types';
@@ -39,7 +39,7 @@ interface UseOrderLocationsParams {
 
   onRouteChange?: (routePoints: RoutePoint[]) => void;
   onRoutePointsChange?: (startId: string, endId: string, points: RoutePoint[]) => void;
-  onRouteDistanceChange?: (distance: number) => void;
+  // onRouteDistanceChange убираем - не используется в этом хуке
 }
 
 interface Driver {
@@ -107,8 +107,7 @@ export const useOrderLocations = ({
   setExternalOpenDriverPopupId,
   // Колбэки
   onRouteChange,
-  onRoutePointsChange,
-  onRouteDistanceChange: _onRouteDistanceChange
+  onRoutePointsChange
 }: UseOrderLocationsParams): UseOrderLocationsResult => {
 
   // Состояния
@@ -118,6 +117,9 @@ export const useOrderLocations = ({
   const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
+
+  // Ref для отслеживания инициализации в режиме редактирования
+  const isInitializedRef = useRef(false);
 
   // Используем внешнее состояние если передано, иначе локальное
   const [localRoutePoints, setLocalRoutePoints] = useState<RoutePoint[]>([
@@ -156,12 +158,31 @@ export const useOrderLocations = ({
 
   // Загрузка ВСЕХ локаций для обоих режимов
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('🔄 useOrderLocations: Проверяем загрузку локаций:', {
+      mode,
+      startLocationId,
+      endLocationId,
+      additionalStopsLength: additionalStops?.length,
+      mapLocationsLength: mapLocations.length
+    });
+
     if (mode === 'edit' && (startLocationId || endLocationId || additionalStops?.length)) {
+      // eslint-disable-next-line no-console
+      console.log('🔄 useOrderLocations: Загружаем локации для режима edit');
+
       fetchAllLocations().then(locations => {
+        // eslint-disable-next-line no-console
+        console.log('✅ useOrderLocations: Локации загружены:', locations.length);
         setMapLocations(locations);
       });
     } else if (mode === 'create') {
+      // eslint-disable-next-line no-console
+      console.log('🔄 useOrderLocations: Загружаем локации для режима create');
+
       fetchAllLocations().then(locations => {
+        // eslint-disable-next-line no-console
+        console.log('✅ useOrderLocations: Локации загружены:', locations.length);
         setMapLocations(locations);
       });
     }
@@ -225,9 +246,17 @@ export const useOrderLocations = ({
     fetchDrivers();
   }, []);
 
-  // Формируем точки маршрута из загруженных локаций (в режиме редактирования)
+  // Инициализируем точки маршрута ОДИН РАЗ при загрузке данных в режиме редактирования
   useEffect(() => {
-    if (mode === 'edit' && mapLocations.length > 0) {
+    if (mode === 'edit' && mapLocations.length > 0 && !isInitializedRef.current) {
+      // eslint-disable-next-line no-console
+      console.log('🔄 Инициализируем routePoints в режиме edit', {
+        startLocationId,
+        endLocationId,
+        additionalStops
+      });
+
+      // Создаем базовые точки
       const newRoutePoints: RoutePoint[] = [
         { id: '1', location: null, type: 'start', label: 'Откуда' },
         { id: '2', location: null, type: 'end', label: 'Куда' },
@@ -271,8 +300,44 @@ export const useOrderLocations = ({
       }
 
       setRoutePoints(newRoutePoints);
+      isInitializedRef.current = true; // Помечаем как инициализированное
     }
   }, [mode, mapLocations, startLocationId, endLocationId, additionalStops, setRoutePoints]);
+
+  // Сбрасываем флаг инициализации только при смене режима
+  useEffect(() => {
+    if (mode !== 'edit') {
+      isInitializedRef.current = false;
+    }
+  }, [mode]);
+
+  // УБИРАЕМ проблемный useEffect для обновления additionalStops
+  // Полагаемся только на первичную инициализацию в основном useEffect выше
+
+  // Синхронизируем изменения routePoints с родительским компонентом
+  useEffect(() => {
+    if (mode === 'edit' && onRoutePointsChange && routePoints.length > 0) {
+      const startPoint = routePoints.find(p => p.type === 'start');
+      const endPoint = routePoints.find(p => p.type === 'end');
+      const intermediatePoints = routePoints.filter(p => p.type === 'intermediate' && p.location);
+
+      // Отладочная информация только при изменении промежуточных точек
+      if (intermediatePoints.length > 0) {
+        // eslint-disable-next-line no-console
+        console.log('🔄 Синхронизация routePoints с родителем (есть промежуточные):', {
+          startId: startPoint?.location?.id,
+          endId: endPoint?.location?.id,
+          intermediateCount: intermediatePoints.length,
+          intermediateIds: intermediatePoints.map(p => p.location?.id),
+          totalPoints: routePoints.length
+        });
+      }
+
+      if (startPoint?.location && endPoint?.location) {
+        onRoutePointsChange(startPoint.location.id, endPoint.location.id, routePoints);
+      }
+    }
+  }, [mode, routePoints, onRoutePointsChange]);
 
   // Готовность определяется наличием локаций в режиме редактирования
   const isReady = useMemo(() => {

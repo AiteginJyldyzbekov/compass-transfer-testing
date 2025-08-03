@@ -1,7 +1,7 @@
 'use client';
 
-import { Navigation, Plus } from 'lucide-react';
-import { useMemo } from 'react';
+import { Navigation, Plus, AlertTriangle } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
 import { LeafletMap } from '@shared/components/map';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout/card';
@@ -47,6 +47,10 @@ interface MapTabProps {
   selectedDriver?: Driver | null;
   setSelectedDriver?: (driver: Driver | null) => void;
   dynamicMapCenter?: { latitude: number; longitude: number } | null;
+
+  // Для моментальных заказов - показывать радиус водителей
+  showDriverRadius?: boolean;
+  isInstantOrder?: boolean; // Флаг для моментальных заказов
   setDynamicMapCenter?: (center: { latitude: number; longitude: number } | null) => void;
   openDriverPopupId?: string | null;
   setOpenDriverPopupId?: (id: string | null) => void;
@@ -55,6 +59,7 @@ interface MapTabProps {
   onRouteChange?: (routePoints: RoutePoint[]) => void;
   onRoutePointsChange?: (startId: string, endId: string, points: RoutePoint[]) => void;
   onRouteDistanceChange?: (distance: number) => void;
+  onRouteLoadingChange?: (loading: boolean) => void; // Новый колбэк для состояния загрузки
 }
 
 export function MapTab({
@@ -68,6 +73,8 @@ export function MapTab({
   setRoutePoints: setExternalRoutePoints,
   selectedDriver: externalSelectedDriver,
   setSelectedDriver: setExternalSelectedDriver,
+  showDriverRadius = false,
+  isInstantOrder = false,
   dynamicMapCenter: externalDynamicMapCenter,
   setDynamicMapCenter: setExternalDynamicMapCenter,
   openDriverPopupId: externalOpenDriverPopupId,
@@ -76,7 +83,26 @@ export function MapTab({
   onRouteChange,
   onRoutePointsChange,
   onRouteDistanceChange,
+  onRouteLoadingChange,
 }: MapTabProps) {
+  // Состояние для отслеживания ошибки маршрута и загрузки
+  const [routeError, setRouteError] = useState(false);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeDistance, setRouteDistance] = useState<number>(0);
+
+  // Обработчик изменения расстояния маршрута
+  const handleRouteDistanceChange = (distance: number) => {
+    setRouteDistance(distance);
+
+    // Если расстояние 0, значит произошла ошибка построения маршрута
+    setRouteError(distance === 0 && routePoints.length >= 2);
+
+    // Передаем дальше
+    if (onRouteDistanceChange) {
+      onRouteDistanceChange(distance);
+    }
+  };
+
   // ВСЯ ЛОГИКА В ХУКЕ!
   const {
     routePoints,
@@ -120,12 +146,40 @@ export function MapTab({
     // Колбэки
     onRouteChange,
     onRoutePointsChange,
-    onRouteDistanceChange,
+    // onRouteDistanceChange НЕ передаем в useOrderLocations - он не используется там
   });
+
+  // Отслеживаем изменения точек маршрута для управления состоянием загрузки
+  useEffect(() => {
+    if (routePoints.length < 2) {
+      setRouteError(false);
+      setRouteLoading(false);
+      setRouteDistance(0);
+    } else {
+      // Если есть минимум 2 точки, начинаем загрузку маршрута
+      setRouteLoading(true);
+      setRouteError(false);
+    }
+  }, [routePoints.length]);
+
+  // Отслеживаем получение расстояния для завершения загрузки
+  useEffect(() => {
+    if (routeDistance > 0) {
+      setRouteLoading(false);
+    }
+  }, [routeDistance]);
+
+  // Передаем состояние загрузки в родительский компонент
+  useEffect(() => {
+    if (onRouteLoadingChange) {
+      onRouteLoadingChange(routeLoading);
+    }
+  }, [routeLoading, onRouteLoadingChange]);
 
   // Преобразуем точки маршрута для карты с мемоизацией
   const mapRoutePoints = useMemo(() => {
-    return routePoints
+
+    const validPoints = routePoints
       .filter(
         (point: RoutePoint) =>
           point.location &&
@@ -139,6 +193,8 @@ export function MapTab({
         type: point.type === 'start' ? 'start' : point.type === 'end' ? 'end' : 'waypoint',
         id: point.location!.id,
       }));
+
+    return validPoints;
   }, [routePoints]);
 
   // Показываем индикатор загрузки
@@ -182,8 +238,8 @@ export function MapTab({
                 ))}
               </div>
 
-              {/* Добавить промежуточную точку */}
-              {routePoints.length < 5 && (
+              {/* Добавить промежуточную точку - только для обычных заказов */}
+              {!isInstantOrder && routePoints.length < 5 && (
                 <Button variant='outline' onClick={() => addIntermediatePoint()} className='w-full'>
                   <Plus className='h-4 w-4 mr-2' />
                   Добавить остановку
@@ -198,6 +254,18 @@ export function MapTab({
       <div className='flex-[2] w-full lg:w-1/2 relative'>
         <Card className='h-full'>
           <CardContent className='h-full p-4'>
+            {/* Уведомление об ошибке маршрута */}
+            {routeError && (
+              <div className='mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2'>
+                <AlertTriangle className='h-4 w-4 text-red-600' />
+                <div className='text-sm text-red-800'>
+                  <strong>Ошибка построения маршрута</strong>
+                  <p className='text-xs text-red-600 mt-1'>
+                    Не удалось построить маршрут по дорогам. Проверьте доступность API роутинга.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className='h-96 lg:h-full rounded-lg overflow-hidden'>
               <LeafletMap
                 latitude={mapCenter.latitude}
@@ -213,14 +281,17 @@ export function MapTab({
                   .map((p: RoutePoint) => p.location!.id)}
                 onLocationToggle={handleLocationToggle}
                 canSelectLocation={canSelectLocation}
-                onDriverSelect={handleDriverSelect}
+                onDriverSelect={isInstantOrder ? undefined : handleDriverSelect}
                 selectedDriverId={selectedDriver?.id}
                 openDriverPopupId={openDriverPopupId}
                 dynamicCenter={dynamicMapCenter}
-                onRouteDistanceChange={onRouteDistanceChange}
+                onRouteDistanceChange={handleRouteDistanceChange}
                 activeDrivers={drivers}
                 getDriverById={getDriverById}
                 loadDriverData={loadDriverData}
+                // Для моментальных заказов показываем радиус поиска водителей
+                showDriverSearchZone={showDriverRadius}
+                driverSearchRadius={1000} // 1 км радиус для каждого водителя
               />
             </div>
           </CardContent>
@@ -232,6 +303,7 @@ export function MapTab({
           onClose={() => handleDriverSelect(null)}
           activeDrivers={drivers}
           getDriverById={(id: string) => allDrivers.find((d: Driver) => d.id === id) || null}
+          isInstantOrder={isInstantOrder}
         />
       </div>
 

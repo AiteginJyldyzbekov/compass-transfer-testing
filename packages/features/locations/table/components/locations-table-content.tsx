@@ -11,8 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
+import { useUserRole } from '@shared/contexts';
 import type { LocationDTO } from '@entities/locations/interface/LocationDTO';
 import { LocationType, LocationTypeLabels, locationTypeIcons } from '@entities/locations/enums';
+import { Role } from '@entities/users/enums';
 
 interface ColumnVisibility {
   type: boolean;
@@ -76,7 +78,11 @@ export function LocationsTableContent({
   handleSort,
   onDeleteLocation,
 }: LocationsTableContentProps) {
+  const { userRole } = useUserRole();
 
+  // Проверяем, может ли пользователь редактировать и удалять локации (все роли кроме Operator)
+  const canEditLocations = userRole !== Role.Operator;
+  const canDeleteLocations = userRole !== Role.Operator;
 
   const formatCoordinates = (lat: number, lng: number) => {
     return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
@@ -173,21 +179,25 @@ export function LocationsTableContent({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
-                      <DropdownMenuItem onClick={() => router.push(`/locations/${location.id}`)}>
+                      <DropdownMenuItem onClick={() => router.push(`/locations/view?id=${location.id}`)}>
                         <Eye className='mr-2 h-4 w-4' />
                         Просмотр
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(`/locations/edit/${location.id}`)}>
-                        <Edit className='mr-2 h-4 w-4' />
-                        Редактировать
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className='text-red-600'
-                        onClick={() => onDeleteLocation(location)}
-                      >
-                        <Trash2 className='mr-2 h-4 w-4' />
-                        Удалить
-                      </DropdownMenuItem>
+                      {canEditLocations && (
+                        <DropdownMenuItem onClick={() => router.push(`/locations/edit/${location.id}`)}>
+                          <Edit className='mr-2 h-4 w-4' />
+                          Редактировать
+                        </DropdownMenuItem>
+                      )}
+                      {canDeleteLocations && (
+                        <DropdownMenuItem
+                          className='text-red-600'
+                          onClick={() => onDeleteLocation(location)}
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          Удалить
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -67,10 +67,11 @@ export function useOrdersTable(initialFilters?: {
   const [flyReisFilter, setFlyReisFilter] = useState(initialFilters?.flyReis || '');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Пагинация (cursor-based)
+  // Пагинация (cursor-based с историей)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [cursorsHistory, setCursorsHistory] = useState<(string | null)[]>([]);
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('orders-page-size');
@@ -167,6 +168,7 @@ export function useOrdersTable(initialFilters?: {
 
     // Сбрасываем пагинацию при изменении фильтров
     if (filtersChanged) {
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -302,6 +304,8 @@ export function useOrdersTable(initialFilters?: {
     if (orders.length > 0) {
       const lastOrder = orders[orders.length - 1];
 
+      // Сохраняем текущий cursor в историю
+      setCursorsHistory(prev => [...prev, currentCursor]);
       setCurrentCursor(lastOrder.id);
       setIsFirstPage(false);
       setCurrentPageNumber(prev => prev + 1);
@@ -309,6 +313,20 @@ export function useOrdersTable(initialFilters?: {
   };
 
   const handlePrevPage = () => {
+    if (cursorsHistory.length > 0) {
+      // Берем предыдущий cursor из истории
+      const newHistory = [...cursorsHistory];
+      const prevCursor = newHistory.pop();
+
+      setCursorsHistory(newHistory);
+      setCurrentCursor(prevCursor || null);
+      setIsFirstPage(prevCursor === null);
+      setCurrentPageNumber(prev => prev - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -316,6 +334,7 @@ export function useOrdersTable(initialFilters?: {
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -348,6 +367,7 @@ export function useOrdersTable(initialFilters?: {
 
   const handleTypeFilterChange = (types: OrderType[]) => {
     setTypeFilter(types);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -355,6 +375,7 @@ export function useOrdersTable(initialFilters?: {
 
   const handleStatusFilterChange = (statuses: OrderStatus[]) => {
     setStatusFilter(statuses);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -362,6 +383,7 @@ export function useOrdersTable(initialFilters?: {
 
   const handleSubStatusFilterChange = (subStatuses: OrderSubStatus[]) => {
     setSubStatusFilter(subStatuses);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -405,30 +427,35 @@ export function useOrdersTable(initialFilters?: {
     // Сеттеры
     setSearchTerm: (term: string) => {
       setSearchTerm(term);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setOrderNumberFilter: (orderNumber: string) => {
       setOrderNumberFilter(orderNumber);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setCreatorIdFilter: (creatorId: string) => {
       setCreatorIdFilter(creatorId);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setAirFlightFilter: (airFlight: string) => {
       setAirFlightFilter(airFlight);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setFlyReisFilter: (flyReis: string) => {
       setFlyReisFilter(flyReis);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -438,6 +465,7 @@ export function useOrdersTable(initialFilters?: {
     // Обработчики
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleSort,
     handleColumnVisibilityChange,

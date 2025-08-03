@@ -54,12 +54,12 @@ export function OrdersStats({ className, activeStatus }: OrderStatsProps) {
   // Функция для получения цвета обводки активного статуса
   const getActiveRingColor = (status: keyof OrderStatsResponse) => {
     const ringColors = {
-      pending: 'ring-yellow-400',
-      scheduled: 'ring-blue-400',
-      inProgress: 'ring-green-400',
-      completed: 'ring-emerald-400',
-      cancelled: 'ring-red-400',
-      expired: 'ring-orange-400',
+      pending: 'ring-1 ring-yellow-400',
+      scheduled: 'ring-1 ring-blue-400',
+      inProgress: 'ring-1 ring-green-400',
+      completed: 'ring-1 ring-emerald-400',
+      cancelled: 'ring-1 ring-red-400',
+      expired: 'ring-1 ring-orange-400',
     };
     
     return ringColors[status];
@@ -108,13 +108,13 @@ export function OrdersStats({ className, activeStatus }: OrderStatsProps) {
           key={status}
           onClick={() => handleStatClick(status)}
           className={`
-            flex flex-col items-center justify-center border rounded-lg p-1 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-105
+            flex flex-row items-center justify-start gap-2 border rounded-lg p-1 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-105
             ${orderStatsColors[status]}
             ${isActiveStatus(status) ? `ring-4 ${getActiveRingColor(status)} ring-offset-2 shadow-xl` : ''}
             ${status === 'expired' && stats[status] > 0 ? 'animate-pulse [animation-duration:3s]' : ''}
           `}
         >
-          <div className="flex items-center justify-center w-12 h-12 border border-current rounded-full mb-2">
+          <div className="flex items-center justify-center w-8 h-8 border border-gray-400 border-current rounded-full">
             <span className="text-lg font-bold">
               {stats[status].toLocaleString('ru-RU')}
             </span>

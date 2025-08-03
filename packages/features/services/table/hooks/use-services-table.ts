@@ -44,9 +44,10 @@ export function useServicesTable() {
   });
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Пагинация (cursor-based)
+  // Пагинация (cursor-based с историей)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
+  const [cursorsHistory, setCursorsHistory] = useState<(string | null)[]>([]);
 
   // Инициализируем pageSize из localStorage синхронно
   const [pageSize, setPageSize] = useState(() => {
@@ -176,6 +177,7 @@ export function useServicesTable() {
     // Используем внутреннюю функцию состояния, чтобы не вызывать обновление URL
     if (newQuantifiableFilter !== isQuantifiableFilter) {
       setIsQuantifiableFilter(newQuantifiableFilter);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
     }
@@ -213,6 +215,9 @@ export function useServicesTable() {
   const handleNextPage = () => {
     if (services.length > 0) {
       const lastService = services[services.length - 1];
+
+      // Сохраняем текущий cursor в историю
+      setCursorsHistory(prev => [...prev, currentCursor]);
       setCurrentCursor(lastService.id);
       setIsFirstPage(false);
       setCurrentPageNumber(prev => prev + 1);
@@ -220,6 +225,20 @@ export function useServicesTable() {
   };
 
   const handlePrevPage = () => {
+    if (cursorsHistory.length > 0) {
+      // Берем предыдущий cursor из истории
+      const newHistory = [...cursorsHistory];
+      const prevCursor = newHistory.pop();
+
+      setCursorsHistory(newHistory);
+      setCurrentCursor(prevCursor || null);
+      setIsFirstPage(prevCursor === null);
+      setCurrentPageNumber(prev => prev - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -227,6 +246,7 @@ export function useServicesTable() {
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -297,30 +317,35 @@ export function useServicesTable() {
     // Сеттеры
     setSearchTerm: (term: string) => {
       setSearchTerm(term);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setNameFilter: (name: string) => {
       setNameFilter(name);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setPriceFromFilter: (price: string) => {
       setPriceFromFilter(price);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setPriceToFilter: (price: string) => {
       setPriceToFilter(price);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setIsQuantifiableFilter: (isQuantifiable: boolean | null) => {
       setIsQuantifiableFilter(isQuantifiable);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -341,6 +366,7 @@ export function useServicesTable() {
       const newURL = params.toString() ? `/services?${params.toString()}` : '/services';
       router.push(newURL);
 
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -350,6 +376,7 @@ export function useServicesTable() {
     // Обработчики
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleSort,
     handleColumnVisibilityChange,

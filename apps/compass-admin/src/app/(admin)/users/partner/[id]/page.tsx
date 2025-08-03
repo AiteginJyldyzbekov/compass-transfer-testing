@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PartnerPageProps) {
   const { id } = await params;
 
   return {
-    title: `Партнер ${id} | Compass Admin`,
-    description: 'Просмотр информации о партнере',
+    title: `Контр-агент ${id} | Compass Admin`,
+    description: 'Просмотр информации о Контр-агент',
   };
 }

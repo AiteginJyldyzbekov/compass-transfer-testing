@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft } from 'lucide-react';
 import { Button } from '@shared/ui/forms/button';
 import type { GetCarDTO } from '@entities/cars/interface';
 
@@ -13,6 +13,7 @@ interface CarsTablePaginationProps {
   currentPageNumber: number;
   handleNextPage: () => void;
   handlePrevPage: () => void;
+  handleFirstPage: () => void;
 }
 
 export function CarsTablePagination({
@@ -24,6 +25,7 @@ export function CarsTablePagination({
   currentPageNumber,
   handleNextPage,
   handlePrevPage,
+  handleFirstPage,
 }: CarsTablePaginationProps) {
   // Вычисляем общее количество страниц
   const totalPagesCalculated = Math.ceil(totalCount / pageSize);
@@ -35,6 +37,17 @@ export function CarsTablePagination({
       </div>
 
       <div className='flex items-center space-x-2'>
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={handleFirstPage}
+          disabled={currentPageNumber === 1}
+          className='h-8 px-2'
+          title='В начало'
+        >
+          <ChevronsLeft className='h-4 w-4' />
+        </Button>
+
         <Button
           variant='outline'
           size='sm'

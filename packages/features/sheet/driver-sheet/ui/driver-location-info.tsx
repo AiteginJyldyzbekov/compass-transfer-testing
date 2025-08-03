@@ -26,16 +26,16 @@ export function DriverLocationInfo({ driver }: DriverLocationInfoProps) {
   }] : [];
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-4 h-full'>
       <h3 className='text-lg font-semibold'>Расположение на карте</h3>
 
       {hasLocation ? (
-        <div className='rounded-lg border overflow-hidden'>
+        <div className='rounded-lg border overflow-hidden h-full'>
           <LeafletMap
             latitude={driver.currentLocation!.latitude}
             longitude={driver.currentLocation!.longitude}
             zoom={15}
-            height='300px'
+            height='70%'
             width='100%'
             showMarker={false}
             activeDrivers={activeDrivers}

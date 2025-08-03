@@ -59,10 +59,11 @@ export function useLocationsTable() {
   const [popular1Filter, setPopular1Filter] = useState<boolean | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Пагинация (cursor-based)
+  // Пагинация (cursor-based с историей)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [currentPageNumber, setCurrentPageNumber] = useState(1); // Отслеживаем номер страницы
+  const [cursorsHistory, setCursorsHistory] = useState<(string | null)[]>([]);
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('locations-page-size');
@@ -279,6 +280,9 @@ export function useLocationsTable() {
   const handleNextPage = () => {
     if (locations.length > 0) {
       const lastLocation = locations[locations.length - 1];
+
+      // Сохраняем текущий cursor в историю
+      setCursorsHistory(prev => [...prev, currentCursor]);
       setCurrentCursor(lastLocation.id);
       setIsFirstPage(false);
       setCurrentPageNumber(prev => prev + 1);
@@ -286,6 +290,20 @@ export function useLocationsTable() {
   };
 
   const handlePrevPage = () => {
+    if (cursorsHistory.length > 0) {
+      // Берем предыдущий cursor из истории
+      const newHistory = [...cursorsHistory];
+      const prevCursor = newHistory.pop();
+
+      setCursorsHistory(newHistory);
+      setCurrentCursor(prevCursor || null);
+      setIsFirstPage(prevCursor === null);
+      setCurrentPageNumber(prev => prev - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -293,6 +311,7 @@ export function useLocationsTable() {
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -433,6 +452,7 @@ export function useLocationsTable() {
     // Обработчики
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleSort,
     handleColumnVisibilityChange,

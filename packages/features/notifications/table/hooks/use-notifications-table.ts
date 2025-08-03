@@ -49,10 +49,11 @@ export function useNotificationsTable() {
   const [userIdFilter, setUserIdFilter] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Пагинация (cursor-based)
+  // Пагинация (cursor-based с историей)
   const [currentCursor, setCurrentCursor] = useState<string | null>(null);
   const [isFirstPage, setIsFirstPage] = useState(true);
   const [currentPageNumber, setCurrentPageNumber] = useState(1); // Отслеживаем номер страницы
+  const [cursorsHistory, setCursorsHistory] = useState<(string | null)[]>([]);
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('notifications-page-size');
@@ -210,6 +211,8 @@ export function useNotificationsTable() {
     if (notifications.length > 0) {
       const lastNotification = notifications[notifications.length - 1];
 
+      // Сохраняем текущий cursor в историю
+      setCursorsHistory(prev => [...prev, currentCursor]);
       setCurrentCursor(lastNotification.id);
       setIsFirstPage(false);
       setCurrentPageNumber(prev => prev + 1);
@@ -217,6 +220,20 @@ export function useNotificationsTable() {
   };
 
   const handlePrevPage = () => {
+    if (cursorsHistory.length > 0) {
+      // Берем предыдущий cursor из истории
+      const newHistory = [...cursorsHistory];
+      const prevCursor = newHistory.pop();
+
+      setCursorsHistory(newHistory);
+      setCurrentCursor(prevCursor || null);
+      setIsFirstPage(prevCursor === null);
+      setCurrentPageNumber(prev => prev - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -227,6 +244,7 @@ export function useNotificationsTable() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('notifications-page-size', size.toString());
     }
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -254,6 +272,7 @@ export function useNotificationsTable() {
 
   const handleTypeFilterChange = (types: NotificationType[]) => {
     setTypeFilter(types);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -261,6 +280,7 @@ export function useNotificationsTable() {
 
   const handleOrderTypeFilterChange = (orderTypes: OrderType[]) => {
     setOrderTypeFilter(orderTypes);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -268,6 +288,7 @@ export function useNotificationsTable() {
 
   const toggleMyNotifications = () => {
     setShowMyNotifications(prev => !prev);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -292,6 +313,7 @@ export function useNotificationsTable() {
   const handleIsReadFilterChange = useCallback((value: boolean | null) => {
     setIsReadFilter(value);
     updateURL(value);
+    setCursorsHistory([]);
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
@@ -334,12 +356,14 @@ export function useNotificationsTable() {
     // Сеттеры
     setSearchTerm: (term: string) => {
       setSearchTerm(term);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     },
     setContentFilter: (content: string) => {
       setContentFilter(content);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -347,6 +371,7 @@ export function useNotificationsTable() {
     setIsReadFilter: handleIsReadFilterChange,
     setUserIdFilter: (userId: string) => {
       setUserIdFilter(userId);
+      setCursorsHistory([]);
       setCurrentCursor(null);
       setIsFirstPage(true);
       setCurrentPageNumber(1);
@@ -356,6 +381,7 @@ export function useNotificationsTable() {
     // Обработчики
     handleNextPage,
     handlePrevPage,
+    handleFirstPage,
     handlePageSizeChange,
     handleSort,
     handleColumnVisibilityChange,

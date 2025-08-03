@@ -7,18 +7,7 @@ import { Badge } from '@shared/ui/data-display/badge';
 import { Button } from '@shared/ui/forms/button';
 import { Input } from '@shared/ui/forms/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout/card';
-import { CarType, CarTypeValues } from '@entities/tariffs/enums/CarType.enum';
-
-// Маппинг вместимости по типам автомобилей
-const CAR_TYPE_CAPACITY: Record<CarType, number> = {
-  [CarType.Sedan]: 4,
-  [CarType.Hatchback]: 4,
-  [CarType.SUV]: 5,
-  [CarType.Minivan]: 8,
-  [CarType.Coupe]: 2,
-  [CarType.Cargo]: 2,
-  [CarType.Pickup]: 3,
-};
+import { CarType, CarTypeValues, CAR_TYPE_CAPACITY } from '@entities/tariffs/enums/CarType.enum';
 
 interface Passenger {
   id: string;
@@ -70,10 +59,12 @@ interface PassengersTabProps {
   passengers?: Passenger[];
   handlePassengersChange?: (passengers: Passenger[]) => void;
   selectedTariff?: SelectedTariff; // Выбранный тариф для определения вместимости
+  isInstantOrder?: boolean; // Флаг для моментальных заказов
+  onValidationError?: () => void; // Колбэк для обработки ошибок валидации
   [key: string]: unknown;
 }
 
-export function PassengersTab({ users, passengers: initialPassengers, handlePassengersChange, selectedTariff }: PassengersTabProps) {
+export function PassengersTab({ users, passengers: initialPassengers, handlePassengersChange, selectedTariff, isInstantOrder = false, onValidationError }: PassengersTabProps) {
   const [passengers, setPassengers] = useState<EnhancedPassenger[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
   const [isLoadingPassengerData, setIsLoadingPassengerData] = useState(false);
@@ -94,8 +85,31 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
   useLayoutEffect(() => {
     const loadPassengersData = async () => {
       if (!initialPassengers || initialPassengers.length === 0) {
+        // Для моментальных заказов автоматически создаем пассажира по умолчанию
+        if (isInstantOrder) {
+          const defaultPassenger: EnhancedPassenger = {
+            id: `passenger-${Date.now()}`,
+            firstName: '',
+            lastName: '',
+            phone: '',
+            email: '',
+            isMainPassenger: true,
+            isFromSystem: false,
+            customerId: null,
+            userData: null,
+            isUserDataLoaded: true
+          };
+
+          setPassengers([defaultPassenger]);
+
+          // Уведомляем родительский компонент о создании пассажира
+          if (handlePassengersChange) {
+            handlePassengersChange([defaultPassenger]);
+          }
+        }
+
         setPassengersDataLoaded(true);
-        
+
         return;
       }
 
@@ -363,7 +377,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                   </h3>
                   <div className='flex items-center justify-center gap-2 mt-2'>
                     <Badge variant={selectedCustomer.role === 'Partner' ? 'default' : 'secondary'}>
-                      {selectedCustomer.role === 'Partner' ? 'Партнер' : 'Клиент'}
+                      {selectedCustomer.role === 'Partner' ? 'Контр-агент' : 'Клиент'}
                     </Badge>
                     <Badge variant='outline'>Основной пассажир</Badge>
                   </div>
@@ -560,7 +574,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                             variant={user.role === 'Partner' ? 'default' : 'secondary'}
                             className='text-xs'
                           >
-                            {user.role === 'Partner' ? 'Партнер' : 'Клиент'}
+                            {user.role === 'Partner' ? 'Контр-агент' : 'Клиент'}
                           </Badge>
                         </div>
 

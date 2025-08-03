@@ -169,9 +169,6 @@ export function CurrencyWidget() {
                     <div className="text-xs opacity-70">
                       Последнее обновление: {currencyData.lastUpdated}
                     </div>
-                    <div className="text-xs opacity-60 mt-1">
-                      Данные предоставлены ExchangeRate-API
-                    </div>
                   </div>
                 </div>
 
@@ -186,14 +183,6 @@ export function CurrencyWidget() {
                         className="text-green-100 hover:text-white transition-colors"
                       >
                         НБКР
-                      </a>
-                      <a
-                        href="https://www.exchangerate-api.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-100 hover:text-white transition-colors"
-                      >
-                        API
                       </a>
                     </div>
                     <div className="text-green-200">

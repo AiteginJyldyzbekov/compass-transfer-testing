@@ -1,1 +1,1 @@
-export * from './location-map';
+export * from './leaflet-location-map'
