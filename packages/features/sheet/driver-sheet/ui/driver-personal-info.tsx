@@ -64,8 +64,7 @@ export function DriverPersonalInfo({ driver }: DriverPersonalInfoProps) {
           )}
         </div>
       </div>
-
-      {/* Дополнительная информация */}
+      
       {(driver.profile.workExperience?.length || driver.profile.education?.length || driver.profile.testScore?.length) && (
         <div className='p-4 rounded-lg border bg-gray-50 border-gray-200'>
           <h4 className='font-medium text-foreground mb-3'>Дополнительная информация</h4>

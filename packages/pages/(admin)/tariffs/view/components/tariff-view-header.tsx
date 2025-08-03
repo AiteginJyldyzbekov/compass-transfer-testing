@@ -73,15 +73,6 @@ export function TariffViewHeader({ tariff }: TariffViewHeaderProps) {
             </div>
           </div>
 
-          {/* Статус архивирования */}
-          <div className='flex flex-col gap-2'>
-            {tariff.archived && (
-              <Badge variant='outline' className='text-xs bg-gray-50 text-gray-600 border-gray-200'>
-                <Archive className='w-3 h-3 mr-1' />
-                Архив
-              </Badge>
-            )}
-          </div>
         </div>
       </CardContent>
     </Card>

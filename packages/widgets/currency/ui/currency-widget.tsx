@@ -1,6 +1,6 @@
 'use client';
 
-import { DollarSign, TrendingUp, TrendingDown, RefreshCw, Calculator } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, RefreshCw, Calculator, Edit3 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import {
   getCurrencyRatesWithHistory,
@@ -16,10 +16,12 @@ import {
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
 import { CurrencyCalculatorModal } from './currency-calculator-modal';
+import { CurrencyEditModal } from './currency-edit-modal';
 
 export function CurrencyWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currencyData, setCurrencyData] = useState<CurrencyData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function CurrencyWidget() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const data = await getCurrencyRatesWithHistory();
 
       setCurrencyData(data);
@@ -38,6 +40,16 @@ export function CurrencyWidget() {
       setIsLoading(false);
     }
   }, []);
+
+  const handleSaveEditedRates = useCallback((updatedRates: any[]) => {
+    if (currencyData) {
+      setCurrencyData({
+        ...currencyData,
+        rates: updatedRates,
+        lastUpdated: new Date().toLocaleString('ru-RU')
+      });
+    }
+  }, [currencyData]);
 
   // Загружаем курсы сразу при монтировании компонента
   useEffect(() => {
@@ -75,6 +87,18 @@ export function CurrencyWidget() {
                 <span className="font-medium">Курсы валют</span>
               </div>
               <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditModalOpen(true);
+                    setIsOpen(false); // Закрываем dropdown при открытии редактора
+                  }}
+                  className="h-8 w-8 p-0 text-white hover:bg-white/20"
+                  title="Редактировать курсы"
+                >
+                  <Edit3 className="h-3 w-3" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -202,6 +226,14 @@ export function CurrencyWidget() {
       isOpen={isCalculatorOpen}
       onClose={() => setIsCalculatorOpen(false)}
       currencyData={currencyData}
+    />
+
+    {/* Модальное окно редактирования курсов */}
+    <CurrencyEditModal
+      isOpen={isEditModalOpen}
+      onClose={() => setIsEditModalOpen(false)}
+      currencyData={currencyData}
+      onSave={handleSaveEditedRates}
     />
   </>
   );

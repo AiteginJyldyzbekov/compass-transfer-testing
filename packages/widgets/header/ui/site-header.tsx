@@ -35,38 +35,43 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/navigation/dropdown-menu';
-import { notifications, type Notification } from '@entities/notification';
+import { useNotificationContext } from '@entities/notifications/context';
+import { NotificationTypeLabels } from '@entities/notifications/config/notification-type-labels';
+import type { GetNotificationDTO } from '@shared/api/notifications';
 import { CurrencyWidget } from '@widgets/currency';
 import { WeatherWidget } from '@widgets/weather';
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [activeCategory, setActiveCategory] = React.useState('all');
-  const [notificationsState, setNotificationsState] = React.useState(notifications);
   const { openSheet, closeSheet, isSheetOpen } = useSheet();
 
-  // Мемоизируем уведомления
-  const memoizedNotifications = React.useMemo(() => notificationsState, [notificationsState]);
+  // Получаем реальные данные уведомлений из контекста
+  const {
+    notifications: realNotifications,
+    unreadCount,
+    isLoading,
+    actions: { markAsRead, deleteNotification }
+  } = useNotificationContext();
 
-  // Количество непрочитанных уведомлений
-  const unreadCount = React.useMemo(
-    () => memoizedNotifications.filter((n: Notification) => !n.isRead).length,
-    [memoizedNotifications],
-  );
+  // Мемоизируем уведомления
+  const memoizedNotifications = React.useMemo(() => realNotifications, [realNotifications]);
 
   // Фильтруем уведомления по категории
   const filteredNotifications = React.useMemo(() => {
     switch (activeCategory) {
       case 'unread':
-        return memoizedNotifications.filter((n: Notification) => !n.isRead && n.type !== 'deleted');
+        return memoizedNotifications.filter((n: GetNotificationDTO) => !n.isRead);
       case 'read':
-        return memoizedNotifications.filter((n: Notification) => n.isRead && n.type !== 'deleted');
+        return memoizedNotifications.filter((n: GetNotificationDTO) => n.isRead);
       case 'archived':
-        return memoizedNotifications.filter((n: Notification) => n.type === 'system');
+        return memoizedNotifications.filter((n: GetNotificationDTO) =>
+          n.type === 'System' || n.type === 'SystemMessage' || n.type === 'Maintenance'
+        );
       case 'deleted':
-        return memoizedNotifications.filter((n: Notification) => n.type === 'deleted');
+        return []; // В API нет удаленных уведомлений, они физически удаляются
       default:
-        return memoizedNotifications.filter((n: Notification) => n.type !== 'deleted');
+        return memoizedNotifications;
     }
   }, [memoizedNotifications, activeCategory]);
 
@@ -76,83 +81,69 @@ export function SiteHeader() {
       {
         id: 'all',
         label: 'Все',
-        count: memoizedNotifications.filter((n: Notification) => n.type !== 'deleted').length,
+        count: memoizedNotifications.length,
         icon: Inbox,
       },
       {
         id: 'unread',
         label: 'Непрочитанные',
-        count: memoizedNotifications.filter((n: Notification) => !n.isRead && n.type !== 'deleted')
-          .length,
+        count: memoizedNotifications.filter((n: GetNotificationDTO) => !n.isRead).length,
         icon: EyeOff,
       },
       {
         id: 'read',
         label: 'Прочитанные',
-        count: memoizedNotifications.filter((n: Notification) => n.isRead && n.type !== 'deleted')
-          .length,
+        count: memoizedNotifications.filter((n: GetNotificationDTO) => n.isRead).length,
         icon: Eye,
       },
       {
         id: 'archived',
         label: 'Архив',
-        count: memoizedNotifications.filter((n: Notification) => n.type === 'system').length,
+        count: memoizedNotifications.filter((n: GetNotificationDTO) =>
+          n.type === 'System' || n.type === 'SystemMessage' || n.type === 'Maintenance'
+        ).length,
         icon: Archive,
       },
       {
         id: 'deleted',
         label: 'Удаленные',
-        count: memoizedNotifications.filter((n: Notification) => n.type === 'deleted').length,
+        count: 0, // В API нет удаленных уведомлений
         icon: Trash2,
       },
     ],
     [memoizedNotifications],
   );
 
-  // Функции для работы с уведомлениями
-  const markAsRead = React.useCallback((id: number) => {
-    setNotificationsState((prev: Notification[]) =>
-      prev.map((n: Notification) => (n.id === id ? { ...n, isRead: true } : n)),
-    );
+  // Функции для работы с уведомлениями (используем из контекста)
+  const handleMarkAsRead = React.useCallback((id: string) => {
+    markAsRead(id);
+  }, [markAsRead]);
+
+  const handleDeleteNotification = React.useCallback((id: string) => {
+    deleteNotification(id);
+  }, [deleteNotification]);
+
+  // Заглушки для функций которые пока не реализованы в API
+  const archiveNotification = React.useCallback((_id: string) => {
+    // TODO: Реализовать архивирование через API
+    console.log('Archive notification not implemented yet');
   }, []);
 
-  const archiveNotification = React.useCallback((id: number) => {
-    setNotificationsState((prev: Notification[]) =>
-      prev.map((n: Notification) => (n.id === id ? { ...n, type: 'system' as const } : n)),
-    );
+  const restoreNotification = React.useCallback((_id: string) => {
+    // TODO: Реализовать восстановление через API
+    console.log('Restore notification not implemented yet');
   }, []);
 
-  const deleteNotification = React.useCallback((id: number) => {
-    setNotificationsState((prev: Notification[]) =>
-      prev.map((n: Notification) =>
-        n.id === id ? { ...n, type: 'deleted' as const, deletedAt: new Date() } : n,
-      ),
-    );
-  }, []);
+  // Функция для форматирования времени
+  const formatTime = React.useCallback((dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-  const restoreNotification = React.useCallback((id: number) => {
-    setNotificationsState((prev: Notification[]) =>
-      prev.map((n: Notification) =>
-        n.id === id ? { ...n, type: 'order' as const, deletedAt: undefined } : n,
-      ),
-    );
-  }, []);
-
-  // Автоматическая очистка удаленных уведомлений через 30 дней
-  React.useEffect(() => {
-    const thirtyDaysAgo = new Date();
-
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    setNotificationsState((prev: Notification[]) =>
-      prev.filter((n: Notification) => {
-        if (n.type === 'deleted' && n.deletedAt) {
-          return n.deletedAt > thirtyDaysAgo;
-        }
-
-        return true;
-      }),
-    );
+    if (diffInMinutes < 1) return 'Только что';
+    if (diffInMinutes < 60) return `${diffInMinutes} мин назад`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} ч назад`;
+    return date.toLocaleDateString('ru-RU');
   }, []);
 
   // Преобразуем путь в breadcrumb элементы
@@ -294,20 +285,28 @@ export function SiteHeader() {
 
               {/* Список уведомлений */}
               <div className='flex-1'>
-                <div className='flex flex-col gap-4'>
-                  {filteredNotifications.map(notification => (
+                {isLoading ? (
+                  <div className='flex items-center justify-center py-8'>
+                    <div className='animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent' />
+                  </div>
+                ) : filteredNotifications.length === 0 ? (
+                  <div className='flex flex-col items-center justify-center py-8 text-center'>
+                    <Inbox className='h-12 w-12 text-muted-foreground mb-4' />
+                    <p className='text-muted-foreground'>Нет уведомлений</p>
+                  </div>
+                ) : (
+                  <div className='flex flex-col gap-4'>
+                    {filteredNotifications.map(notification => (
                     <div
                       key={notification.id}
                       className={`p-4 rounded-lg border transition-colors cursor-pointer ${
-                        notification.type === 'deleted'
-                          ? 'bg-red-50 border-red-200 hover:bg-red-100 dark:bg-red-950 dark:border-red-800 dark:hover:bg-red-900'
-                          : notification.isRead
-                            ? 'bg-green-50 border-green-200 hover:bg-green-100 dark:bg-green-950 dark:border-green-800 dark:hover:bg-green-900'
-                            : notification.type === 'system'
-                              ? 'bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-950 dark:border-gray-800 dark:hover:bg-gray-900'
-                              : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-950 dark:border-yellow-800 dark:hover:bg-yellow-900'
+                        notification.isRead
+                          ? 'bg-green-50 border-green-200 hover:bg-green-100 dark:bg-green-950 dark:border-green-800 dark:hover:bg-green-900'
+                          : notification.type === 'System' || notification.type === 'SystemMessage' || notification.type === 'Maintenance'
+                            ? 'bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-950 dark:border-gray-800 dark:hover:bg-gray-900'
+                            : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100 dark:bg-yellow-950 dark:border-yellow-800 dark:hover:bg-yellow-900'
                       }`}
-                      onClick={() => !notification.isRead && markAsRead(notification.id)}
+                      onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
                     >
                       <div className='flex items-start justify-between gap-3'>
                         <div className='flex-1 min-w-0'>
@@ -317,13 +316,15 @@ export function SiteHeader() {
                                 notification.isRead ? 'text-muted-foreground' : 'text-foreground'
                               }`}
                             >
-                              {notification.title}
+                              {notification.title || NotificationTypeLabels[notification.type] || 'Уведомление'}
                             </h4>
                           </div>
                           <p className='text-sm text-muted-foreground mb-2 line-clamp-2'>
-                            {notification.message}
+                            {notification.content || 'Нет описания'}
                           </p>
-                          <span className='text-xs text-muted-foreground'>{notification.time}</span>
+                          <span className='text-xs text-muted-foreground'>
+                            {formatTime(notification.createdAt)}
+                          </span>
                         </div>
                         <div className='flex items-center gap-1'>
                           <DropdownMenu>
@@ -338,57 +339,58 @@ export function SiteHeader() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
-                              {notification.type === 'deleted' ? (
+                              {notification.orderId && (
                                 <DropdownMenuItem
                                   onClick={e => {
                                     e.stopPropagation();
-                                    restoreNotification(notification.id);
+                                    // Переход к заказу
+                                    const orderType = notification.orderType === 'Instant' ? 'instant' : 'scheduled';
+                                    window.open(`/orders/${orderType}/${notification.orderId}`, '_blank');
                                   }}
                                 >
-                                  <Archive className='mr-2 h-4 w-4' />
-                                  Восстановить
+                                  <ExternalLink className='mr-2 h-4 w-4' />
+                                  Перейти к заказу
                                 </DropdownMenuItem>
-                              ) : (
-                                <>
-                                  {notification.type === 'order' && (
-                                    <DropdownMenuItem
-                                      onClick={e => {
-                                        e.stopPropagation();
-                                        // Здесь будет переход к заказу
-                                      }}
-                                    >
-                                      <ExternalLink className='mr-2 h-4 w-4' />
-                                      Перейти к заказу
-                                    </DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuItem
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      archiveNotification(notification.id);
-                                    }}
-                                  >
-                                    <Archive className='mr-2 h-4 w-4' />
-                                    Архивировать
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      deleteNotification(notification.id);
-                                    }}
-                                    className='text-red-600 focus:text-red-600'
-                                  >
-                                    <Trash2 className='mr-2 h-4 w-4' />
-                                    Удалить
-                                  </DropdownMenuItem>
-                                </>
                               )}
+                              {notification.rideId && (
+                                <DropdownMenuItem
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    // Переход к поездке
+                                    window.open(`/rides/${notification.rideId}`, '_blank');
+                                  }}
+                                >
+                                  <ExternalLink className='mr-2 h-4 w-4' />
+                                  Перейти к поездке
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  archiveNotification(notification.id);
+                                }}
+                              >
+                                <Archive className='mr-2 h-4 w-4' />
+                                Архивировать
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleDeleteNotification(notification.id);
+                                }}
+                                className='text-red-600 focus:text-red-600'
+                              >
+                                <Trash2 className='mr-2 h-4 w-4' />
+                                Удалить
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
                       </div>
                     </div>
                   ))}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </SheetContent>
