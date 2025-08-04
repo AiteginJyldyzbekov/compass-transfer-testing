@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ordersApi, type OrderFilters, type GetOrderDTO } from '@shared/api/orders';
 import { useSavedFilters } from '@shared/hooks';
+import { useUserRole } from '@shared/contexts/user-role-context';
+import { Role } from '@entities/users/enums';
 import type { OrderStatus } from '@entities/orders/enums/OrderStatus.enum';
 import type { OrderSubStatus } from '@entities/orders/enums/OrderSubStatus.enum';
 import type { OrderType } from '@entities/orders/enums/OrderType.enum';
@@ -42,6 +44,7 @@ export function useOrdersTable(initialFilters?: {
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { userRole } = useUserRole();
   
   // Данные
   const [orders, setOrders] = useState<GetOrderDTO[]>([]);
@@ -224,7 +227,10 @@ export function useOrdersTable(initialFilters?: {
         params.orderNumberOp = 'Equal';
       }
 
-      const response = await ordersApi.getOrders(params);
+      // Для партнеров используем API для заказов созданных ими
+      const response = userRole === Role.Partner
+        ? await ordersApi.getMyCreatorOrders(params)
+        : await ordersApi.getOrders(params);
 
       setOrders(response.data);
       setFilteredOrders(response.data);
@@ -252,6 +258,7 @@ export function useOrdersTable(initialFilters?: {
     airFlightFilter,
     flyReisFilter,
     searchTerm,
+    userRole,
   ]);
 
   // Загружаем данные при изменении зависимостей

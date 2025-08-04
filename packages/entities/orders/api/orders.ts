@@ -66,6 +66,40 @@ export interface CreateInstantOrderRequest {
 }
 
 /**
+ * Интерфейс для создания моментального заказа партнером
+ * (партнер сам является пассажиром)
+ */
+export interface CreateInstantOrderByPartnerRequest {
+  /** ID тарифа */
+  tariffId: string;
+
+  /** ID шаблона маршрута (опционально) */
+  routeId?: string | null;
+
+  /** ID начальной локации */
+  startLocationId: string | null;
+
+  /** ID конечной локации */
+  endLocationId: string | null;
+
+  /** Дополнительные остановки */
+  additionalStops: string[];
+
+  /** Дополнительные услуги */
+  services: Array<{
+    serviceId: string;
+    quantity: number;
+    notes?: string | null;
+  }>;
+
+  /** Предварительная стоимость */
+  initialPrice: number;
+
+  /** ID платежа (опционально) */
+  paymentId?: string | null;
+}
+
+/**
  * API для работы с заказами
  */
 export class OrdersApi {
@@ -114,6 +148,24 @@ export class OrdersApi {
 
     if (response.error) {
       throw new Error(response.error.message || 'Failed to create instant order');
+    }
+
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Создание моментального заказа партнером
+   * POST /Order/instant/by-customer
+   */
+  static async createInstantOrderByPartner(data: CreateInstantOrderByPartnerRequest): Promise<GetOrderDTO> {
+    const response = await apiPost<GetOrderDTO>('/Order/instant/by-customer', data);
+
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to create instant order by partner');
     }
 
     if (!response.data) {

@@ -18,6 +18,7 @@ interface DriverMarkerProps {
   loadDriverData?: (id: string) => Promise<void>;
   uiScale?: number;
   forceOpenPopup?: boolean;
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver';
 }
 
 /**
@@ -32,6 +33,7 @@ export const DriverMarker: React.FC<DriverMarkerProps> = ({
   loadDriverData,
   uiScale = 1,
   forceOpenPopup = false,
+  userRole = 'operator',
 }) => {
   const fullDriverData = getDriverById?.(driver.id);
   const popupRef = useRef<L.Popup>(null);
@@ -435,71 +437,73 @@ export const DriverMarker: React.FC<DriverMarkerProps> = ({
                     gap: '0.5rem',
                   }}
                 >
-                  {/* Основные кнопки выбора водителя */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    {isSelected ? (
-                      <button
-                        type='button'
-                        onClick={() => {
-                          onDriverSelect('');
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: '0.5rem 1rem',
-                          backgroundColor: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '0.5rem',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                        }}
-                        onMouseOver={e => {
-                          e.currentTarget.style.backgroundColor = '#dc2626';
-                        }}
-                        onMouseOut={e => {
-                          e.currentTarget.style.backgroundColor = '#ef4444';
-                        }}
-                      >
-                        ❌ Отменить водителя
-                      </button>
-                    ) : (
-                      <button
-                        type='button'
-                        onClick={() => {
-                          onDriverSelect(driver);
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: '0.5rem 1rem',
-                          backgroundColor: '#10b981',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '0.5rem',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                        }}
-                        onMouseOver={e => {
-                          e.currentTarget.style.backgroundColor = '#16a34a';
-                        }}
-                        onMouseOut={e => {
-                          e.currentTarget.style.backgroundColor = '#22c55e';
-                        }}
-                      >
-                        ✅ Выбрать водителя
-                      </button>
-                    )}
-                  </div>
+                  {/* Основные кнопки выбора водителя - скрыты для партнеров */}
+                  {userRole !== 'partner' && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      {isSelected ? (
+                        <button
+                          type='button'
+                          onClick={() => {
+                            onDriverSelect('');
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '0.5rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                          }}
+                          onMouseOver={e => {
+                            e.currentTarget.style.backgroundColor = '#dc2626';
+                          }}
+                          onMouseOut={e => {
+                            e.currentTarget.style.backgroundColor = '#ef4444';
+                          }}
+                        >
+                          ❌ Отменить водителя
+                        </button>
+                      ) : (
+                        <button
+                          type='button'
+                          onClick={() => {
+                            onDriverSelect(driver);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '0.5rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                          }}
+                          onMouseOver={e => {
+                            e.currentTarget.style.backgroundColor = '#16a34a';
+                          }}
+                          onMouseOut={e => {
+                            e.currentTarget.style.backgroundColor = '#22c55e';
+                          }}
+                        >
+                          ✅ Выбрать водителя
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

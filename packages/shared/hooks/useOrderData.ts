@@ -8,7 +8,7 @@ import type { GetUserBasicDTO } from '@entities/users/interface';
 /**
  * Хук для загрузки данных необходимых для создания заказа
  */
-export function useOrderData() {
+export function useOrderData(userRole?: 'admin' | 'operator' | 'partner' | 'driver') {
   const [tariffs, setTariffs] = useState<GetTariffDTOWithArchived[]>([]);
   const [services, setServices] = useState<GetServiceDTO[]>([]);
   const [users, setUsers] = useState<GetUserBasicDTO[]>([]);
@@ -22,8 +22,11 @@ export function useOrderData() {
         setIsLoading(true);
         setError(null);
 
-        // Загружаем все данные параллельно
-        const [tariffsResponse, servicesResponse, usersResponse] = await Promise.all([
+        // Определяем, нужно ли загружать пользователей
+        const shouldLoadUsers = userRole === 'admin' || userRole === 'operator';
+
+        // Загружаем данные параллельно
+        const promises = [
           // Загружаем все тарифы (включая архивные)
           tariffsApi.getTariffs({
             first: true,
@@ -32,24 +35,33 @@ export function useOrderData() {
             sortOrder: 'Asc'
           }),
           // Загружаем все услуги
-          servicesApi.getServices({ 
-            first: true, 
+          servicesApi.getServices({
+            first: true,
             size: 100,
             sortBy: 'name',
             sortOrder: 'Asc'
-          }),
-          // Загружаем пользователей (клиентов)
-          usersApi.getUsers({ 
-            first: true, 
-            size: 100,
-            sortBy: 'firstName',
-            sortOrder: 'Asc'
           })
-        ]);
+        ];
+
+        // Добавляем загрузку пользователей только для админов и операторов
+        if (shouldLoadUsers) {
+          promises.push(
+            usersApi.getUsers({
+              first: true,
+              size: 100,
+              sortBy: 'firstName',
+              sortOrder: 'Asc'
+            })
+          );
+        }
+
+        const responses = await Promise.all(promises);
+        const [tariffsResponse, servicesResponse, usersResponse] = responses;
 
         setTariffs(tariffsResponse.data);
         setServices(servicesResponse.data);
-        setUsers(usersResponse.data);
+        // Устанавливаем пользователей только если они были загружены
+        setUsers(usersResponse?.data || []);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки данных';
         setError(errorMessage);

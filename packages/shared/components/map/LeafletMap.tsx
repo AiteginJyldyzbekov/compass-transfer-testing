@@ -55,6 +55,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   onLocationSelect,
   isSelectingStart = true,
   onRouteDistanceChange,
+  userRole = 'operator',
 }) => {
   const position: [number, number] = [latitude, longitude];
   const [isClient, setIsClient] = useState(false);
@@ -199,6 +200,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
               loadDriverData={loadDriverData}
               uiScale={uiScale}
               forceOpenPopup={openDriverPopupId === driver.id}
+              userRole={userRole}
             />
           ))}
 

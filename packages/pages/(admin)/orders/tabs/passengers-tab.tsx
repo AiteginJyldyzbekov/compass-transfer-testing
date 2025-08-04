@@ -61,10 +61,11 @@ interface PassengersTabProps {
   selectedTariff?: SelectedTariff; // Выбранный тариф для определения вместимости
   isInstantOrder?: boolean; // Флаг для моментальных заказов
   onValidationError?: () => void; // Колбэк для обработки ошибок валидации
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver'; // Роль пользователя
   [key: string]: unknown;
 }
 
-export function PassengersTab({ users, passengers: initialPassengers, handlePassengersChange, selectedTariff, isInstantOrder = false, onValidationError }: PassengersTabProps) {
+export function PassengersTab({ users, passengers: initialPassengers, handlePassengersChange, selectedTariff, isInstantOrder = false, onValidationError, userRole = 'operator' }: PassengersTabProps) {
   const [passengers, setPassengers] = useState<EnhancedPassenger[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
   const [isLoadingPassengerData, setIsLoadingPassengerData] = useState(false);
@@ -72,6 +73,11 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
 
   // Функция для загрузки данных пользователя по ID
   const loadUserData = async (userId: string): Promise<User | null> => {
+    // Партнеры не могут загружать данные других пользователей
+    if (userRole === 'partner') {
+      return null;
+    }
+
     try {
       const response = await usersApi.getUserById(userId);
 
@@ -198,6 +204,12 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
   // Функция поиска пользователей через API
   const searchUsers = useCallback(
     async (query: string) => {
+      // Партнеры не могут искать пользователей
+      if (userRole === 'partner') {
+        setSearchResults([]);
+        return;
+      }
+
       if (!query.trim()) {
         setSearchResults([]);
 
@@ -227,7 +239,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
         setIsSearching(false);
       }
     },
-    [allowedRoles],
+    [allowedRoles, userRole],
   );
 
   // Debounced поиск
@@ -241,6 +253,11 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
 
   // Логика отображения пользователей
   const filteredUsers = (() => {
+    // Партнеры не могут видеть список пользователей
+    if (userRole === 'partner') {
+      return [];
+    }
+
     // Если есть поисковый запрос, показываем только результаты поиска
     if (searchQuery.trim()) {
       return searchResults.filter(user => allowedRoles.includes(user.role));
@@ -353,9 +370,9 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
   }
 
   return (
-    <div className='flex flex-col lg:flex-row gap-6 max-h-screen'>
+    <div className={`flex flex-col gap-6 max-h-screen ${userRole !== 'partner' ? 'lg:flex-row' : ''}`}>
       {/* Левая колонка - Профиль выбранного клиента */}
-      <div className='w-full lg:flex-1 flex-shrink-0 lg:sticky lg:top-0 lg:self-start'>
+      <div className={`w-full flex-shrink-0 ${userRole !== 'partner' ? 'lg:flex-1 lg:sticky lg:top-0 lg:self-start' : ''}`}>
         <Card className='h-full'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
@@ -514,16 +531,24 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
             ) : (
               <div className='text-center py-12'>
                 <User className='h-16 w-16 text-gray-300 mx-auto mb-4' />
-                <h3 className='text-lg font-medium text-gray-900 mb-2'>Клиент не выбран</h3>
-                <p className='text-gray-500'>Выберите клиента из списка справа</p>
+                <h3 className='text-lg font-medium text-gray-900 mb-2'>
+                  {userRole === 'partner' ? 'Добавьте пассажиров' : 'Клиент не выбран'}
+                </h3>
+                <p className='text-gray-500'>
+                  {userRole === 'partner'
+                    ? 'Нажмите "Добавить пассажира" чтобы создать нового пассажира'
+                    : 'Выберите клиента из списка справа'
+                  }
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Правая колонка - Список пользователей и поиск */}
-      <div className='w-full lg:flex-1 flex-shrink-0 flex flex-col'>
+      {/* Правая колонка - Список пользователей и поиск (скрыта для партнеров) */}
+      {userRole !== 'partner' && (
+        <div className='w-full lg:flex-1 flex-shrink-0 flex flex-col'>
         <Card className='flex-1 flex flex-col'>
           <CardHeader className='gap-2'>
             <CardTitle className='flex items-center gap-2'>
@@ -639,7 +664,8 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      )}
 
       {/* Третья колонка - Список добавленных пассажиров */}
       <div className='w-full lg:flex-1 flex-shrink-0'>

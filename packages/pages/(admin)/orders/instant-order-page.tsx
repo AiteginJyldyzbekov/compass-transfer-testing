@@ -40,9 +40,11 @@ interface SelectedService {
 interface InstantOrderPageProps {
   mode: 'create' | 'edit';
   id?: string; // ID заказа для режима редактирования
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver';
+  initialTariffId?: string; // ID тарифа для предварительного выбора
 }
 
-export function InstantOrderPage({ mode, id }: InstantOrderPageProps) {
+export function InstantOrderPage({ mode, id, userRole = 'operator', initialTariffId }: InstantOrderPageProps) {
   const router = useRouter();
 
   // React Hook Form для совместимости с MapTab (как в order-page.tsx)
@@ -103,10 +105,11 @@ export function InstantOrderPage({ mode, id }: InstantOrderPageProps) {
 
   // Хук для создания заказа
   const { createOrder, isLoading: isCreatingOrder } = useInstantOrderSubmit({
+    userRole,
     onSuccess: (order) => {
       // eslint-disable-next-line no-console
       console.log('✅ Моментальный заказ создан успешно:', order);
-      
+
       // Переходим к списку заказов (не админ-панель!)
       router.push('/orders');
     },
@@ -368,7 +371,7 @@ export function InstantOrderPage({ mode, id }: InstantOrderPageProps) {
 
     try {
       // Формируем данные для создания заказа
-      const orderData = {
+      const baseOrderData = {
         tariffId: selectedTariff!.id,
         routeId: null, // Для моментальных заказов обычно не используется
         startLocationId,
@@ -382,16 +385,23 @@ export function InstantOrderPage({ mode, id }: InstantOrderPageProps) {
             notes: service.notes || null,
           })),
         initialPrice: currentPrice,
-        passengers: [
-          {
-            customerId: null,
-            firstName: "",
-            lastName: null,
-            isMainPassenger: true
-          }
-        ],
         paymentId: null, // Для мгновенных заказов пока null
       };
+
+      // Для партнеров не отправляем passengers (они сами пассажиры)
+      const orderData = userRole === 'partner'
+        ? baseOrderData
+        : {
+            ...baseOrderData,
+            passengers: [
+              {
+                customerId: null,
+                firstName: "",
+                lastName: null,
+                isMainPassenger: true
+              }
+            ]
+          };
 
       // eslint-disable-next-line no-console
       console.log('📦 Создаем моментальный заказ:', orderData);
@@ -467,6 +477,7 @@ export function InstantOrderPage({ mode, id }: InstantOrderPageProps) {
                           tariffs={tariffs}
                           selectedTariff={selectedTariff}
                           setSelectedTariff={handleTariffChange}
+                          initialTariffId={initialTariffId}
                         />
                       );
 
@@ -487,6 +498,7 @@ export function InstantOrderPage({ mode, id }: InstantOrderPageProps) {
                           // Для моментальных заказов показываем всех доступных водителей с радиусом
                           showDriverRadius
                           isInstantOrder
+                          userRole={userRole}
                         />
                       );
 

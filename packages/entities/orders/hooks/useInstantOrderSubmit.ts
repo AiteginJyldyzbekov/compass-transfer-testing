@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { OrdersApi, type CreateInstantOrderRequest } from '../api/orders';
+import { OrdersApi, type CreateInstantOrderRequest, type CreateInstantOrderByPartnerRequest } from '../api/orders';
 import type { GetOrderDTO } from '../interface';
 
 /**
@@ -14,6 +14,9 @@ export interface UseInstantOrderSubmitOptions {
 
   /** Колбэк при завершении (успех или ошибка) */
   onSettled?: () => void;
+
+  /** Роль пользователя для выбора правильного API */
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver';
 }
 
 /**
@@ -21,17 +24,17 @@ export interface UseInstantOrderSubmitOptions {
  */
 export interface UseInstantOrderSubmitResult {
   /** Функция создания заказа */
-  createOrder: (data: CreateInstantOrderRequest) => void;
-  
+  createOrder: (data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest) => void;
+
   /** Состояние загрузки */
   isLoading: boolean;
-  
+
   /** Ошибка */
   error: Error | null;
-  
+
   /** Данные созданного заказа */
   data: GetOrderDTO | null;
-  
+
   /** Сброс состояния */
   reset: () => void;
 }
@@ -42,14 +45,19 @@ export interface UseInstantOrderSubmitResult {
 export function useInstantOrderSubmit(
   options: UseInstantOrderSubmitOptions = {}
 ): UseInstantOrderSubmitResult {
-  const { onSuccess, onError, onSettled } = options;
+  const { onSuccess, onError, onSettled, userRole = 'operator' } = options;
 
   const mutation = useMutation({
-    mutationFn: (data: CreateInstantOrderRequest) => {
+    mutationFn: (data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest) => {
       // eslint-disable-next-line no-console
       console.log('📦 useInstantOrderSubmit: Создаем моментальный заказ', data);
-      
-      return OrdersApi.createInstantOrder(data);
+
+      // Для партнеров используем отдельный API
+      if (userRole === 'partner') {
+        return OrdersApi.createInstantOrderByPartner(data as CreateInstantOrderByPartnerRequest);
+      }
+
+      return OrdersApi.createInstantOrder(data as CreateInstantOrderRequest);
     },
     onSuccess: (data) => {
       // eslint-disable-next-line no-console

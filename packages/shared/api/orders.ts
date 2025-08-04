@@ -72,6 +72,28 @@ export const ordersApi = {
     return result.data!;
   },
 
+  // Получение статистики заказов партнера (созданных им)
+  getMyCreatorOrderStats: async (): Promise<OrderStatsResponse> => {
+    const result = await apiGet<OrderStatsResponse>('/Order/my/creator/stats');
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data!;
+  },
+
+  // Получение заказов созданных партнером
+  getMyCreatorOrders: async (filters: OrderFilters = {}): Promise<OrderApiResponse> => {
+    const result = await apiGet<OrderApiResponse>('/Order/my/creator', { params: filters });
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data!;
+  },
+
   // Удаление заказа
   deleteOrder: async (orderId: string): Promise<void> => {
     const result = await apiDelete(`/Order/${orderId}`);

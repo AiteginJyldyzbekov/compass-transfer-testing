@@ -35,3 +35,22 @@ export const CarColorValues = [
   CarColor.Gold,
   CarColor.Other,
 ];
+
+/**
+ * Переводы цветов автомобилей
+ */
+export const CarColorTranslations = {
+  [CarColor.Black]: 'Чёрный',
+  [CarColor.White]: 'Белый',
+  [CarColor.Silver]: 'Серебристый',
+  [CarColor.Gray]: 'Серый',
+  [CarColor.Red]: 'Красный',
+  [CarColor.Blue]: 'Синий',
+  [CarColor.Green]: 'Зелёный',
+  [CarColor.Yellow]: 'Жёлтый',
+  [CarColor.Brown]: 'Коричневый',
+  [CarColor.Orange]: 'Оранжевый',
+  [CarColor.Purple]: 'Фиолетовый',
+  [CarColor.Gold]: 'Золотой',
+  [CarColor.Other]: 'Другой',
+} as const;

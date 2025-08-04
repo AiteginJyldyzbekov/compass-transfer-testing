@@ -71,16 +71,23 @@ const orderTypeOptions: OrderTypeOption[] = [
 interface OrderTypeSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  selectedTariffId?: string;
 }
 
-export function OrderTypeSelectionModal({ isOpen, onClose }: OrderTypeSelectionModalProps) {
+export function OrderTypeSelectionModal({ isOpen, onClose, selectedTariffId }: OrderTypeSelectionModalProps) {
   const router = useRouter();
 
   const handleOrderTypeSelect = (option: OrderTypeOption) => {
     if (option.disabled) return;
-    
+
     onClose();
-    router.push(option.route);
+
+    // Добавляем tariffId в URL если он передан
+    const url = selectedTariffId
+      ? `${option.route}?tariffId=${selectedTariffId}`
+      : option.route;
+
+    router.push(url);
   };
 
   return (

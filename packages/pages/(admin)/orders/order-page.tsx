@@ -55,9 +55,11 @@ interface SelectedService {
 interface OrderPageProps {
   mode: 'create' | 'edit';
   id?: string;
+  initialTariffId?: string;
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver';
 }
 
-export function OrderPage({ mode, id }: OrderPageProps) {
+export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: OrderPageProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('pricing');
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['pricing'])); // Отслеживаем посещенные табы
@@ -327,6 +329,19 @@ export function OrderPage({ mode, id }: OrderPageProps) {
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [currentPrice, setCurrentPrice] = useState(200);
   const [selectedTariff, setSelectedTariff] = useState<GetTariffDTOWithArchived | null>(null);
+
+  // Автоматический выбор тарифа при создании заказа
+  useEffect(() => {
+    if (mode === 'create' && initialTariffId && tariffs.length > 0 && !selectedTariff) {
+      const foundTariff = tariffs.find(t => t.id === initialTariffId);
+      if (foundTariff && !foundTariff.archived) {
+        setSelectedTariff(foundTariff);
+        // Автоматически переключаемся на таб тарифов, чтобы показать выбранный тариф
+        setActiveTab('pricing');
+        setVisitedTabs(prev => new Set([...prev, 'pricing']));
+      }
+    }
+  }, [mode, initialTariffId, tariffs, selectedTariff]);
 
   const handlePassengersChange = (newPassengers: any[]) => {
     // Обновляем форму с новыми пассажирами
@@ -866,6 +881,7 @@ export function OrderPage({ mode, id }: OrderPageProps) {
                       // Пассажиры
                       passengers={methods.getValues('passengers') as any[]}
                       handlePassengersChange={handlePassengersChange}
+                      userRole={userRole}
                       // Тариф
                       selectedTariff={
                         activeTab === 'passengers'
@@ -877,6 +893,7 @@ export function OrderPage({ mode, id }: OrderPageProps) {
                       setSelectedTariff={setSelectedTariff}
                       onRefreshTariffs={refetchTariffs}
                       isRefreshingTariffs={isRefreshingTariffs}
+                      initialTariffId={initialTariffId}
                       // Обработчики
                       handleServicesChange={handleServicesChange}
                       handlePriceChange={handlePriceChange}

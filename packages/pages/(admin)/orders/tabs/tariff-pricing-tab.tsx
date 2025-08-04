@@ -2,7 +2,7 @@
 
 import { DollarSign, Clock, Car, Filter, ExternalLink, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { GetTariffDTOWithArchived } from '@shared/api/tariffs';
 import { useUserRole } from '@shared/contexts';
 import { Badge } from '@shared/ui/data-display/badge';
@@ -17,6 +17,7 @@ interface TariffPricingTabProps {
   setSelectedTariff: (tariff: GetTariffDTOWithArchived | null) => void;
   onRefreshTariffs?: () => void;
   isRefreshingTariffs?: boolean;
+  initialTariffId?: string; // ID тарифа для предварительного выбора
 }
 
 export function TariffPricingTab({
@@ -24,10 +25,21 @@ export function TariffPricingTab({
   selectedTariff,
   setSelectedTariff,
   onRefreshTariffs,
-  isRefreshingTariffs = false
+  isRefreshingTariffs = false,
+  initialTariffId
 }: TariffPricingTabProps) {
   const [showArchived, setShowArchived] = useState(false);
   const { userRole } = useUserRole();
+
+  // Автоматически выбираем тариф при загрузке, если передан initialTariffId
+  useEffect(() => {
+    if (initialTariffId && !selectedTariff && tariffs.length > 0) {
+      const initialTariff = tariffs.find(t => t.id === initialTariffId && !t.archived);
+      if (initialTariff) {
+        setSelectedTariff(initialTariff);
+      }
+    }
+  }, [initialTariffId, selectedTariff, tariffs, setSelectedTariff]);
 
   // Проверяем, может ли пользователь просматривать детали тарифа
   const canViewTariffDetails = userRole === Role.Admin || userRole === Role.Operator;

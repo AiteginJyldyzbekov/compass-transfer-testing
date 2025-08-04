@@ -33,6 +33,25 @@ const filterMenuItemsByRole = (items: typeof sidebarData.navMain, userRole: Role
       return false;
     }
 
+    // Для роли Partner оставляем только "Дашбоард" и "Заказы"
+    if (userRole === Role.Partner) {
+      const allowedItems = ['Дашбоард', 'Заказы'];
+      return allowedItems.includes(item.title);
+    }
+
+    return true;
+  });
+};
+
+// Функция для фильтрации документов в зависимости от роли
+const filterDocumentsByRole = (items: typeof sidebarData.documents, userRole: Role) => {
+  return items.filter(item => {
+    // Для роли Partner оставляем только "Тарифы"
+    if (userRole === Role.Partner) {
+      const allowedItems = ['Тарифы'];
+      return allowedItems.includes(item.name);
+    }
+
     return true;
   });
 };
@@ -206,6 +225,7 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
 
   // Фильтруем пункты меню в зависимости от роли пользователя
   const filteredNavMain = filterMenuItemsByRole(sidebarData.navMain, userRole);
+  const filteredDocuments = filterDocumentsByRole(sidebarData.documents, userRole);
 
   // Определяем, нужно ли показывать список водителей для данной роли
   const shouldShowDrivers = ![Role.Partner, Role.Driver, Role.Customer].includes(userRole);
@@ -311,7 +331,7 @@ export function AppSidebar({ currentUser, ...props }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent className='overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent group-data-[collapsible=icon]:scrollbar-hide group-data-[collapsible=icon]:overflow-y-auto group-data-[collapsible=icon]:overflow-x-hidden h-full'>
         <NavMain items={filteredNavMain} />
-        <NavDocuments items={sidebarData.documents} />
+        <NavDocuments items={filteredDocuments} />
 
         {/* Группа водителей - показываем только для Admin, Operator, Terminal */}
         {shouldShowDrivers && (

@@ -24,6 +24,19 @@ export interface LogoutResponse {
   message: string;
 }
 
+export interface PartnerRegisterRequest {
+  email: string;
+  password: string;
+  fullName: string;
+  companyName: string;
+  legalAddress: string;
+}
+
+export interface PartnerRegisterResponse {
+  message: string;
+  success: boolean;
+}
+
 /**
  * Сервис для работы с аутентификацией
  */
@@ -71,5 +84,12 @@ export class AuthService {
       '/Auth/manage/credentials',
       data,
     );
+  }
+
+  /**
+   * Регистрация партнера
+   */
+  static async registerPartner(data: PartnerRegisterRequest): Promise<ApiResult<PartnerRegisterResponse>> {
+    return apiPost<PartnerRegisterResponse, PartnerRegisterRequest>('/Auth/register/partner', data);
   }
 }

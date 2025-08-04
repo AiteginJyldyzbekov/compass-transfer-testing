@@ -153,4 +153,6 @@ export interface LeafletMapProps {
   onRouteDeviation?: (isOffRoute: boolean, distance?: number) => void;
   /** Callback для передачи расстояния маршрута в метрах */
   onRouteDistanceChange?: (distance: number) => void;
+  /** Роль пользователя для скрытия кнопок выбора водителя */
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver';
 }

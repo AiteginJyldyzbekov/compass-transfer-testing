@@ -24,7 +24,7 @@ export const notifications: Notification[] = [
     type: 'system',
     title: 'Обновление системы',
     message: 'Запланировано обновление системы завтра в 03:00',
-    time: '1 час назад',
+    time: '04.08.2025',
     isRead: true,
     priority: 'low',
   },

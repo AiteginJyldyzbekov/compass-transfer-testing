@@ -98,8 +98,11 @@ export function OrdersTableContent({
     },
   });
 
-  // Проверяем, может ли пользователь удалять заказы (все роли кроме Operator)
-  const canDeleteOrders = userRole !== Role.Operator;
+  // Проверяем, может ли пользователь удалять заказы (все роли кроме Operator и Partner)
+  const canDeleteOrders = userRole !== Role.Operator && userRole !== Role.Partner;
+
+  // Проверяем, может ли пользователь редактировать заказы (все роли кроме Partner)
+  const canEditOrders = userRole !== Role.Partner;
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
@@ -205,10 +208,12 @@ export function OrdersTableContent({
                         <Eye className='mr-2 h-4 w-4' />
                         Просмотр
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(getOrderEditRoute(order.id, order.type as OrderType))}>
-                        <Edit className='mr-2 h-4 w-4' />
-                        Редактировать
-                      </DropdownMenuItem>
+                      {canEditOrders && (
+                        <DropdownMenuItem onClick={() => router.push(getOrderEditRoute(order.id, order.type as OrderType))}>
+                          <Edit className='mr-2 h-4 w-4' />
+                          Редактировать
+                        </DropdownMenuItem>
+                      )}
                       {canDeleteOrders && (
                         <DropdownMenuItem
                           className='text-red-600'

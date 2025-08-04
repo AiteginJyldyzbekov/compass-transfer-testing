@@ -1,15 +1,38 @@
-import { SectionCards } from '@features/dashboard/ui/section-cards';
-import { ChartAreaInteractive } from '@widgets/charts';
+import { redirect } from 'next/navigation';
+import { getUserFromCookie } from '@shared/lib/parse-cookie';
+import { Role } from '@entities/users/enums';
+import { AdminDashboard } from '@pages/(admin)/dashboard/admin';
+import { OperatorDashboard } from '@pages/(admin)/dashboard/operator';
+import { PartnerDashboard } from '@pages/(admin)/dashboard/partner';
 
-export default function Page() {
-  return (
-    <div className='h-full flex flex-1 flex-col gap-2 border rounded-2xl overflow-hidden pr-2 bg-white'>
-      <div className='flex flex-col gap-4 overflow-y-auto py-4'>
-        <SectionCards />
-        <div className='pl-4 pr-2'>
-          <ChartAreaInteractive />
-        </div>
-      </div>
-    </div>
-  );
+export default async function Page({ params }: { params: { status?: string } }) {
+  // Получаем роль пользователя на сервере
+  const userRole = (await getUserFromCookie('role')) as Role | null;
+
+  // Если роль не определена, перенаправляем на логин
+  if (!userRole) {
+    redirect('/login');
+  }
+
+  // Рендерим соответствующий дашборд в зависимости от роли
+  switch (userRole) {
+    case Role.Admin:
+      return <AdminDashboard />;
+
+    case Role.Operator:
+      return <OperatorDashboard status={params.status} />;
+
+    case Role.Partner:
+      return <PartnerDashboard userRole="partner" />;
+
+    case Role.Driver:
+    case Role.Customer:
+    case Role.Terminal:
+      // Эти роли не должны иметь доступ к админ панели
+      redirect('/login');
+
+    default:
+      // Неизвестная роль - перенаправляем на логин
+      redirect('/login');
+  }
 }

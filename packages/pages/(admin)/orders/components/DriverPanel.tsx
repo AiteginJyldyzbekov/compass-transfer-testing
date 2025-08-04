@@ -18,9 +18,15 @@ interface DriverPanelProps {
   activeDrivers?: Array<{ id: string; currentLocation?: { latitude: number; longitude: number } }>; // Активные водители с карты
   getDriverById?: (id: string) => Record<string, unknown> | null; // Функция для получения полных данных водителя
   isInstantOrder?: boolean; // Флаг для моментальных заказов - отключает выбор водителей
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver'; // Роль пользователя
 }
 
-export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDrivers = [], getDriverById, isInstantOrder = false }: DriverPanelProps) {
+export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDrivers = [], getDriverById, isInstantOrder = false, userRole = 'operator' }: DriverPanelProps) {
+  // Партнеры не должны видеть панель водителей
+  if (userRole === 'partner') {
+    return null;
+  }
+
   const [searchQuery, setSearchQuery] = useState('');
   const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(true); // По умолчанию скрыта
@@ -170,7 +176,7 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
 
           {/* Поиск водителей или информация о моментальном заказе */}
           <div className="space-y-3">
-            {isInstantOrder ? (
+            {isInstantOrder && userRole !== 'partner' ? (
               <div className="text-center py-4 px-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="text-sm text-blue-800 font-medium mb-1">
                   Моментальный заказ
@@ -179,7 +185,7 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
                   Система автоматически найдет подходящего водителя
                 </div>
               </div>
-            ) : (
+            ) : isInstantOrder && userRole === 'partner' ? null : (
               <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

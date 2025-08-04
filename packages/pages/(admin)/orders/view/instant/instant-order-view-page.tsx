@@ -1,12 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { OrderType } from '@entities/orders/enums/OrderType.enum';
 import { useInstantOrderById } from '@entities/orders/hooks';
 import { getOrderEditRoute } from '@entities/orders/utils/order-routes';
-import { DeleteConfirmationModal } from '@shared/ui/modals/delete-confirmation-modal';
 import { InstantOrderViewHeader } from './components/instant-order-view-header';
 import { InstantOrderViewContent } from './components/instant-order-view-content';
 import { InstantOrderViewActions } from './components/instant-order-view-actions';
@@ -19,7 +16,6 @@ interface InstantOrderViewPageProps {
 
 export function InstantOrderViewPage({ orderId }: InstantOrderViewPageProps) {
   const router = useRouter();
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const {
     order,
@@ -34,33 +30,6 @@ export function InstantOrderViewPage({ orderId }: InstantOrderViewPageProps) {
   const handleEdit = () => {
     if (order) {
       router.push(getOrderEditRoute(order.id, OrderType.Instant));
-    }
-  };
-
-  const handleDelete = () => {
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!order) return;
-
-    try {
-      // TODO: Добавить API вызов для удаления заказа
-      console.log('Удаление заказа:', order.id);
-
-      // Показываем успешное уведомление
-      toast.success('Заказ успешно удален', {
-        description: `Мгновенный заказ #${order.orderNumber} был удален`
-      });
-
-      // После успешного удаления перенаправляем на список заказов
-      router.push('/orders');
-    } catch (error) {
-      // Показываем ошибку
-      toast.error('Ошибка при удалении заказа', {
-        description: error instanceof Error ? error.message : 'Произошла неизвестная ошибка'
-      });
-      throw error; // Перебрасываем ошибку, чтобы модальное окно не закрылось
     }
   };
 
@@ -97,21 +66,9 @@ export function InstantOrderViewPage({ orderId }: InstantOrderViewPageProps) {
             order={order}
             onEdit={handleEdit}
             onBack={handleBack}
-            onDelete={handleDelete}
           />
         </div>
       </div>
-
-      {/* Модальное окно подтверждения удаления */}
-      <DeleteConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Удалить заказ"
-        description="Вы уверены, что хотите удалить этот заказ?"
-        itemName={order ? `Мгновенный заказ #${order.orderNumber}` : undefined}
-        warningText="Удаление заказа может повлиять на связанные поездки и статистику."
-      />
     </div>
   );
 }

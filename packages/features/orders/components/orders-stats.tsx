@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ordersApi, type OrderStatsResponse } from '@shared/api/orders';
 import { orderStatsLabels, orderStatsColors } from '@entities/orders';
+import { useUserRole } from '@shared/contexts/user-role-context';
+import { Role } from '@entities/users/enums';
 
 interface OrderStatsProps {
   className?: string;
@@ -17,13 +19,18 @@ export function OrdersStats({ className, activeStatus }: OrderStatsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { userRole } = useUserRole();
 
   useEffect(() => {
     const loadStats = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await ordersApi.getOrderStats();
+
+        // Для партнеров используем API для статистики созданных ими заказов
+        const data = userRole === Role.Partner
+          ? await ordersApi.getMyCreatorOrderStats()
+          : await ordersApi.getOrderStats();
 
         setStats(data);
       } catch (err) {
@@ -34,7 +41,7 @@ export function OrdersStats({ className, activeStatus }: OrderStatsProps) {
     };
 
     loadStats();
-  }, []);
+  }, [userRole]);
 
   // Преобразуем ключ статистики в значение статуса для API
   const statusMap: Record<keyof OrderStatsResponse, string> = {

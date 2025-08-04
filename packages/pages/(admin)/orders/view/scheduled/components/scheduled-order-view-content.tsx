@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react';
-import { Calendar, MapPin, User, Info, DollarSign, Plane, ExternalLink, Settings } from 'lucide-react';
+import { Calendar, MapPin, User, Car, Info, DollarSign, Plane, ExternalLink, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout';
+import { Badge } from '@shared/ui/data-display/badge';
 import { Skeleton } from '@shared/ui/data-display/skeleton';
 import { Button } from '@shared/ui/forms/button';
 import type { GetOrderDTO } from '@entities/orders/interface';
-import { CarTypeValues } from '@entities/tariffs/enums/CarType.enum';
-import { ServiceClassValues } from '@entities/tariffs/enums/ServiceClass.enum';
 import { useLocation } from '@features/locations/hooks/useLocation';
 import { useUserById } from '@shared/hooks/useUserById';
 import { useTariffById } from '@shared/hooks/useTariffById';
@@ -23,17 +22,6 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
   // Запросы для получения данных
   const { location: startLocation, isLoading: startLocationLoading } = useLocation(order.startLocationId || '');
   const { location: endLocation, isLoading: endLocationLoading } = useLocation(order.endLocationId || '');
-
-  // Запросы для дополнительных остановок (максимум 5 для безопасности)
-  const stop1 = useLocation(order.additionalStops?.[0] || '');
-  const stop2 = useLocation(order.additionalStops?.[1] || '');
-  const stop3 = useLocation(order.additionalStops?.[2] || '');
-  const stop4 = useLocation(order.additionalStops?.[3] || '');
-  const stop5 = useLocation(order.additionalStops?.[4] || '');
-
-  const additionalStopsData = [stop1, stop2, stop3, stop4, stop5]
-    .slice(0, order.additionalStops?.length || 0)
-    .filter((_, index) => order.additionalStops?.[index]);
   const { user: creator, isLoading: creatorLoading } = useUserById(order.creatorId || '');
   const { tariff, isLoading: tariffLoading } = useTariffById(order.tariffId || '');
   const { services, isLoading: servicesLoading } = useServices();
@@ -44,12 +32,8 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
   const [activeCategory, setActiveCategory] = useState('main');
   const [activeOrderType, setActiveOrderType] = useState('all');
 
-  // Получаем данные выбранного водителя для sheet
+  // Получаем данные выбранного водителя
   const { driver: selectedDriver } = useDriverById(selectedDriverId);
-
-  // Получаем данные водителя из заказа
-  const assignedDriverId = order.rides?.[0]?.driverId;
-  const { driver: assignedDriver, isLoading: assignedDriverLoading } = useDriverById(assignedDriverId);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('ru-RU', {
@@ -66,9 +50,9 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
     return new Intl.NumberFormat('ru-RU').format(price) + ' сом';
   };
 
-  // Функция для поиска услуги по ID
-  const findServiceById = (serviceId: string) => {
-    return services.find(service => service.id === serviceId);
+  // Функция для поиска услуги по имени
+  const findServiceByName = (serviceName: string) => {
+    return services.find(service => service.name === serviceName);
   };
 
   return (
@@ -128,17 +112,11 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
         <CardContent className='space-y-4'>
           <div className='flex gap-3'>
             <div className='flex flex-col items-center pt-1'>
-              <div className='w-3 h-3 bg-green-500 rounded-full flex-shrink-0' />
-              {additionalStopsData.map((_, index) => (
-                <div key={index}>
-                  <div className='w-0.5 flex-1 bg-gray-300 my-2' style={{ minHeight: '30px' }} />
-                  <div className='w-3 h-3 bg-blue-500 rounded-full flex-shrink-0' />
-                </div>
-              ))}
-              <div className='w-0.5 flex-1 bg-gray-300 my-2' style={{ minHeight: '30px' }} />
-              <div className='w-3 h-3 bg-red-500 rounded-full flex-shrink-0' />
+              <div className='w-3 h-3 bg-green-500 rounded-full flex-shrink-0'></div>
+              <div className='w-0.5 flex-1 bg-gray-300 my-2' style={{ minHeight: '60px' }}></div>
+              <div className='w-3 h-3 bg-red-500 rounded-full flex-shrink-0'></div>
             </div>
-            <div className='flex-1 space-y-6'>
+            <div className='flex-1 space-y-8'>
               <div>
                 <div className='font-medium text-sm text-muted-foreground mb-1'>Откуда</div>
                 <div className='font-medium'>
@@ -154,28 +132,6 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
                   </div>
                 )}
               </div>
-
-              {/* Дополнительные остановки */}
-              {additionalStopsData.map((stopData, index) => (
-                <div key={index}>
-                  <div className='font-medium text-sm text-muted-foreground mb-1'>
-                    Остановка {index + 1}
-                  </div>
-                  <div className='font-medium'>
-                    {stopData.isLoading ? (
-                      <Skeleton className='h-4 w-48' />
-                    ) : (
-                      stopData.location?.name || 'Не указано'
-                    )}
-                  </div>
-                  {stopData.location?.address && (
-                    <div className='text-sm text-muted-foreground mt-1'>
-                      {stopData.location.address}
-                    </div>
-                  )}
-                </div>
-              ))}
-
               <div>
                 <div className='font-medium text-sm text-muted-foreground mb-1'>Куда</div>
                 <div className='font-medium'>
@@ -230,11 +186,11 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
               <div className='grid grid-cols-2 gap-4'>
                 <div>
                   <div className='text-sm text-muted-foreground'>Класс обслуживания</div>
-                  <div className='font-medium'>{ServiceClassValues[tariff.serviceClass as keyof typeof ServiceClassValues] || tariff.serviceClass}</div>
+                  <div className='font-medium'>{tariff.serviceClass}</div>
                 </div>
                 <div>
                   <div className='text-sm text-muted-foreground'>Тип автомобиля</div>
-                  <div className='font-medium'>{CarTypeValues[tariff.carType as keyof typeof CarTypeValues] || tariff.carType}</div>
+                  <div className='font-medium'>{tariff.carType}</div>
                 </div>
               </div>
               <div className='grid grid-cols-2 gap-4'>
@@ -308,7 +264,7 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
           <CardContent>
             <div className='space-y-3'>
               {order.services.map((service, index) => {
-                const serviceData = findServiceById(service.serviceId);
+                const serviceData = findServiceByName(service.name);
                 const actualPrice = serviceData?.price || 0;
 
                 return (
@@ -353,59 +309,52 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
         </Card>
       )}
 
-
-
-      {/* Водитель */}
-      {assignedDriverId && (
+      {/* Поездки */}
+      {order.rides && order.rides.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
-              <User className='h-5 w-5' />
-              Водитель
+              <Car className='h-5 w-5' />
+              Поездки ({order.rides.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='flex items-center gap-3 p-3 bg-gray-50 rounded-lg'>
-              <div className='w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center'>
-                <User className='h-5 w-5 text-blue-600' />
-              </div>
-              <div className='flex-1'>
-                {assignedDriverLoading ? (
-                  <div className='space-y-1'>
-                    <Skeleton className='h-4 w-32' />
-                    <Skeleton className='h-3 w-24' />
-                  </div>
-                ) : assignedDriver ? (
-                  <div>
-                    <div className='font-medium'>{assignedDriver.fullName}</div>
-                    <div className='text-sm text-muted-foreground'>
-                      {assignedDriver.phoneNumber}
+            <div className='space-y-3'>
+              {order.rides.map((ride, index) => (
+                <div key={ride.id} className='p-3 bg-gray-50 rounded-lg'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <div className='text-sm font-medium'>
+                      Поездка #{index + 1}
                     </div>
-                    <div className='text-xs text-muted-foreground'>
-                      Назначен на заказ
-                    </div>
+                    <Badge variant='outline' className='text-xs'>
+                      {ride.status}
+                    </Badge>
                   </div>
-                ) : (
-                  <div>
-                    <div className='font-medium'>ID: {assignedDriverId}</div>
-                    <div className='text-sm text-muted-foreground'>
-                      Назначен на заказ
+                  {ride.startedAt && (
+                    <div className='text-xs text-muted-foreground mb-2'>
+                      {formatDate(ride.startedAt)}
                     </div>
-                  </div>
-                )}
-              </div>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => {
-                  if (assignedDriverId) {
-                    setSelectedDriverId(assignedDriverId);
-                    setIsDriverSheetOpen(true);
-                  }
-                }}
-              >
-                Подробнее
-              </Button>
+                  )}
+                  {ride.driverId && (
+                    <div className='flex items-center gap-2'>
+                      <User className='h-3 w-3 text-muted-foreground' />
+                      <span className='text-xs text-muted-foreground'>Водитель:</span>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        className='h-5 px-1 text-xs'
+                        onClick={() => {
+                          setSelectedDriverId(ride.driverId!);
+                          setIsDriverSheetOpen(true);
+                        }}
+                      >
+                        {ride.driverId}
+                        <ExternalLink className='h-2 w-2 ml-1' />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -510,7 +459,7 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
               <span>
                 {formatPrice(
                   order.services.reduce((sum, service) => {
-                    const serviceData = findServiceById(service.serviceId);
+                    const serviceData = findServiceByName(service.name);
                     const actualPrice = serviceData?.price || 0;
                     return sum + actualPrice * service.quantity;
                   }, 0)

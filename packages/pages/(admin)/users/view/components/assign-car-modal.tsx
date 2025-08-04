@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Search, Car, Plus, Loader2, Filter } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/modals/dialog';
+import { useState, useEffect } from 'react';
+import { carsApi } from '@shared/api/cars';
+import { Badge } from '@shared/ui/data-display/badge';
 import { Button } from '@shared/ui/forms/button';
 import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
-import { Badge } from '@shared/ui/data-display/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/modals/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
-import { carsApi } from '@shared/api/cars';
 
 import { CarColor, VehicleType, ServiceClass, VehicleStatus } from '@entities/cars/enums';
 import type { GetCarDTO } from '@entities/cars/interface';
@@ -42,10 +42,7 @@ const carColorLabels: Record<CarColor, string> = {
   [CarColor.Orange]: 'Оранжевый',
   [CarColor.Brown]: 'Коричневый',
   [CarColor.Purple]: 'Фиолетовый',
-  [CarColor.Pink]: 'Розовый',
   [CarColor.Gold]: 'Золотой',
-  [CarColor.Beige]: 'Бежевый',
-  [CarColor.Maroon]: 'Бордовый',
 };
 
 export function AssignCarModal({ 

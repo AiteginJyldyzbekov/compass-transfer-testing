@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 import { AuthService } from '@shared/api/auth-service';
 import { cn } from '@shared/lib/utils';
 import { Button } from '@shared/ui/forms/button';
@@ -104,6 +105,13 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
         <Button type='submit' className='w-full' disabled={isLoading}>
           {isLoading ? 'Вход...' : 'Войти'}
         </Button>
+      </div>
+
+      <div className='text-center text-sm text-muted-foreground'>
+        Нет аккаунта?{' '}
+        <Link href='/register' className='text-primary hover:underline'>
+          Зарегистрироваться как партнер
+        </Link>
       </div>
 
       {/* <div className='text-center text-sm'>

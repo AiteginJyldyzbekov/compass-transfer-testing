@@ -43,6 +43,9 @@ interface MapTabProps {
   routePoints?: RoutePoint[];
   setRoutePoints?: (points: RoutePoint[]) => void;
 
+  // Роль пользователя
+  userRole?: 'admin' | 'operator' | 'partner' | 'driver';
+
   // Внешнее состояние водителя (для сохранения между табами)
   selectedDriver?: Driver | null;
   setSelectedDriver?: (driver: Driver | null) => void;
@@ -79,6 +82,7 @@ export function MapTab({
   setDynamicMapCenter: setExternalDynamicMapCenter,
   openDriverPopupId: externalOpenDriverPopupId,
   setOpenDriverPopupId: setExternalOpenDriverPopupId,
+  userRole = 'operator',
   // Колбэки
   onRouteChange,
   onRoutePointsChange,
@@ -292,19 +296,23 @@ export function MapTab({
                 // Для моментальных заказов показываем радиус поиска водителей
                 showDriverSearchZone={showDriverRadius}
                 driverSearchRadius={1000} // 1 км радиус для каждого водителя
+                userRole={userRole}
               />
             </div>
           </CardContent>
         </Card>
-        {/* Панель водителя */}
-        <DriverPanel
-          selectedDriver={selectedDriver}
-          onDriverSelect={handleDriverSelect}
-          onClose={() => handleDriverSelect(null)}
-          activeDrivers={drivers}
-          getDriverById={(id: string) => allDrivers.find((d: Driver) => d.id === id) || null}
-          isInstantOrder={isInstantOrder}
-        />
+        {/* Панель водителя - скрыта для партнеров */}
+        {userRole !== 'partner' && (
+          <DriverPanel
+            selectedDriver={selectedDriver}
+            onDriverSelect={handleDriverSelect}
+            onClose={() => handleDriverSelect(null)}
+            activeDrivers={drivers}
+            getDriverById={(id: string) => allDrivers.find((d: Driver) => d.id === id) || null}
+            isInstantOrder={isInstantOrder}
+            userRole={userRole}
+          />
+        )}
       </div>
 
       {/* Модальное окно выбора локации */}
