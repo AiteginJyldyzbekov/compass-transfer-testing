@@ -1,6 +1,6 @@
-import { InstantOrderPage } from '@pages/(admin)/orders';
 import { getUserFromCookie } from '@shared/lib/parse-cookie';
 import { Role } from '@entities/users/enums';
+import { InstantOrderPage } from '@pages/(admin)/orders/create/instant';
 
 export default async function CreateInstantOrderPage({
   searchParams,

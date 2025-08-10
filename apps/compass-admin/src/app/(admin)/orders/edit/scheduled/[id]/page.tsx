@@ -1,4 +1,4 @@
-import { OrderPage } from '@pages/(admin)/orders';
+import { ScheduledOrderPage } from '@pages/(admin)/orders/create/scheduled/scheduled-order-page';
 
 interface EditScheduledOrderPageProps {
   params: Promise<{
@@ -9,7 +9,7 @@ interface EditScheduledOrderPageProps {
 export default async function EditScheduledOrderPage({ params }: EditScheduledOrderPageProps) {
   const { id } = await params;
   
-  return <OrderPage mode="edit" id={id} />;
+  return <ScheduledOrderPage mode="edit" id={id} />;
 }
 
 export async function generateMetadata({ params }: EditScheduledOrderPageProps) {

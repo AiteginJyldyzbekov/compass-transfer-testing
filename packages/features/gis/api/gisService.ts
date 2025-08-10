@@ -11,7 +11,16 @@ class GisService extends BaseApiService {
    * Search active drivers inside rectangular bounds
    */
   async getActiveDrivers(params: GetActiveDriversParams): Promise<ActiveDriverDTO[]> {
-    const queryParams: any = {
+    interface ActiveDriversQueryParams {
+      LatFrom: number;
+      LatTo: number;
+      LongFrom: number;
+      LongTo: number;
+      CarType?: string;
+      ServiceClass?: string;
+    }
+    
+    const queryParams: ActiveDriversQueryParams = {
       LatFrom: params.latFrom,
       LatTo: params.latTo,
       LongFrom: params.longFrom,

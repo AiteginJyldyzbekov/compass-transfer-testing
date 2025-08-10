@@ -8,9 +8,11 @@ import { Card, CardContent } from '@shared/ui/layout';
 import { ChapterHeader } from '@shared/ui/layout/chapter-header';
 import { FormSidebar } from '@shared/ui/layout/form-sidebar';
 import { CarBasicSection, CarFeaturesSection } from '@entities/cars';
+import { VehicleStatus, VehicleType, CarColor } from '@entities/cars/enums';
 import type { GetCarDTO } from '@entities/cars/interface';
 import { CAR_FORM_CHAPTERS } from '@entities/cars/model/form-chapters/car-chapters';
 import type { CarUpdateFormData } from '@entities/cars/schemas/carUpdateSchema';
+import { ServiceClass } from '@entities/shared/types';
 import { useCarEditFormLogic } from '@features/cars/forms/edit/car-edit-form';
 
 interface CarEditViewProps {
@@ -62,11 +64,11 @@ export function CarEditView({ carId }: CarEditViewProps) {
       make: '',
       model: '',
       year: 2022,
-      color: 'White' as any,
+      color: CarColor.White,
       licensePlate: '',
-      type: 'Sedan' as any,
-      serviceClass: 'Economy' as any,
-      status: 'Available' as any,
+      type: VehicleType.Sedan,
+      serviceClass: ServiceClass.Economy,
+      status: VehicleStatus.Available,
       passengerCapacity: 4,
       features: [],
     },

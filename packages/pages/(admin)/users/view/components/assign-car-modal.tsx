@@ -1,55 +1,33 @@
 'use client';
 
 import { Search, Car, Plus, Loader2, Filter } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { carsApi } from '@shared/api/cars';
+import { useState, useEffect, useCallback } from 'react';
+import { carsApi, type CarFilters } from '@shared/api/cars';
 import { Badge } from '@shared/ui/data-display/badge';
 import { Button } from '@shared/ui/forms/button';
 import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/modals/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
-
-import { CarColor, VehicleType, ServiceClass, VehicleStatus } from '@entities/cars/enums';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/modals/dialog';
+import { VehicleType, ServiceClass, VehicleStatus } from '@entities/cars/enums';
+import { CarColorTranslations } from '@entities/cars/enums/CarColor.enum'
+import { vehicleStatusLabels } from '@entities/cars/enums/VehicleStatus.enum'
 import type { GetCarDTO } from '@entities/cars/interface';
 
 interface AssignCarModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAssignCar: (carId: string) => Promise<void>;
-  driverId: string;
+  _driverId: string;
   driverName: string;
 }
 
-// Переводы для статусов автомобилей
-const vehicleStatusLabels: Record<VehicleStatus, string> = {
-  [VehicleStatus.Available]: 'Доступен',
-  [VehicleStatus.Maintenance]: 'На обслуживании',
-  [VehicleStatus.Repair]: 'На ремонте',
-  [VehicleStatus.Other]: 'Другое',
-};
-
-// Переводы для цветов автомобилей
-const carColorLabels: Record<CarColor, string> = {
-  [CarColor.White]: 'Белый',
-  [CarColor.Black]: 'Черный',
-  [CarColor.Silver]: 'Серебристый',
-  [CarColor.Gray]: 'Серый',
-  [CarColor.Red]: 'Красный',
-  [CarColor.Blue]: 'Синий',
-  [CarColor.Green]: 'Зеленый',
-  [CarColor.Yellow]: 'Желтый',
-  [CarColor.Orange]: 'Оранжевый',
-  [CarColor.Brown]: 'Коричневый',
-  [CarColor.Purple]: 'Фиолетовый',
-  [CarColor.Gold]: 'Золотой',
-};
 
 export function AssignCarModal({ 
   isOpen, 
   onClose, 
   onAssignCar, 
-  driverId,
+  _driverId,
   driverName
 }: AssignCarModalProps) {
   const [cars, setCars] = useState<GetCarDTO[]>([]);
@@ -67,12 +45,12 @@ export function AssignCarModal({
   });
 
   // Загрузка автомобилей
-  const loadCars = async () => {
+  const loadCars = useCallback(async () => {
     try {
       setLoading(true);
       
-      const params: any = {
-        pageSize: 50,
+      const params: CarFilters = {
+        size: 50,
       };
 
       // Поиск по номерному знаку или марке/модели
@@ -82,29 +60,29 @@ export function AssignCarModal({
         // Если содержит цифры или буквы в формате номера, ищем по номерному знаку
         if (/[0-9]/.test(query) || query.length <= 10) {
           params.licensePlate = query;
-          params.licensePlateOp = 'Contains';
+          params.licensePlateOp = 'Contains' as const;
         } else {
           // Иначе ищем по марке
           params.make = query;
-          params.makeOp = 'Contains';
+          params.makeOp = 'Contains' as const;
         }
       }
 
       // Применяем фильтры
       if (filters.status !== undefined) {
-        params.status = filters.status;
+        params.status = [filters.status];
       }
 
       if (filters.type !== undefined) {
-        params.type = filters.type;
+        params.type = [filters.type];
       }
 
       if (filters.serviceClass !== undefined) {
-        params.serviceClass = filters.serviceClass;
+        params.serviceClass = [filters.serviceClass];
       }
 
       // Показываем только доступные автомобили без назначенных водителей
-      params.status = VehicleStatus.Available;
+      params.status = [VehicleStatus.Available];
 
       const response = await carsApi.getCars(params);
       
@@ -115,12 +93,13 @@ export function AssignCarModal({
       
       setCars(availableCars);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка загрузки автомобилей:', error);
       setCars([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, filters]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -128,7 +107,7 @@ export function AssignCarModal({
     const timeoutId = setTimeout(loadCars, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [isOpen, searchQuery, filters.status, filters.type, filters.serviceClass]);
+  }, [isOpen, loadCars]);
 
   const handleAssignCar = async (carId: string) => {
     try {
@@ -136,6 +115,7 @@ export function AssignCarModal({
       await onAssignCar(carId);
       handleClose();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка назначения автомобиля:', error);
     } finally {
       setAssigningCarId(null);
@@ -294,7 +274,7 @@ export function AssignCarModal({
                             {car.licensePlate}
                           </Badge>
                           <Badge variant="secondary" className="text-xs">
-                            {carColorLabels[car.color]}
+                            {CarColorTranslations[car.color]}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-600">

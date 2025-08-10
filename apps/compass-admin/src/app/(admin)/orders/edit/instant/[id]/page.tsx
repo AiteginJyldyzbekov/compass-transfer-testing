@@ -1,4 +1,4 @@
-import { InstantOrderPage } from '@pages/(admin)/orders';
+import { InstantOrderPage } from '@pages/(admin)/orders/create/instant/instant-order-page';
 
 interface EditInstantOrderPageProps {
   params: Promise<{

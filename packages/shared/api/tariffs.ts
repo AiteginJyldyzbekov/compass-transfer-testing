@@ -63,16 +63,11 @@ interface TariffFilters {
 }
 
 interface TariffApiResponse {
-  data: GetTariffDTOWithArchived[];
+  data: GetTariffDTO[];
   totalCount: number;
   pageSize: number;
   hasPrevious: boolean;
   hasNext: boolean;
-}
-
-// Расширяем интерфейс GetTariffDTO для включения поля archived
-interface GetTariffDTOWithArchived extends GetTariffDTO {
-  archived: boolean;
 }
 
 export const tariffsApi = {
@@ -88,8 +83,8 @@ export const tariffsApi = {
   },
 
   // Получение тарифа по ID
-  getTariffById: async (id: string): Promise<GetTariffDTOWithArchived> => {
-    const result = await apiGet<GetTariffDTOWithArchived>(`/Tariff/${id}`);
+  getTariffById: async (id: string): Promise<GetTariffDTO> => {
+    const result = await apiGet<GetTariffDTO>(`/Tariff/${id}`);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -99,8 +94,8 @@ export const tariffsApi = {
   },
 
   // Создание тарифа
-  createTariff: async (data: CreateTariffDTO): Promise<GetTariffDTOWithArchived> => {
-    const result = await apiPost<GetTariffDTOWithArchived, CreateTariffDTO>('/Tariff', data);
+  createTariff: async (data: CreateTariffDTO): Promise<GetTariffDTO> => {
+    const result = await apiPost<GetTariffDTO, CreateTariffDTO>('/Tariff', data);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -110,8 +105,8 @@ export const tariffsApi = {
   },
 
   // Обновление тарифа
-  updateTariff: async (id: string, data: UpdateTariffDTO): Promise<GetTariffDTOWithArchived> => {
-    const result = await apiPut<GetTariffDTOWithArchived, UpdateTariffDTO>(`/Tariff/${id}`, data);
+  updateTariff: async (id: string, data: UpdateTariffDTO): Promise<GetTariffDTO> => {
+    const result = await apiPut<GetTariffDTO, UpdateTariffDTO>(`/Tariff/${id}`, data);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -130,8 +125,8 @@ export const tariffsApi = {
   },
 
   // Установка статуса архивирования тарифа
-  setArchivedStatus: async (id: string, archived: boolean): Promise<GetTariffDTOWithArchived> => {
-    const result = await apiPost<GetTariffDTOWithArchived, boolean>(`/Tariff/${id}/archived`, archived);
+  setArchivedStatus: async (id: string, archived: boolean): Promise<GetTariffDTO> => {
+    const result = await apiPost<GetTariffDTO, boolean>(`/Tariff/${id}/archived`, archived);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -144,5 +139,5 @@ export const tariffsApi = {
 export type { 
   TariffFilters, 
   TariffApiResponse, 
-  GetTariffDTOWithArchived 
+  GetTariffDTO 
 };

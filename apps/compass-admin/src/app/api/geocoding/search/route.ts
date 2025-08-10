@@ -1,4 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+
+// Интерфейс для данных из API Nominatim
+interface NominatimResult {
+  place_id: string | number;
+  display_name: string;
+  lat: string;
+  lon: string;
+  type: string;
+  importance: number;
+  address?: Record<string, string>;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,14 +33,13 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      console.error(`Nominatim search API error: ${response.status}`);
       return NextResponse.json([]);
     }
 
     const data = await response.json();
     
     // Фильтруем и форматируем результаты
-    const results = data.map((item: any) => ({
+    const results = data.map((item: NominatimResult) => ({
       place_id: item.place_id,
       display_name: item.display_name,
       lat: item.lat,
@@ -40,8 +50,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(results);
 
-  } catch (error) {
-    console.error('Ошибка поиска:', error);
+  } catch {
     return NextResponse.json([]);
   }
 }

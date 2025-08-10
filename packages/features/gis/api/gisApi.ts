@@ -1,6 +1,6 @@
 import { apiClient } from '@shared/api';
 import type { VehicleType } from '@entities/cars/enums/VehicleType.enum';
-import type { CarType, ServiceClass } from '@entities/tariff/enums';
+import type { CarType, ServiceClass } from '@entities/shared/types';
 
 /**
  * Интерфейс для активного водителя с геолокацией
@@ -36,7 +36,17 @@ export const getActiveDrivers = async (
   params: GetActiveDriversParams,
 ): Promise<ActiveDriverDTO[]> => {
   try {
-    const queryParams: any = {
+    // Интерфейс для параметров запроса
+    interface ActiveDriversQueryParams {
+      LatFrom: number;
+      LatTo: number;
+      LongFrom: number;
+      LongTo: number;
+      CarType?: CarType;
+      ServiceClass?: ServiceClass;
+    }
+    
+    const queryParams: ActiveDriversQueryParams = {
       LatFrom: params.latFrom,
       LatTo: params.latTo,
       LongFrom: params.longFrom,

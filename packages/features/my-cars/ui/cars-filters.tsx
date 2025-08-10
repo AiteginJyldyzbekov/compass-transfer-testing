@@ -36,7 +36,7 @@ export function CarsFilters({ onFiltersChange, currentFilters }: CarsFiltersProp
   const [isExpanded, setIsExpanded] = useState(false);
   const [localFilters, setLocalFilters] = useState<GetMyCarParams>(currentFilters);
 
-  const handleFilterChange = (key: keyof GetMyCarParams, value: any) => {
+  const handleFilterChange = (key: keyof GetMyCarParams, value: string | number | undefined) => {
     const newFilters = { ...localFilters, [key]: value };
 
     setLocalFilters(newFilters);

@@ -17,3 +17,12 @@ export const VehicleStatusValues = [
   VehicleStatus.Repair,
   VehicleStatus.Other,
 ];
+
+
+// Переводы для статусов автомобилей
+export const vehicleStatusLabels: Record<VehicleStatus, string> = {
+  [VehicleStatus.Available]: 'Доступен',
+  [VehicleStatus.Maintenance]: 'На обслуживании',
+  [VehicleStatus.Repair]: 'На ремонте',
+  [VehicleStatus.Other]: 'Другое',
+};

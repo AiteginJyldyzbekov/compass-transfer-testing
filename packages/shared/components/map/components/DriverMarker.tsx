@@ -56,11 +56,7 @@ export const DriverMarker: React.FC<DriverMarkerProps> = ({
   useLayoutEffect(() => {
     if (markerRef.current) {
       // Добавляем driverId в опции маркера для поиска в MapController
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (markerRef.current as any).options.driverId = driver.id;
-
-      // eslint-disable-next-line no-console
-      console.log('🏷️ DriverMarker: Установлен driverId в опции маркера', { driverId: driver.id });
+      (markerRef.current as { options: Record<string, unknown> }).options.driverId = driver.id;
     }
   }, [driver.id]);
 

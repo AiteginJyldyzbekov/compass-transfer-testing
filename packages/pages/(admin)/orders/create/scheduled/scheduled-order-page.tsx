@@ -4,21 +4,21 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import type { GetTariffDTOWithArchived } from '@shared/api/tariffs';
-import type { RoutePoint } from '@shared/components/map/types';
 import { useOrderData } from '@shared/hooks/useOrderData';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent } from '@shared/ui/layout/card';
 import { SidebarHeader } from '@shared/ui/layout/sidebar';
 import type { GetLocationDTO } from '@entities/locations/interface';
 import { orderStatusLabels } from '@entities/orders/constants/order-status-labels';
+import { OrderStatus } from '@entities/orders/enums';
 import {
   useScheduledOrderSubmit,
   useGetScheduledOrder,
   useUpdateScheduledOrder,
   useScheduledRideSubmit,
 } from '@entities/orders/hooks';
-import type { PassengerDTO } from '@entities/orders/interface';
+import type { PassengerDTO, GetOrderServiceDTO } from '@entities/orders/interface';
+import type { GetTariffDTO } from '@entities/tariffs/interface';
 import type { GetDriverDTO } from '@entities/users/interface';
 import {
   TariffPricingTab,
@@ -27,7 +27,7 @@ import {
   MapTab,
   ServicesTab,
   SummaryTab,
-} from './tabs';
+} from '../../tabs';
 
 // Интерфейс для точки маршрута в форме заказа
 interface OrderRoutePoint {
@@ -37,20 +37,8 @@ interface OrderRoutePoint {
   label: string;
 }
 
-// Расширенный интерфейс для RoutePoint с location
-interface RoutePointWithLocation extends RoutePoint {
-  location?: GetLocationDTO;
-}
-
-// Тип для сервиса в selectedServices (может быть как GetOrderServiceDTO, так и GetServiceDTO с quantity)
-interface SelectedService {
-  serviceId?: string;
-  id?: string;
-  quantity: number;
-  notes?: string | null;
-  name?: string;
-  price?: number;
-}
+// Тип для сервиса в selectedServices используем контракт GetOrderServiceDTO
+// Дополнительные данные (цена и т.п.) берём из справочника services по serviceId
 
 interface OrderPageProps {
   mode: 'create' | 'edit';
@@ -59,7 +47,7 @@ interface OrderPageProps {
   userRole?: 'admin' | 'operator' | 'partner' | 'driver';
 }
 
-export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: OrderPageProps) {
+export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'operator' }: OrderPageProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('pricing');
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['pricing'])); // Отслеживаем посещенные табы
@@ -76,7 +64,7 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
         // Проверяем что заполнены дата и время И время валидно (не в прошлом)
         const scheduledTime = methods.getValues('scheduledTime');
 
-        return !!scheduledTime && scheduledTime.trim() !== '' && scheduleValid;
+        return !!scheduledTime && typeof scheduledTime === 'string' && scheduledTime.trim() !== '' && scheduleValid;
       case 'passengers':
         // Проверяем что есть хотя бы один пассажир
         const passengers = methods.getValues('passengers');
@@ -222,17 +210,17 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
     flyReis: '',
     description: '',
     notes: '',
-    passengers: [] as any[],
+    passengers: [] as PassengerDTO[],
     startLocationId: '',
     endLocationId: '',
     additionalStops: [] as string[],
-    routePoints: [] as any[],
+    routePoints: [] as OrderRoutePoint[],
   });
 
   // Состояние для карты и водителя (сохраняется между шагами)
-  const [selectedDriver, setSelectedDriver] = useState<any>(null);
+  const [selectedDriver, setSelectedDriver] = useState<GetDriverDTO | null>(null);
   // Изначальный водитель заказа (для отслеживания изменений в режиме редактирования)
-  const [originalDriver, setOriginalDriver] = useState<any>(null);
+  const [originalDriver, setOriginalDriver] = useState<GetDriverDTO | null>(null);
   const [dynamicMapCenter, setDynamicMapCenter] = useState<{
     latitude: number;
     longitude: number;
@@ -275,23 +263,19 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
   const [customPrice, setCustomPrice] = useState<string>('');
 
   // Состояние для статуса заказа (для редактирования)
-  const [orderStatus, setOrderStatus] = useState<
-    'Pending' | 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled' | 'Expired'
-  >('Pending');
-  const [originalOrderStatus, setOriginalOrderStatus] = useState<
-    'Pending' | 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled' | 'Expired'
-  >('Pending');
+  const [orderStatus, setOrderStatus] = useState<OrderStatus>(OrderStatus.Pending);
+  const [originalOrderStatus, setOriginalOrderStatus] = useState<OrderStatus>(OrderStatus.Pending);
 
   const methods = useMemo(
     () => ({
-      getValues: (key?: string): any => {
+      getValues: (key?: string): unknown => {
         if (key) {
           return formData[key as keyof typeof formData];
         }
 
         return formData;
       },
-      setValue: (key: string, value: any) => {
+      setValue: (key: string, value: unknown) => {
         setFormData(prev => ({ ...prev, [key]: value }));
       },
     }),
@@ -313,10 +297,10 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
       flatLocations: routeLocations || [],
       routePoints: routePoints, // Используем реальные точки маршрута
 
-      addLocationSmart: (_location: any) => {
+      addLocationSmart: (_location: GetLocationDTO) => {
         // Функция для добавления локации
       },
-      selectLocationForPoint: (_location: any, _pointIndex: number) => {
+      selectLocationForPoint: (_location: GetLocationDTO, _pointIndex: number) => {
         // Функция для выбора локации для точки
       },
       removeRoutePoint: (_index: number) => {
@@ -326,14 +310,15 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
     [routeLocations, routePoints],
   );
 
-  const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
+  const [selectedServices, setSelectedServices] = useState<GetOrderServiceDTO[]>([]);
   const [currentPrice, setCurrentPrice] = useState(200);
-  const [selectedTariff, setSelectedTariff] = useState<GetTariffDTOWithArchived | null>(null);
+  const [selectedTariff, setSelectedTariff] = useState<GetTariffDTO | null>(null);
 
   // Автоматический выбор тарифа при создании заказа
   useEffect(() => {
     if (mode === 'create' && initialTariffId && tariffs.length > 0 && !selectedTariff) {
       const foundTariff = tariffs.find(t => t.id === initialTariffId);
+      
       if (foundTariff && !foundTariff.archived) {
         setSelectedTariff(foundTariff);
         // Автоматически переключаемся на таб тарифов, чтобы показать выбранный тариф
@@ -343,7 +328,7 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
     }
   }, [mode, initialTariffId, tariffs, selectedTariff]);
 
-  const handlePassengersChange = (newPassengers: any[]) => {
+  const handlePassengersChange = (newPassengers: PassengerDTO[]) => {
     // Обновляем форму с новыми пассажирами
     methods.setValue('passengers', newPassengers);
     // Принудительно обновляем состояние для перерендера
@@ -351,20 +336,27 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
   };
 
   const handleRoutePointsChange = useCallback(
-    (startLocationId: string, endLocationId: string, routePoints: RoutePointWithLocation[]) => {
+    (
+      startLocationId: string,
+      endLocationId: string,
+      routePoints: { id: string; location: GetLocationDTO | null; type: 'start' | 'end' | 'intermediate'; label: string }[],
+    ) => {
       // Извлекаем ID промежуточных точек
       const additionalStops = routePoints
         .filter(p => p.type === 'intermediate' && p.location)
         .map(p => p.location!.id);
 
       // Проверяем, изменились ли данные
-      const currentData = methods.getValues();
+      const currentStartLocationId = methods.getValues('startLocationId');
+      const currentEndLocationId = methods.getValues('endLocationId');
+      const currentAdditionalStops = methods.getValues('additionalStops');
+      const currentRoutePoints = methods.getValues('routePoints');
 
       if (
-        currentData.startLocationId === startLocationId &&
-        currentData.endLocationId === endLocationId &&
-        JSON.stringify(currentData.additionalStops || []) === JSON.stringify(additionalStops) &&
-        JSON.stringify(currentData.routePoints) === JSON.stringify(routePoints)
+        currentStartLocationId === startLocationId &&
+        currentEndLocationId === endLocationId &&
+        JSON.stringify(currentAdditionalStops || []) === JSON.stringify(additionalStops) &&
+        JSON.stringify(currentRoutePoints) === JSON.stringify(routePoints)
       ) {
         return; // Данные не изменились, не обновляем
       }
@@ -411,7 +403,7 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
     return false;
   }, [isEditMode, originalDriver, selectedDriver]);
 
-  const handleServicesChange = (newServices: SelectedService[]) => {
+  const handleServicesChange = (newServices: GetOrderServiceDTO[]) => {
     setSelectedServices(newServices);
   };
 
@@ -432,15 +424,7 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
 
   // Отладочная информация
   useEffect(() => {
-    if (isEditMode) {
-      // eslint-disable-next-line no-console
-      console.log('📝 OrderPage: Режим редактирования', {
-        id,
-        isLoadingOrder,
-        hasExistingOrder: !!existingOrder,
-        orderNumber: existingOrder?.orderNumber
-      });
-    }
+    if (isEditMode) {}
   }, [isEditMode, id, isLoadingOrder, existingOrder]);
 
   // Получаем номер заказа для отображения в заголовке
@@ -450,7 +434,7 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
   useEffect(() => {
     if (existingOrder && !isOrderDataLoaded && tariffs.length > 0 && services.length > 0) {
       // 1. Заполняем основные поля
-      const currentStatus = existingOrder.status as any;
+      const currentStatus = existingOrder.status as OrderStatus;
 
       setOrderStatus(currentStatus);
       setOriginalOrderStatus(currentStatus); // Сохраняем оригинальный статус
@@ -505,24 +489,27 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
 
       // 4. Устанавливаем выбранные услуги
       if (existingOrder.services && existingOrder.services.length > 0) {
-        const selectedServicesFromOrder = existingOrder.services
-          .map(orderService => {
-            const foundService = services.find(s => s.id === orderService.serviceId);
+        const selectedServicesFromOrder: GetOrderServiceDTO[] = [];
 
-            if (foundService) {
-              return {
-                ...foundService,
-                serviceId: foundService.id, // Добавляем serviceId для совместимости
-                quantity: orderService.quantity,
-                notes: orderService.notes,
-              };
+        existingOrder.services.forEach(orderService => {
+          const foundService = services.find(s => s.id === orderService.serviceId);
+
+          if (foundService) {
+            const dto: GetOrderServiceDTO = {
+              serviceId: foundService.id,
+              quantity: orderService.quantity,
+              name: foundService.name,
+            };
+
+            if (orderService.notes !== undefined) {
+              dto.notes = orderService.notes;
             }
 
-            return null;
-          })
-          .filter(Boolean);
+            selectedServicesFromOrder.push(dto);
+          }
+        });
 
-        setSelectedServices(selectedServicesFromOrder as SelectedService[]);
+        setSelectedServices(selectedServicesFromOrder);
       }
 
       // Отмечаем, что данные загружены
@@ -615,9 +602,9 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
           .slice(1, -1)
           .map(point => point.location!.id),
         services: selectedServices
-          .filter((service: SelectedService) => service.serviceId || service.id) // Фильтруем сервисы без ID
-          .map((service: SelectedService) => ({
-            serviceId: service.serviceId || service.id!, // Используем serviceId или id
+          .filter((service) => !!service.serviceId) // Фильтруем сервисы без ID
+          .map((service) => ({
+            serviceId: service.serviceId,
             quantity: service.quantity || 1,
             notes: service.notes || null,
           })),
@@ -635,17 +622,18 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
           const basePrice = selectedTariff.basePrice || 0;
           const perKmPrice = selectedTariff.perKmPrice || 0;
           const distancePrice = distance * perKmPrice;
-          const servicesPrice = selectedServices.reduce(
-            (sum, service) => sum + (service.price || 0) * (service.quantity || 1),
-            0,
-          );
+          const servicesPrice = selectedServices.reduce((sum, sel) => {
+            const svc = services.find(s => s.id === sel.serviceId);
+            
+            return sum + ((svc?.price || 0) * (sel.quantity || 1));
+          }, 0);
 
           return basePrice + distancePrice + servicesPrice;
         })(),
         scheduledTime: (() => {
           const dateValue = methods.getValues('scheduledTime');
 
-          if (dateValue) {
+          if (dateValue && typeof dateValue === 'string') {
             // Конвертируем в UTC формат для PostgreSQL
             const date = new Date(dateValue);
 
@@ -654,27 +642,37 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
 
           return new Date().toISOString(); // Текущая дата в UTC
         })(),
-        passengers: (Array.isArray(methods.getValues('passengers'))
-          ? methods.getValues('passengers')
-          : []
-        ).map((passenger: PassengerDTO) => ({
+        passengers: (() => {
+          const passengersData = methods.getValues('passengers');
+          const passengers = Array.isArray(passengersData) ? passengersData as PassengerDTO[] : [];
+
+          return passengers.map((passenger: PassengerDTO) => ({
           customerId: passenger.customerId || null,
           firstName: passenger.firstName,
           lastName: passenger.lastName || null,
-          isMainPassenger: passenger.isMainPassenger,
-        })),
-        description: methods.getValues('description') || null,
+            isMainPassenger: passenger.isMainPassenger,
+          }));
+        })(),
+        description: (() => {
+          const value = methods.getValues('description');
+
+          return value && typeof value === 'string' ? value : null;
+        })(),
         airFlight: (() => {
           const value = methods.getValues('airFlight');
 
-          return value ? value.toUpperCase().replace(/[^A-Z0-9\s-]/g, '') : null;
+          return value && typeof value === 'string' ? value.toUpperCase().replace(/[^A-Z0-9\s-]/g, '') : null;
         })(),
         flyReis: (() => {
           const value = methods.getValues('flyReis');
 
-          return value ? value.toUpperCase().replace(/[^A-Z0-9\s-]/g, '') : null;
+          return value && typeof value === 'string' ? value.toUpperCase().replace(/[^A-Z0-9\s-]/g, '') : null;
         })(),
-        notes: methods.getValues('notes') || null,
+        notes: (() => {
+          const value = methods.getValues('notes');
+
+          return value && typeof value === 'string' ? value : null;
+        })(),
       };
 
       // Отправляем или обновляем заказ в зависимости от режима
@@ -688,7 +686,7 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
         await updateOrder(id, updateData);
 
         // В режиме редактирования назначаем водителя только если нужно
-        if (shouldAssignDriverInEditMode()) {
+        if (shouldAssignDriverInEditMode() && selectedDriver) {
           const carId = selectedDriver.activeCar?.id || selectedDriver.activeCarId;
 
           if (!carId) {
@@ -739,7 +737,7 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
     currentPrice,
     handleServicesChange,
     handlePriceChange,
-  };
+  } as const;
 
   const tabs = [
     { id: 'pricing', label: 'Тарифы/Цены', component: TariffPricingTab },
@@ -823,24 +821,16 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
                 <select
                   value={orderStatus}
                   onChange={e => {
-                    setOrderStatus(
-                      e.target.value as
-                        | 'Pending'
-                        | 'Scheduled'
-                        | 'InProgress'
-                        | 'Completed'
-                        | 'Cancelled'
-                        | 'Expired',
-                    );
+                    setOrderStatus(e.target.value as OrderStatus);
                   }}
                   className='px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[220px]'
                 >
-                  <option value='Pending'>{orderStatusLabels.Pending}</option>
-                  <option value='Scheduled'>{orderStatusLabels.Scheduled}</option>
-                  <option value='InProgress'>{orderStatusLabels.InProgress}</option>
-                  <option value='Completed'>{orderStatusLabels.Completed}</option>
-                  <option value='Cancelled'>{orderStatusLabels.Cancelled}</option>
-                  <option value='Expired'>{orderStatusLabels.Expired}</option>
+                  <option value={OrderStatus.Pending}>{orderStatusLabels.Pending}</option>
+                  <option value={OrderStatus.Scheduled}>{orderStatusLabels.Scheduled}</option>
+                  <option value={OrderStatus.InProgress}>{orderStatusLabels.InProgress}</option>
+                  <option value={OrderStatus.Completed}>{orderStatusLabels.Completed}</option>
+                  <option value={OrderStatus.Cancelled}>{orderStatusLabels.Cancelled}</option>
+                  <option value={OrderStatus.Expired}>{orderStatusLabels.Expired}</option>
                 </select>
               </div>
             </div>
@@ -863,8 +853,10 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
 
                   const TabComponent = activeTabData.component;
 
+                  const TabComponentAny = TabComponent as React.ComponentType<Record<string, unknown>>;
+
                   return (
-                    <TabComponent
+                    <TabComponentAny
                       {...({} as Record<string, unknown>)}
                       // Данные
                       tariffs={tariffs}
@@ -879,17 +871,11 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
                       selectedServices={selectedServices}
                       currentPrice={currentPrice}
                       // Пассажиры
-                      passengers={methods.getValues('passengers') as any[]}
+                      passengers={methods.getValues('passengers') as never[]}
                       handlePassengersChange={handlePassengersChange}
                       userRole={userRole}
                       // Тариф
-                      selectedTariff={
-                        activeTab === 'passengers'
-                          ? selectedTariff
-                            ? { id: selectedTariff.id, carType: selectedTariff.carType }
-                            : undefined
-                          : selectedTariff
-                      }
+                      selectedTariff={selectedTariff as unknown as GetTariffDTO}
                       setSelectedTariff={setSelectedTariff}
                       onRefreshTariffs={refetchTariffs}
                       isRefreshingTariffs={isRefreshingTariffs}
@@ -908,13 +894,13 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
                         activeTab === 'schedule' ? setScheduleValid : undefined
                       }
                       initialScheduledTime={
-                        activeTab === 'schedule' ? methods.getValues('scheduledTime') : undefined
+                        activeTab === 'schedule' ? methods.getValues('scheduledTime') as string : undefined
                       }
                       // Обработчики для MapTab
                       onRoutePointsChange={mapTabRoutePointsChange}
                       // Состояние водителя для MapTab
-                      selectedDriver={selectedDriver}
-                      setSelectedDriver={setSelectedDriver}
+                      selectedDriver={selectedDriver as unknown as GetDriverDTO}
+                      setSelectedDriver={setSelectedDriver as unknown as (driver: unknown) => void}
                       dynamicMapCenter={dynamicMapCenter}
                       setDynamicMapCenter={setDynamicMapCenter}
                       openDriverPopupId={openDriverPopupId}
@@ -925,21 +911,13 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
                       onRouteDistanceChange={setRouteDistance}
                       onRouteLoadingChange={setRouteLoading}
                       // Данные локаций заказа для MapTab
-                      startLocationId={methods.getValues('startLocationId')}
-                      endLocationId={methods.getValues('endLocationId')}
+                      startLocationId={methods.getValues('startLocationId') as string}
+                      endLocationId={methods.getValues('endLocationId') as string}
                       additionalStops={(() => {
                         const stops = isEditMode && existingOrder?.additionalStops
                           ? existingOrder.additionalStops
-                          : methods.getValues('additionalStops') || [];
-
-                        // eslint-disable-next-line no-console
-                        console.log('🗺️ MapTab additionalStops:', {
-                          isEditMode,
-                          existingOrderStops: existingOrder?.additionalStops,
-                          formStops: methods.getValues('additionalStops'),
-                          finalStops: stops
-                        });
-
+                          : methods.getValues('additionalStops') as string[] || [];
+                          
                         return stops;
                       })()}
                       rides={existingOrder?.rides} // Передаем rides для режима редактирования
@@ -955,8 +933,8 @@ export function OrderPage({ mode, id, initialTariffId, userRole = 'operator' }: 
                       // Переключение табов (только для SummaryTab)
                       onTabChange={activeTab === 'summary' ? setActiveTab : undefined}
                       // Функции для работы с водителями (для MapTab и SummaryTab)
-                      getDriverById={getDriverById}
-                      updateDriverCache={updateDriverCache}
+                      getDriverById={getDriverById as unknown as (id: string) => Record<string, unknown> | null}
+                      updateDriverCache={updateDriverCache as unknown as (id: string, data: Record<string, unknown>) => void}
                     />
                   );
                 })()}

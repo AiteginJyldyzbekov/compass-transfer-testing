@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Search, User, Plus, Loader2, Filter, Eye } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/modals/dialog';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { usersApi } from '@shared/api/users';
+import { Badge } from '@shared/ui/data-display/badge';
+import { Skeleton } from '@shared/ui/data-display/skeleton';
 import { Button } from '@shared/ui/forms/button';
 import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
-import { Badge } from '@shared/ui/data-display/badge';
-import { Skeleton } from '@shared/ui/data-display/skeleton';
-import { usersApi } from '@shared/api/users';
-import { DriverSheet } from '@widgets/sidebar/ui/driver-sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/modals/dialog';
 import type { GetDriverDTO } from '@entities/users/interface';
+import { DriverSheet } from '@widgets/sidebar/ui/driver-sheet';
 
 interface AddDriverModalProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ export function AddDriverModal({
 
       try {
         setLoading(true);
-        const params: Record<string, any> = {
+        const params: Record<string, string | number | boolean | string[]> = {
           size: 50,
         };
 
@@ -87,8 +88,8 @@ export function AddDriverModal({
         );
 
         setDrivers(availableDrivers);
-      } catch (error) {
-        console.error('Ошибка загрузки водителей:', error);
+      } catch {
+        toast.error('Ошибка загрузки водителей:');
         setDrivers([]);
       } finally {
         setLoading(false);
@@ -107,8 +108,8 @@ export function AddDriverModal({
       setAddingDriverId(driverId);
       await onAddDriver(driverId);
       onClose();
-    } catch (error) {
-      console.error('Ошибка добавления водителя:', error);
+    } catch {
+      toast.error('Ошибка добавления водителя:');
     } finally {
       setAddingDriverId(null);
     }

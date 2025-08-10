@@ -1,16 +1,9 @@
 'use client';
 
 import { X } from 'lucide-react';
+import type { RoutePoint } from '@shared/components/map/types';
 import { Button } from '@shared/ui/forms/button';
 import { locationTypeIcons } from '@entities/locations/enums/LocationType.enum';
-import type { GetLocationDTO } from '@entities/locations/interface';
-
-interface RoutePoint {
-  id: string;
-  location: GetLocationDTO | null;
-  type: 'start' | 'end' | 'intermediate';
-  label: string;
-}
 
 interface RoutePointItemProps {
   point: RoutePoint;

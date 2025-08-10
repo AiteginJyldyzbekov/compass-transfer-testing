@@ -2,9 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { toast } from 'sonner';
 import { Label } from '@shared/ui/forms/label';
 import { LeafletLocationMap } from '@shared/ui/maps/leaflet-location-map';
 import type { LocationCreateFormData } from '../schemas/locationCreateSchema';
+
+// Интерфейс для структурированного адреса из LeafletLocationMap
+interface AddressData {
+  fullAddress: string;
+  country: string;
+  region: string;
+  city: string;
+  street: string;
+}
 
 interface LocationMapSectionProps {
   labels?: {
@@ -32,10 +42,8 @@ export function LocationMapSection({
   // Инициализируем координаты из формы
   useEffect(() => {
     if (typeof latitude === 'number' && typeof longitude === 'number') {
-      console.log('Инициализируем координаты из формы:', latitude, longitude);
       setCoordinates([latitude, longitude]);
     } else {
-      console.log('Координаты не найдены, сбрасываем:', latitude, longitude);
       setCoordinates(null);
     }
   }, [latitude, longitude]);
@@ -45,19 +53,17 @@ export function LocationMapSection({
     const checkYandexMapsApi = async () => {
       try {
         const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
-        console.log('Yandex Maps API Key:', apiKey ? `Установлен: ${apiKey.substring(0, 8)}...` : 'Не найден');
-        console.log('Все переменные окружения:', Object.keys(process.env).filter(key => key.includes('YANDEX')));
 
         if (!apiKey) {
           setError('API ключ Яндекс Карт не настроен. Проверьте переменную NEXT_PUBLIC_YANDEX_MAPS_API_KEY в .env файле');
           setIsApiLoaded(false);
+
           return;
         }
 
-        console.log('Загружаем Яндекс Карты...');
         setIsApiLoaded(true);
-      } catch (error) {
-        console.error('Проверка API Яндекс Карт не удалась:', error);
+      } catch {
+        toast.error('Проверка API Яндекс Карт не удалась:');
         setError('Ошибка загрузки карты. Пожалуйста, попробуйте обновить страницу.');
         setIsApiLoaded(false);
       }
@@ -68,23 +74,22 @@ export function LocationMapSection({
 
   // Обработчик изменения координат
   const handleCoordinatesChange = (newCoordinates: [number, number]) => {
-    console.log('Обновляем координаты:', newCoordinates);
     setCoordinates(newCoordinates);
     setValue('latitude', newCoordinates[0]);
     setValue('longitude', newCoordinates[1]);
   };
 
   // Обработчик изменения адреса и названия
-  const handleAddressChange = (addressData: any) => {
+  const handleAddressChange = (addressData: AddressData) => {
     const currentName = watch('name');
     const currentAddress = watch('address');
 
-    // Обновляем поля формы структурированными данными
+    // Заполняем адрес
     setValue('address', addressData.fullAddress);
 
     // Заполняем название только если:
     // 1. Поле пустое, ИЛИ
-    // 2. Текущее название совпадает с предыдущим адресом (автозаполненное)
+    // 2. Текущее значение названия равно текущему адресу (т.е. пользователь его не редактировал)
     if (!currentName || currentName === currentAddress) {
       setValue('name', addressData.fullAddress);
     }
@@ -92,15 +97,6 @@ export function LocationMapSection({
     setValue('country', addressData.country);
     setValue('region', addressData.region);
     setValue('city', addressData.city);
-
-    console.log('Обновляем поля формы:', {
-      address: addressData.fullAddress,
-      name: (!currentName || currentName === currentAddress) ? addressData.fullAddress : currentName,
-      nameUpdated: (!currentName || currentName === currentAddress),
-      country: addressData.country,
-      region: addressData.region,
-      city: addressData.city
-    });
   };
 
   return (
@@ -131,12 +127,14 @@ export function LocationMapSection({
                   // Перезагружаем проверку API
                   const checkApi = async () => {
                     const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
+
                     if (apiKey) {
                       setIsApiLoaded(true);
                     } else {
                       setError('API ключ не найден');
                     }
                   };
+
                   checkApi();
                 }}
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -148,7 +146,7 @@ export function LocationMapSection({
         ) : !isApiLoaded ? (
           <div className="bg-gray-100 rounded-lg p-6 text-center h-[400px] flex items-center justify-center">
             <div className="text-gray-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-3"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-3"/>
               <p>Загрузка карты...</p>
             </div>
           </div>
@@ -174,8 +172,6 @@ export function LocationMapSection({
       {errors.longitude && (
         <p className="text-sm text-red-600">{errors.longitude.message}</p>
       )}
-
-
     </div>
   );
 }

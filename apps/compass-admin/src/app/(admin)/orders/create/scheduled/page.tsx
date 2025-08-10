@@ -1,6 +1,6 @@
-import { OrderPage } from '@pages/(admin)/orders';
 import { getUserFromCookie } from '@shared/lib/parse-cookie';
 import { Role } from '@entities/users/enums';
+import { ScheduledOrderPage } from '@pages/(admin)/orders/create/scheduled';
 
 export default async function CreateScheduledOrderPage({
   searchParams,
@@ -28,7 +28,7 @@ export default async function CreateScheduledOrderPage({
     }
   })();
 
-  return <OrderPage mode="create" initialTariffId={params.tariffId} userRole={roleString} />;
+  return <ScheduledOrderPage mode="create" initialTariffId={params.tariffId} userRole={roleString} />;
 }
 
 export const metadata = {

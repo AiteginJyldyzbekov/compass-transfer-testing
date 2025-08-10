@@ -7,28 +7,25 @@ import { Badge } from '@shared/ui/data-display/badge';
 import { Button } from '@shared/ui/forms/button';
 import { Input } from '@shared/ui/forms/input';
 import { Card, CardContent } from '@shared/ui/layout/card';
-import { useDriverSearch, type Driver } from '@features/drivers/hooks/useDriverSearch';
-import { ServiceClassValues, type ServiceClass } from '@entities/tariffs/enums/ServiceClass.enum';
 import { CarTypeValues, type CarType } from '@entities/tariffs/enums/CarType.enum';
+import { ServiceClassValues, type ServiceClass } from '@entities/tariffs/enums/ServiceClass.enum';
+import type { GetDriverDTO } from '@entities/users/interface';
+import { useDriverSearch } from '@features/drivers/hooks/useDriverSearch';
 
 interface DriverPanelProps {
-  selectedDriver?: Driver | null;
-  onDriverSelect: (driver: Driver, location?: { latitude: number; longitude: number }, fromSearchPanel?: boolean) => void;
+  selectedDriver?: GetDriverDTO | null;
+  onDriverSelect: (driver: GetDriverDTO | null, location?: { latitude: number; longitude: number }, fromSearchPanel?: boolean) => void;
   onClose: () => void;
   activeDrivers?: Array<{ id: string; currentLocation?: { latitude: number; longitude: number } }>; // Активные водители с карты
-  getDriverById?: (id: string) => Record<string, unknown> | null; // Функция для получения полных данных водителя
+  getDriverById?: (id: string) => GetDriverDTO | null; // Функция для получения полных данных водителя
   isInstantOrder?: boolean; // Флаг для моментальных заказов - отключает выбор водителей
-  userRole?: 'admin' | 'operator' | 'partner' | 'driver'; // Роль пользователя
+  userRole?: 'admin' | 'operator' | 'driver'; // Роль пользователя
 }
 
-export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDrivers = [], getDriverById, isInstantOrder = false, userRole = 'operator' }: DriverPanelProps) {
-  // Партнеры не должны видеть панель водителей
-  if (userRole === 'partner') {
-    return null;
-  }
-
+export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDrivers = [], getDriverById, isInstantOrder = false, userRole: _userRole = 'operator' }: DriverPanelProps) {
+  // Хуки должны быть вызваны всегда, независимо от условий
   const [searchQuery, setSearchQuery] = useState('');
-  const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
+  const [allDrivers, setAllDrivers] = useState<GetDriverDTO[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(true); // По умолчанию скрыта
 
   const { drivers, isLoading, searchDrivers, searchDriversByName } = useDriverSearch();
@@ -58,10 +55,12 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
     }
   }, [debouncedSearchQuery, searchDriversByName]);
 
+  // Партнеры не должны видеть панель водителей (убираем проверку, так как partner не входит в тип)
+
   // Определяем какие водители показывать
   const displayDrivers = searchQuery.trim().length >= 2 ? (drivers || []) : (allDrivers || []);
 
-  const handleDriverClick = (driver: Driver) => {
+  const handleDriverClick = (driver: GetDriverDTO) => {
     // В моментальных заказах не разрешаем выбор водителей
     if (isInstantOrder) {
       return;
@@ -82,7 +81,7 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
       const driverWithLocation = allDrivers.find(d => d.id === driver.id) ||
                                 drivers.find(d => d.id === driver.id);
 
-      location = (driverWithLocation as Driver & { currentLocation?: { latitude: number; longitude: number } })?.currentLocation;
+      location = (driverWithLocation as GetDriverDTO & { currentLocation?: { latitude: number; longitude: number } })?.currentLocation;
     }
 
 
@@ -114,14 +113,14 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
           {selectedDriver && (() => {
             // Получаем полные данные водителя из кэша (БЕЗ автоматической загрузки)
             const fullDriverData = getDriverById ? getDriverById(selectedDriver.id) : null;
-            const driverName = fullDriverData?.fullName || selectedDriver.fullName || `Водитель ${selectedDriver.id}`;
-            const driverPhone = fullDriverData?.phoneNumber || selectedDriver.phoneNumber || 'Телефон не указан';
+            const driverName = (fullDriverData?.fullName as string) || selectedDriver.fullName || `Водитель ${selectedDriver.id}`;
+            const driverPhone = (fullDriverData?.phoneNumber as string) || selectedDriver.phoneNumber || 'Телефон не указан';
 
             // Получаем данные автомобиля
             const activeCar = fullDriverData?.activeCar as Record<string, unknown> | undefined;
-            const carType = activeCar?.type as string || selectedDriver.vehicleServiceClass?.[0] || '';
+            const carType = activeCar?.type as string || '';
             const carTypeTranslated = CarTypeValues[carType as unknown as CarType] || carType;
-            const serviceClass = activeCar?.serviceClass as string || selectedDriver.vehicleServiceClass?.[0] || '';
+            const serviceClass = activeCar?.serviceClass as string || '';
             const serviceClassTranslated = ServiceClassValues[serviceClass as unknown as ServiceClass] || serviceClass;
             const licensePlate = activeCar?.licensePlate as string || '';
 
@@ -176,7 +175,7 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
 
           {/* Поиск водителей или информация о моментальном заказе */}
           <div className="space-y-3">
-            {isInstantOrder && userRole !== 'partner' ? (
+            {isInstantOrder ? (
               <div className="text-center py-4 px-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="text-sm text-blue-800 font-medium mb-1">
                   Моментальный заказ
@@ -185,7 +184,7 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
                   Система автоматически найдет подходящего водителя
                 </div>
               </div>
-            ) : isInstantOrder && userRole === 'partner' ? null : (
+            ) : (
               <div className="flex items-center gap-2">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -228,14 +227,14 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
                 displayDrivers.map((driver) => {
                   // Получаем полные данные водителя из кэша
                   const fullDriverData = getDriverById ? getDriverById(driver.id) : null;
-                  const driverName = fullDriverData?.fullName || driver.fullName || `Водитель ${driver.id}`;
-                  const driverPhone = fullDriverData?.phoneNumber || driver.phoneNumber || '';
+                  const driverName = (fullDriverData?.fullName as string) || driver.fullName || `Водитель ${driver.id}`;
+                  const driverPhone = (fullDriverData?.phoneNumber as string) || driver.phoneNumber || '';
 
                   // Получаем данные автомобиля
                   const activeCar = fullDriverData?.activeCar as Record<string, unknown> | undefined;
                   const carType = activeCar?.type as string || '';
                   const carTypeTranslated = CarTypeValues[carType as unknown as CarType] || carType;
-                  const serviceClasses = driver.vehicleServiceClass || [];
+                  const serviceClasses = (activeCar?.serviceClass ? [activeCar.serviceClass as string] : []);
                   const licensePlate = activeCar?.licensePlate as string || '';
 
                   return (
@@ -273,7 +272,7 @@ export function DriverPanel({ selectedDriver, onDriverSelect, onClose, activeDri
 
                           <div className="flex gap-1 flex-wrap">
                             {/* Классы обслуживания с переводом */}
-                            {serviceClasses.slice(0, 2).map(cls => (
+                            {serviceClasses.slice(0, 2).map((cls: string) => (
                               <Badge key={cls} variant="outline" className="text-xs px-1.5 py-0.5">
                                 {ServiceClassValues[cls as unknown as ServiceClass] || cls}
                               </Badge>

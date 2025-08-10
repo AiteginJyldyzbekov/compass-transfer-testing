@@ -1,9 +1,9 @@
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { useUserRole } from '@shared/contexts/user-role-context';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout';
-import { useUserRole } from '@shared/contexts/user-role-context';
-import { Role } from '@entities/users/enums';
 import type { GetOrderDTO } from '@entities/orders/interface';
+import { Role } from '@entities/users/enums';
 
 interface ScheduledOrderViewActionsProps {
   order: GetOrderDTO;

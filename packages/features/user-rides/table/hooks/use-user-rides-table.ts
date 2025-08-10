@@ -2,6 +2,25 @@ import { useState, useEffect, useCallback } from 'react';
 import { ridesApi } from '@shared/api/rides';
 import type { GetRideDTO } from '@entities/rides/interface';
 
+// Интерфейс для параметров запроса поездок
+interface RideFilters {
+  // Параметры пагинации
+  first?: boolean;
+  after?: string | undefined;
+  size?: number;
+  
+  // Параметры сортировки
+  sortBy?: string;
+  sortOrder?: 'Asc' | 'Desc';
+  
+  // Фильтры
+  'Id.Contains'?: string;
+  'Status.In'?: string[];
+  
+  // Идентификатор водителя
+  DriverId?: string;
+}
+
 interface ColumnVisibility {
   status: boolean;
   startLocation: boolean;
@@ -54,7 +73,7 @@ export function useUserRidesTable(userId: string) {
       setLoading(true);
       setError(null);
 
-      const params: any = {
+      const params: RideFilters = {
         first: isFirstPage,
         after: currentCursor || undefined,
         size: pageSize,

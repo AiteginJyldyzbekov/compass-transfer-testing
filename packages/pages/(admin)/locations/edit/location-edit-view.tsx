@@ -8,6 +8,7 @@ import { Card, CardContent } from '@shared/ui/layout';
 import { ChapterHeader } from '@shared/ui/layout/chapter-header';
 import { FormSidebar } from '@shared/ui/layout/form-sidebar';
 import { LocationBasicSection, LocationCoordinatesSection, LocationMapSection } from '@entities/locations';
+import { LocationType } from '@entities/locations/enums';
 import type { LocationDTO } from '@entities/locations/interface';
 import { LOCATION_FORM_CHAPTERS } from '@entities/locations/model/form-chapters/location-chapters';
 import type { LocationUpdateFormData } from '@entities/locations/schemas/locationUpdateSchema';
@@ -61,7 +62,7 @@ export function LocationEditView({ locationId }: LocationEditViewProps) {
     initialData: {
       name: '',
       description: '',
-      type: 'Airport' as any,
+      type: LocationType.Airport,
       address: '',
       latitude: 0,
       longitude: 0,
@@ -78,13 +79,12 @@ export function LocationEditView({ locationId }: LocationEditViewProps) {
     if (location && logic.form) {
       logic.form.reset({
         name: location.name || '',
-        description: location.description || '',
         type: location.type,
         address: location.address || '',
         latitude: location.latitude || 0,
         longitude: location.longitude || 0,
         isActive: location.isActive ?? true,
-        popular: (location as any).popular1 ?? false,
+        popular: location.popular1 ?? false,
         popular2: location.popular2 ?? false,
       });
     }

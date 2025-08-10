@@ -44,7 +44,6 @@ export function NotificationFormView({
                     {/* Вертикальная линия */}
                     <div className='absolute -left-8 top-0 bottom-0 w-0.5 border-l-2 border-dashed border-gray-300' />
                     <NotificationBasicSection
-                      showOptionalWarning={getChapterStatus('basic') === 'warning'}
                       labels={{
                         type: 'Тип уведомления *',
                         title: 'Заголовок уведомления *',

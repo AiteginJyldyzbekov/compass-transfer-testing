@@ -3,24 +3,7 @@
 import { useState, useCallback } from 'react';
 import { apiClient } from '@shared/api';
 import { logger } from '@shared/lib';
-
-export interface Driver {
-  id: string;
-  fullName: string;
-  email: string;
-  phoneNumber: string;
-  online: boolean;
-  vehicleServiceClass: string[];
-  licenseCategories: string[];
-  drivingExperience: number;
-  preferredWorkZone: string[];
-  languages: string[];
-  role: string[];
-  currentLocation?: {
-    latitude: number;
-    longitude: number;
-  };
-}
+import type { GetDriverDTO } from '@entities/users/interface';
 
 export interface DriverSearchParams {
   vehicleServiceClass?: string[];
@@ -45,7 +28,7 @@ export interface DriverSearchParams {
  * Хук для поиска водителей
  */
 export const useDriverSearch = () => {
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [drivers, setDrivers] = useState<GetDriverDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,14 +40,14 @@ export const useDriverSearch = () => {
     setError(null);
 
     try {
-      const searchParams: Record<string, any> = {
+      const searchParams: Record<string, unknown> = {
         First: true,
         Size: 50,
         ...params
       };
 
       const response = await apiClient.get<{
-        data: Driver[];
+        data: GetDriverDTO[];
         totalCount: number;
       }>('/User/Driver', { params: searchParams });
 
@@ -72,15 +55,7 @@ export const useDriverSearch = () => {
         throw new Error(response.error.message || 'Ошибка при поиске водителей');
       }
 
-      const driversData = Array.isArray(response.data?.data) ? response.data.data.map((driver: any) => ({
-        ...driver,
-        vehicleServiceClass: driver.vehicleServiceClass || [],
-        licenseCategories: driver.licenseCategories || [],
-        preferredWorkZone: driver.preferredWorkZone || [],
-        languages: driver.languages || [],
-        role: driver.role || [],
-        currentLocation: driver.currentLocation || null
-      })) : [];
+      const driversData = Array.isArray(response.data?.data) ? response.data.data : [];
 
       setDrivers(driversData);
       

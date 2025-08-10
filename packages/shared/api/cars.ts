@@ -185,4 +185,7 @@ export const carsApi = {
   },
 };
 
+// Экспортируем типы для получения моих автомобилей из cars-apiмодуля
+export type { GetMyCarParams } from './cars/cars-api';
+
 export type { CarFilters, CarApiResponse, CreateCarDTO, UpdateCarDTO };

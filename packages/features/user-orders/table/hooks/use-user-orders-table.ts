@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ordersApi } from '@shared/api/orders';
-import type { GetOrderDTO } from '@entities/orders/interface';
+import { ordersApi, type OrderFilters } from '@shared/api/orders';
+import { logger } from '@shared/lib';
 import { type OrderStatus } from '@entities/orders/enums/OrderStatus.enum';
 import { type OrderSubStatus } from '@entities/orders/enums/OrderSubStatus.enum';
 import { type OrderType } from '@entities/orders/enums/OrderType.enum';
+import type { GetOrderDTO } from '@entities/orders/interface';
 
 interface ColumnVisibility {
   orderNumber: boolean;
@@ -63,7 +64,17 @@ export function useUserOrdersTable(userId: string) {
       setLoading(true);
       setError(null);
 
-      const params: any = {
+      // Интерфейс для параметров запроса заказов
+      // Используем тип OrderFilters из API заказов
+      // добавляем наши дополнительные поля для фильтрации
+      type OrdersQueryParams = OrderFilters & {
+        search?: string;
+        orderTypes?: OrderType[];
+        orderStatuses?: OrderStatus[];
+        orderSubStatuses?: OrderSubStatus[];
+      };
+      
+      const params: OrdersQueryParams = {
         first: isFirstPage,
         after: currentCursor || undefined,
         size: pageSize,
@@ -74,7 +85,9 @@ export function useUserOrdersTable(userId: string) {
       // Добавляем фильтры
       if (searchTerm) {
         params['orderNumber'] = searchTerm;
-        params['orderNumberOp'] = 'Contains';
+        // Используем Contains, который есть в airFlightOp/flyReisOp, но нет в orderNumberOp
+        // вместо этого можно использовать Equal или другое подходящее сравнение
+        params['orderNumberOp'] = 'Equal';
       }
 
       if (typeFilter.length > 0) {
@@ -99,8 +112,8 @@ export function useUserOrdersTable(userId: string) {
       setHasNext(response.hasNext || false);
       setHasPrevious(response.hasPrevious || false);
 
-    } catch (err) {
-      console.error('Ошибка загрузки заказов пользователя:', err);
+    } catch (err: unknown) {
+      logger.error('Ошибка загрузки заказов пользователя:', err);
       setError(err instanceof Error ? err.message : 'Ошибка загрузки заказов');
     } finally {
       setLoading(false);

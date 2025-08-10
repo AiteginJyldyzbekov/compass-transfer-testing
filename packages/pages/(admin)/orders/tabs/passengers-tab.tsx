@@ -1,361 +1,59 @@
 'use client';
 
 import { Users, Plus, Trash2, User, Phone, Mail, Search, UserCheck, MapPin, ExternalLink } from 'lucide-react';
-import { useState, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
-import { usersApi } from '@shared/api/users';
 import { Badge } from '@shared/ui/data-display/badge';
 import { Button } from '@shared/ui/forms/button';
 import { Input } from '@shared/ui/forms/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout/card';
-import { CarType, CarTypeValues, CAR_TYPE_CAPACITY } from '@entities/tariffs/enums/CarType.enum';
+import type { GetTariffDTO } from '@entities/tariffs/interface';
+import type { GetCustomerDTO, GetPartnerDTO } from '@entities/users/interface';
+import { usePassengersManagement, type EnhancedPassenger } from '@features/users/hooks/use-passengers-management';
 
-interface Passenger {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  age?: number;
-  isMainPassenger: boolean;
-  isFromSystem?: boolean; // Пассажир из системы (нередактируемый)
-  customerId?: string | null; // ID пользователя в системе
-}
-
-// Расширенный пассажир с загруженными данными пользователя
-interface EnhancedPassenger extends Passenger {
-  userData?: User | null; // Загруженные данные пользователя
-  isUserDataLoaded?: boolean; // Флаг загрузки данных пользователя
-}
-
-interface User {
-  id: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  phone?: string;
-  phoneNumber?: string | null;
-  email?: string;
-  role: string;
-  loyaltyPoints?: number;
-  phantom?: boolean;
-  profile?: {
-    companyName?: string;
-    companyType?: string;
-    legalAddress?: string;
-    contactPhone?: string;
-    contactEmail?: string;
-    website?: string;
-  };
-}
-
-interface SelectedTariff {
-  id: string;
-  carType: CarType;
-  name?: string;
-}
+// Union тип для пользователей в поиске (Customer или Partner)
+type SearchableUser = GetCustomerDTO | GetPartnerDTO;
 
 interface PassengersTabProps {
-  users: User[];
-  passengers?: Passenger[];
-  handlePassengersChange?: (passengers: Passenger[]) => void;
-  selectedTariff?: SelectedTariff; // Выбранный тариф для определения вместимости
+  users: SearchableUser[];
+  passengers?: EnhancedPassenger[];
+  handlePassengersChange?: (passengers: EnhancedPassenger[]) => void;
+  selectedTariff?: GetTariffDTO; // Выбранный тариф для определения вместимости
   isInstantOrder?: boolean; // Флаг для моментальных заказов
   onValidationError?: () => void; // Колбэк для обработки ошибок валидации
   userRole?: 'admin' | 'operator' | 'partner' | 'driver'; // Роль пользователя
   [key: string]: unknown;
 }
 
-export function PassengersTab({ users, passengers: initialPassengers, handlePassengersChange, selectedTariff, isInstantOrder = false, onValidationError, userRole = 'operator' }: PassengersTabProps) {
-  const [passengers, setPassengers] = useState<EnhancedPassenger[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
-  const [isLoadingPassengerData, setIsLoadingPassengerData] = useState(false);
-  const [passengersDataLoaded, setPassengersDataLoaded] = useState(false);
-
-  // Функция для загрузки данных пользователя по ID
-  const loadUserData = async (userId: string): Promise<User | null> => {
-    // Партнеры не могут загружать данные других пользователей
-    if (userRole === 'partner') {
-      return null;
-    }
-
-    try {
-      const response = await usersApi.getUserById(userId);
-
-      return response;
-    } catch {
-      return null;
-    }
-  };
-
-  // useLayoutEffect для синхронной загрузки данных пассажиров
-  useLayoutEffect(() => {
-    const loadPassengersData = async () => {
-      if (!initialPassengers || initialPassengers.length === 0) {
-        // Для моментальных заказов автоматически создаем пассажира по умолчанию
-        if (isInstantOrder) {
-          const defaultPassenger: EnhancedPassenger = {
-            id: `passenger-${Date.now()}`,
-            firstName: '',
-            lastName: '',
-            phone: '',
-            email: '',
-            isMainPassenger: true,
-            isFromSystem: false,
-            customerId: null,
-            userData: null,
-            isUserDataLoaded: true
-          };
-
-          setPassengers([defaultPassenger]);
-
-          // Уведомляем родительский компонент о создании пассажира
-          if (handlePassengersChange) {
-            handlePassengersChange([defaultPassenger]);
-          }
-        }
-
-        setPassengersDataLoaded(true);
-
-        return;
-      }
-
-      setIsLoadingPassengerData(true);
-
-      const enhancedPassengers: EnhancedPassenger[] = [];
-
-      for (const passenger of initialPassengers) {
-        const enhancedPassenger: EnhancedPassenger = {
-          ...passenger,
-          userData: null,
-          isUserDataLoaded: false
-        };
-
-        // Если у пассажира есть ID, это ID пользователя в системе - загружаем данные
-        if (passenger.id) {
-          const userData = await loadUserData(passenger.id);
-
-          enhancedPassenger.userData = userData;
-          enhancedPassenger.isUserDataLoaded = true;
-        } else {
-          // Если нет ID, помечаем как загруженный
-          enhancedPassenger.isUserDataLoaded = true;
-        }
-
-        enhancedPassengers.push(enhancedPassenger);
-      }
-
-      setPassengers(enhancedPassengers);
-      setIsLoadingPassengerData(false);
-      setPassengersDataLoaded(true);
-    };
-
-    if (!passengersDataLoaded) {
-      loadPassengersData();
-    }
-  }, [initialPassengers, passengersDataLoaded]);
-
-  // Синхронизируем состояние пассажиров с пропсами при возврате на таб (старый useEffect)
-  useEffect(() => {
-    if (initialPassengers && initialPassengers.length > 0) {
-      setPassengers(initialPassengers);
-
-      // Пытаемся восстановить выбранного клиента из пассажиров
-      const passengerFromSystem = initialPassengers.find(p => p.isFromSystem && p.email);
-
-      if (passengerFromSystem && !selectedCustomer) {
-        const customer = users.find(u => u.email === passengerFromSystem.email);
-
-        if (customer) {
-          setSelectedCustomer(customer);
-        }
-      }
-    }
-  }, [initialPassengers, users, selectedCustomer]);
-
-  // Функция для обновления пассажиров с уведомлением родителя
-  const updatePassengersList = (newPassengers: Passenger[]) => {
-    setPassengers(newPassengers);
-    if (handlePassengersChange) {
-      handlePassengersChange(newPassengers);
-    }
-  };
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  // Разрешенные роли для выбора пассажиров
-  const allowedRoles = useMemo(() => ['Customer', 'Partner'], []);
-
-  // Определяем максимальное количество пассажиров на основе выбранного тарифа
-  const maxPassengers = useMemo(() => {
-    if (!selectedTariff?.carType) return 4; // По умолчанию 4 места (седан)
-    
-    return CAR_TYPE_CAPACITY[selectedTariff.carType as CarType] || 4;
-  }, [selectedTariff]);
-
-  // Проверяем, можно ли добавить еще пассажиров
-  const canAddMorePassengers = passengers.length < maxPassengers;
-
-  // Получаем русское название типа автомобиля
-  const getCarTypeLabel = (carType: CarType): string => {
-    return CarTypeValues[carType] || carType;
-  };
-
-  // Функция поиска пользователей через API
-  const searchUsers = useCallback(
-    async (query: string) => {
-      // Партнеры не могут искать пользователей
-      if (userRole === 'partner') {
-        setSearchResults([]);
-        return;
-      }
-
-      if (!query.trim()) {
-        setSearchResults([]);
-
-        return;
-      }
-
-      try {
-        setIsSearching(true);
-
-        // Создаем параметры с множественными ролями как ты показал
-        const params = {
-          fullName: query,
-          fullNameOp: 'Contains' as const,
-          size: 50,
-          first: true,
-          role: allowedRoles // Передаем массив напрямую
-        };
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = await usersApi.getUsers(params as any);
+export function PassengersTab({ users, passengers: initialPassengers, handlePassengersChange, selectedTariff, isInstantOrder = false, onValidationError: _onValidationError, userRole = 'operator' }: PassengersTabProps) {
+  const {
+    passengers,
+    selectedCustomer,
+    isLoadingPassengerData,
+    passengersDataLoaded,
+    searchQuery,
+    isSearching,
+    filteredUsers,
+    maxPassengers,
+    canAddMorePassengers,
+    addPassenger,
+    removePassenger,
+    updatePassenger,
+    setMainPassenger,
+    fillFromCustomer,
+    setSearchQuery,
+    setSelectedCustomer,
+    getCarTypeLabel,
+    handleViewUserProfile,
+  } = usePassengersManagement({
+    users,
+    initialPassengers,
+    selectedTariff,
+    isInstantOrder,
+    userRole,
+    onPassengersChange: handlePassengersChange,
+    onValidationError: _onValidationError,
+  });
 
 
-        setSearchResults(response.data || []);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    },
-    [allowedRoles, userRole],
-  );
-
-  // Debounced поиск
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      searchUsers(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, searchUsers]);
-
-  // Логика отображения пользователей
-  const filteredUsers = (() => {
-    // Партнеры не могут видеть список пользователей
-    if (userRole === 'partner') {
-      return [];
-    }
-
-    // Если есть поисковый запрос, показываем только результаты поиска
-    if (searchQuery.trim()) {
-      return searchResults.filter(user => allowedRoles.includes(user.role));
-    }
-
-    // Если поиска нет, показываем изначальных пользователей
-    return (users || []).filter(user => allowedRoles.includes(user.role));
-  })();
-
-  const addPassenger = () => {
-    if (!canAddMorePassengers) return;
-
-    const newPassenger: EnhancedPassenger = {
-      id: Date.now().toString(),
-      firstName: 'Имя не указано',
-      lastName: '',
-      phone: '',
-      email: '',
-      isMainPassenger: false,
-      isFromSystem: false, // Пассажир создан вручную - редактируемый
-      userData: null,
-      isUserDataLoaded: true,
-    };
-
-    updatePassengersList([...passengers, newPassenger]);
-  };
-
-  const removePassenger = (id: string) => {
-    const updatedPassengers = passengers.filter(p => p.id !== id);
-
-    // Если удаляем основного пассажира, делаем основным первого из оставшихся
-    const removedPassenger = passengers.find(p => p.id === id);
-
-    if (removedPassenger?.isMainPassenger && updatedPassengers.length > 0) {
-      updatedPassengers[0].isMainPassenger = true;
-    }
-
-    updatePassengersList(updatedPassengers);
-  };
-
-  const updatePassenger = (
-    id: string,
-    field: keyof Passenger,
-    value: string | number | boolean,
-  ) => {
-    updatePassengersList(passengers.map(p => (p.id === id ? { ...p, [field]: value } : p)));
-  };
-
-  const setMainPassenger = (id: string) => {
-    updatePassengersList(
-      passengers.map(p => ({
-        ...p,
-        isMainPassenger: p.id === id,
-      })),
-    );
-  };
-
-  const fillFromCustomer = (customerId: string) => {
-    if (!canAddMorePassengers) return;
-
-    const customer = filteredUsers.find(u => u.id === customerId);
-
-    if (customer) {
-      // Создаем нового пассажира на основе данных клиента
-      const newPassenger: EnhancedPassenger = {
-        id: Date.now().toString(),
-        firstName: customer.fullName || `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Имя не указано',
-        lastName: '',
-        phone: customer.phoneNumber || customer.phone || '',
-        email: customer.email || '',
-        isMainPassenger: passengers.length === 0, // Первый пассажир становится основным
-        isFromSystem: true, // Помечаем как пассажира из системы
-        customerId: customer.id, // Сохраняем ID пользователя
-        userData: customer, // Сохраняем данные пользователя
-        isUserDataLoaded: true, // Данные уже загружены
-      };
-
-      updatePassengersList([...passengers, newPassenger]);
-    }
-  };
-
-  // Функция для перехода к профилю пользователя
-  const handleViewUserProfile = (user: User, event: React.MouseEvent) => {
-    event.stopPropagation(); // Предотвращаем выбор пользователя при клике на иконку
-    const roleMap: Record<string, string> = {
-      'Customer': 'customer',
-      'Partner': 'partner',
-      'Admin': 'admin',
-      'Driver': 'driver',
-      'Operator': 'operator',
-      'Terminal': 'terminal'
-    };
-
-    const rolePath = roleMap[user.role] || user.role.toLowerCase();
-    const profileUrl = `/users/${rolePath}/${user.id}`;
-
-    window.open(profileUrl, '_blank');
-  };
 
   // Показываем индикатор загрузки, пока данные пассажиров не загружены
   if (isLoadingPassengerData || !passengersDataLoaded) {
@@ -389,8 +87,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                     <User className='h-10 w-10 text-blue-600' />
                   </div>
                   <h3 className='text-xl font-semibold text-gray-900'>
-                    {selectedCustomer.fullName ||
-                      `${selectedCustomer.firstName || ''} ${selectedCustomer.lastName || ''}`.trim()}
+                    {selectedCustomer.fullName}
                   </h3>
                   <div className='flex items-center justify-center gap-2 mt-2'>
                     <Badge variant={selectedCustomer.role === 'Partner' ? 'default' : 'secondary'}>
@@ -401,7 +98,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                 </div>
 
                 {/* Информация о компании для партнеров */}
-                {selectedCustomer.role === 'Partner' && selectedCustomer.profile && (
+                {selectedCustomer.role === 'Partner' && 'profile' in selectedCustomer && selectedCustomer.profile && (
                   <div className='space-y-4'>
                     <h4 className='font-medium text-gray-900'>Информация о компании</h4>
                     <div className='flex items-center gap-3 p-3 bg-gray-50 rounded-lg'>
@@ -410,18 +107,18 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                       </div>
                       <div>
                         <p className='text-sm text-gray-500'>Компания</p>
-                        <p className='font-medium'>{selectedCustomer.profile.companyName}</p>
+                        <p className='font-medium'>{(selectedCustomer as GetPartnerDTO).profile.companyName}</p>
                         <p className='text-xs text-gray-400'>
-                          {selectedCustomer.profile.companyType}
+                          {(selectedCustomer as GetPartnerDTO).profile.companyType}
                         </p>
                       </div>
                     </div>
-                    {selectedCustomer.profile.legalAddress && (
+                    {(selectedCustomer as GetPartnerDTO).profile.legalAddress && (
                       <div className='flex items-center gap-3 p-3 bg-gray-50 rounded-lg'>
                         <MapPin className='h-4 w-4 text-gray-500' />
                         <div>
                           <p className='text-sm text-gray-500'>Юридический адрес</p>
-                          <p className='font-medium'>{selectedCustomer.profile.legalAddress}</p>
+                          <p className='font-medium'>{(selectedCustomer as GetPartnerDTO).profile.legalAddress}</p>
                         </div>
                       </div>
                     )}
@@ -430,7 +127,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
 
                 {/* Баллы лояльности для клиентов */}
                 {selectedCustomer.role === 'Customer' &&
-                  selectedCustomer.loyaltyPoints !== undefined && (
+                  'loyaltyPoints' in selectedCustomer && selectedCustomer.loyaltyPoints !== undefined && (
                     <div className='space-y-4'>
                       <div className='flex items-center gap-3 p-3 bg-yellow-50 rounded-lg'>
                         <div className='w-8 h-8 bg-yellow-100 rounded flex items-center justify-center'>
@@ -438,8 +135,8 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                         </div>
                         <div>
                           <p className='text-sm text-gray-500'>Баллы лояльности</p>
-                          <p className='font-medium'>{selectedCustomer.loyaltyPoints} баллов</p>
-                          {selectedCustomer.phantom && (
+                          <p className='font-medium'>{(selectedCustomer as GetCustomerDTO).loyaltyPoints} баллов</p>
+                          {'phantom' in selectedCustomer && selectedCustomer.phantom && (
                             <p className='text-xs text-orange-500'>Временный аккаунт</p>
                           )}
                         </div>
@@ -464,7 +161,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                     <div>
                       <p className='text-sm text-gray-500'>Телефон</p>
                       <p className='font-medium'>
-                        {selectedCustomer.phoneNumber || selectedCustomer.phone || 'Не указан'}
+                        {selectedCustomer.phoneNumber || 'Не указан'}
                       </p>
                     </div>
                   </div>
@@ -478,32 +175,32 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                   </div>
 
                   {/* Дополнительные контактные данные для партнеров */}
-                  {selectedCustomer.role === 'Partner' && selectedCustomer.profile && (
+                  {selectedCustomer.role === 'Partner' && 'profile' in selectedCustomer && selectedCustomer.profile && (
                     <>
-                      {selectedCustomer.profile.contactPhone && (
+                      {(selectedCustomer as GetPartnerDTO).profile.contactPhone && (
                         <div className='flex items-center gap-3 p-3 bg-blue-50 rounded-lg'>
                           <Phone className='h-4 w-4 text-blue-500' />
                           <div>
                             <p className='text-sm text-blue-600'>Контактный телефон</p>
-                            <p className='font-medium'>{selectedCustomer.profile.contactPhone}</p>
+                            <p className='font-medium'>{(selectedCustomer as GetPartnerDTO).profile.contactPhone}</p>
                           </div>
                         </div>
                       )}
-                      {selectedCustomer.profile.contactEmail && (
+                      {(selectedCustomer as GetPartnerDTO).profile.contactEmail && (
                         <div className='flex items-center gap-3 p-3 bg-blue-50 rounded-lg'>
                           <Mail className='h-4 w-4 text-blue-500' />
                           <div>
                             <p className='text-sm text-blue-600'>Контактный email</p>
-                            <p className='font-medium'>{selectedCustomer.profile.contactEmail}</p>
+                            <p className='font-medium'>{(selectedCustomer as GetPartnerDTO).profile.contactEmail}</p>
                           </div>
                         </div>
                       )}
-                      {selectedCustomer.profile.website && (
+                      {(selectedCustomer as GetPartnerDTO).profile.website && (
                         <div className='flex items-center gap-3 p-3 bg-blue-50 rounded-lg'>
                           <div className='w-4 h-4 text-blue-500'>🌐</div>
                           <div>
                             <p className='text-sm text-blue-600'>Веб-сайт</p>
-                            <p className='font-medium'>{selectedCustomer.profile.website}</p>
+                            <p className='font-medium'>{(selectedCustomer as GetPartnerDTO).profile.website}</p>
                           </div>
                         </div>
                       )}
@@ -592,8 +289,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                       <div className='flex-1'>
                         <div className='flex justify-between items-center gap-2 mb-1'>
                           <h4 className='font-medium text-gray-900'>
-                            {user.fullName ||
-                              `${user.firstName || ''} ${user.lastName || ''}`.trim()}
+                            {user.fullName}
                           </h4>
                           <Badge
                             variant={user.role === 'Partner' ? 'default' : 'secondary'}
@@ -604,21 +300,21 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                         </div>
 
                         {/* Для партнеров показываем информацию о компании */}
-                        {user.role === 'Partner' && user.profile && (
+                        {user.role === 'Partner' && 'profile' in user && user.profile && (
                           <div className='text-sm text-gray-600 mb-2'>
-                            <div className='font-medium'>{user.profile.companyName}</div>
+                            <div className='font-medium'>{(user as GetPartnerDTO).profile.companyName}</div>
                             <div className='text-xs text-gray-500'>
-                              {user.profile.companyType} • {user.profile.legalAddress}
+                              {(user as GetPartnerDTO).profile.companyType} • {(user as GetPartnerDTO).profile.legalAddress}
                             </div>
                           </div>
                         )}
 
                         {/* Для клиентов показываем баллы лояльности */}
-                        {user.role === 'Customer' && user.loyaltyPoints !== undefined && (
+                        {user.role === 'Customer' && 'loyaltyPoints' in user && user.loyaltyPoints !== undefined && (
                           <div className='text-sm text-gray-600 mb-2'>
                             <span className='inline-flex items-center gap-1'>
-                              ⭐ {user.loyaltyPoints} баллов лояльности
-                              {user.phantom && (
+                              ⭐ {(user as GetCustomerDTO).loyaltyPoints} баллов лояльности
+                              {'phantom' in user && user.phantom && (
                                 <span className='text-xs text-orange-500'>(Временный)</span>
                               )}
                             </span>
@@ -632,17 +328,17 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
                               {user.email}
                             </span>
                           )}
-                          {(user.phoneNumber || user.phone) && (
+                          {user.phoneNumber && (
                             <span className='flex items-center gap-1'>
                               <Phone className='h-3 w-3' />
-                              {user.phoneNumber || user.phone}
+                              {user.phoneNumber}
                             </span>
                           )}
                           {/* Для партнеров показываем контактный телефон из профиля */}
-                          {user.role === 'Partner' && user.profile?.contactPhone && (
+                          {user.role === 'Partner' && 'profile' in user && user.profile?.contactPhone && (
                             <span className='flex items-center gap-1'>
                               <Phone className='h-3 w-3' />
-                              {user.profile.contactPhone}
+                              {(user as GetPartnerDTO).profile.contactPhone}
                             </span>
                           )}
                         </div>

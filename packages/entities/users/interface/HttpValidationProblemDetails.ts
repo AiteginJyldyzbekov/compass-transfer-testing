@@ -8,5 +8,5 @@ export interface HttpValidationProblemDetails {
   status?: number | null;
   detail?: string | null;
   instance?: string | null;
-  errors?: Record<string, any>;
+  errors?: Record<string, string[]>;
 }

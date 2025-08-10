@@ -5,37 +5,20 @@ import { useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import type { GetTariffDTOWithArchived } from '@shared/api/tariffs';
-import type { GetLocationDTO } from '@entities/locations/interface';
-
-// Интерфейс для точки маршрута в заказе
-interface RoutePoint {
-  id: string;
-  location: GetLocationDTO | null;
-  type: 'start' | 'end' | 'intermediate';
-  label: string;
-}
+import type { RoutePoint } from '@shared/components/map/types';
 import { useOrderData } from '@shared/hooks/useOrderData';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent } from '@shared/ui/layout/card';
 import { SidebarHeader } from '@shared/ui/layout/sidebar';
 import { useInstantOrderSubmit, useInstantOrderById } from '@entities/orders/hooks';
-import type { PassengerDTO } from '@entities/orders/interface';
+import type { GetOrderServiceDTO } from '@entities/orders/interface';
+import type { GetTariffDTO } from '@entities/tariffs/interface';
+// Импорт интерфейсов компонентов
 import {
   TariffPricingTab,
   MapTab,
-} from './tabs';
-import { SummaryTab } from './tabs/summary-tab';
-
-// Интерфейс для выбранного сервиса
-interface SelectedService {
-  serviceId?: string;
-  id?: string;
-  quantity: number;
-  notes?: string | null;
-  name?: string;
-  price?: number;
-}
+} from '../../tabs';
+import { SummaryTab } from '../../tabs/summary-tab';
 
 interface InstantOrderPageProps {
   mode: 'create' | 'edit';
@@ -47,7 +30,7 @@ interface InstantOrderPageProps {
 export function InstantOrderPage({ mode, id, userRole = 'operator', initialTariffId }: InstantOrderPageProps) {
   const router = useRouter();
 
-  // React Hook Form для совместимости с MapTab (как в order-page.tsx)
+  // React Hook Form для совместимости с MapTab
   const methods = useForm<{
     startLocationId: string;
     endLocationId: string;
@@ -74,12 +57,28 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['pricing']));
 
   // Состояние для отслеживания выбранных данных
-  const [selectedTariff, setSelectedTariff] = useState<GetTariffDTOWithArchived | null>(null);
-  const [selectedServices, _setSelectedServices] = useState<SelectedService[]>([]);
+  const [selectedTariff, setSelectedTariff] = useState<GetTariffDTO | null>(null);
+  const [selectedServices, _setSelectedServices] = useState<GetOrderServiceDTO[]>([]);
   // Убираем состояние passengers - используем дефолтного пассажира
   const [routePoints, setRoutePoints] = useState<RoutePoint[]>([
-    { id: '1', location: null, type: 'start', label: 'Откуда' },
-    { id: '2', location: null, type: 'end', label: 'Куда' },
+    {
+      id: '1',
+      location: null,
+      type: 'start',
+      label: 'Откуда',
+      latitude: 0,
+      longitude: 0,
+      name: 'Откуда'
+    },
+    {
+      id: '2',
+      location: null,
+      type: 'end',
+      label: 'Куда',
+      latitude: 0,
+      longitude: 0,
+      name: 'Куда'
+    },
   ]);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
 
@@ -92,31 +91,17 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   const [endLocationId, setEndLocationId] = useState<string | null>(null);
   const [additionalStops, setAdditionalStops] = useState<string[]>([]);
   const [routeDistance, setRouteDistance] = useState<number>(0);
-  // Состояние загрузки маршрута
   const [routeLoading, setRouteLoading] = useState<boolean>(false);
-
-  // Логируем изменения расстояния
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('🛣️ RouteDistance изменилось:', routeDistance);
-  }, [routeDistance]);
-
-  // Убираем useEffect отсюда - переместим после useOrderData
 
   // Хук для создания заказа
   const { createOrder, isLoading: isCreatingOrder } = useInstantOrderSubmit({
     userRole,
-    onSuccess: (order) => {
-      // eslint-disable-next-line no-console
-      console.log('✅ Моментальный заказ создан успешно:', order);
-
+    onSuccess: () => {
       // Переходим к списку заказов (не админ-панель!)
       router.push('/orders');
     },
     onError: (error) => {
-      // eslint-disable-next-line no-console
-      console.error('❌ Ошибка создания моментального заказа:', error);
-      alert(`Ошибка создания заказа: ${error.message}`);
+      toast.error(`Ошибка создания заказа: ${error.message}`);
     },
   });
 
@@ -132,9 +117,6 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   // Инициализация состояний из данных заказа при загрузке
   useEffect(() => {
     if (mode === 'edit' && orderData && tariffs.length > 0) {
-      // eslint-disable-next-line no-console
-      console.log('🔄 Инициализируем состояния из данных заказа:', orderData);
-
       // 1. Устанавливаем выбранный тариф
       if (orderData.tariffId) {
         const foundTariff = tariffs.find(t => t.id === orderData.tariffId);
@@ -151,7 +133,7 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
         setCurrentPrice(orderData.initialPrice);
       }
 
-      // 4. Устанавливаем локации маршрута (КАК В order-page.tsx!)
+      // 4. Устанавливаем локации маршрута
       if (orderData.startLocationId) {
         setStartLocationId(orderData.startLocationId);
         methods.setValue('startLocationId', orderData.startLocationId); // ДЛЯ MapTab!
@@ -170,14 +152,6 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
       // 5. Принудительно обновляем routePoints для инициализации в MapTab
       // Это заставит useOrderLocations перезапустить инициализацию
       if (routePoints.length === 0) {
-        // eslint-disable-next-line no-console
-        console.log('🗺️ Принудительно сбрасываем routePoints для инициализации:', {
-          startLocationId: orderData.startLocationId,
-          endLocationId: orderData.endLocationId,
-          additionalStops: orderData.additionalStops,
-          mode
-        });
-
         // Сбрасываем routePoints, чтобы useOrderLocations заново их инициализировал
         setRoutePoints([]);
       }
@@ -192,11 +166,9 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   ];
 
   // Обработчики изменения данных
-  const handleTariffChange = useCallback((tariff: GetTariffDTOWithArchived | null) => {
+  const handleTariffChange = useCallback((tariff: GetTariffDTO | null) => {
     setSelectedTariff(tariff);
   }, []);
-
-
 
   // Убираем handlePassengersChange - пассажиры теперь дефолтные
 
@@ -212,8 +184,6 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
     setEndLocationId(endPoint?.location?.id || null);
     setAdditionalStops(intermediatePoints.map(p => p.location?.id).filter(Boolean) as string[]);
   }, []);
-
-
 
   // Функции валидации табов
   const isTabValid = (tabId: string): boolean => {
@@ -331,20 +301,9 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
 
       setCurrentPrice(Math.round(calculatedPrice));
 
-      // eslint-disable-next-line no-console
-      console.log('💰 Рассчитана цена (как в summary-tab):', {
-        basePrice: selectedTariff.basePrice,
-        rawDistanceKm: apiDistanceKm.toFixed(3),
-        roundedDistanceKm: roundedDistanceKm,
-        perKmPrice: selectedTariff.perKmPrice,
-        totalPrice: Math.round(calculatedPrice)
-      });
     } else if (selectedTariff && routeDistance === 0) {
       // Если нет расстояния, используем только базовую цену
       setCurrentPrice(selectedTariff.basePrice);
-
-      // eslint-disable-next-line no-console
-      console.log('💰 Используем базовую цену (нет расстояния):', selectedTariff.basePrice);
     } else {
       // Если нет тарифа, цена = 0
       setCurrentPrice(0);
@@ -378,9 +337,9 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
         endLocationId,
         additionalStops,
         services: selectedServices
-          .filter((service: SelectedService) => service.serviceId || service.id)
-          .map((service: SelectedService) => ({
-            serviceId: service.serviceId || service.id!,
+          .filter((service) => !!service.serviceId)
+          .map((service) => ({
+            serviceId: service.serviceId,
             quantity: service.quantity || 1,
             notes: service.notes || null,
           })),
@@ -403,14 +362,10 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
             ]
           };
 
-      // eslint-disable-next-line no-console
-      console.log('📦 Создаем моментальный заказ:', orderData);
-
       // Создаем заказ
       createOrder(orderData);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('❌ Ошибка при создании заказа:', error);
+    } catch {
+      toast.error('❌ Ошибка при создании заказа:');
     }
   };
 
@@ -486,7 +441,6 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                         <MapTab
                           mode={mode}
                           onRouteChange={handleRouteChange}
-                          // ИСПОЛЬЗУЕМ methods КАК В order-page.tsx!
                           startLocationId={methods.getValues('startLocationId')}
                           endLocationId={methods.getValues('endLocationId')}
                           additionalStops={methods.getValues('additionalStops')}
@@ -502,34 +456,40 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                         />
                       );
 
-
-
-                    // Убираем case 'passengers' - пассажиры теперь дефолтные
-
-
-
                     case 'summary':
                       return (
                         <SummaryTab
-                          tariffs={tariffs}
-                          services={services}
-                          users={users}
+                          _tariffs={tariffs}
+                          _services={services}
+                          _users={users}
                           routeState={{
                             routePoints: routePoints
                           }}
-                          pricing={{}}
+                          _pricing={{}}
                           selectedTariff={selectedTariff}
-                          selectedServices={selectedServices}
+                          selectedServices={services
+                            .filter(s => selectedServices.some(ss => ss.serviceId === s.id))
+                            .map(service => {
+                              const selectedService = selectedServices.find(s => s.serviceId === service.id);
+                              
+                              return {
+                                ...service,
+                                quantity: selectedService?.quantity ?? 1,
+                                totalPrice: service.price * (selectedService?.quantity ?? 1)
+                              };
+                            })}
                           currentPrice={currentPrice}
                           passengers={[
                             {
+                              id: "temp-passenger-1",
                               customerId: null,
                               firstName: "",
                               lastName: null,
                               isMainPassenger: true
                             }
                           ]}
-                          routeLocations={[]}
+                          _routeLocations={[]}
+                          _orderId={id ?? undefined}
                           routeDistance={routeDistance > 0 ? routeDistance : undefined} // Реальное расстояние маршрута
                           methods={{
                             setValue: () => {},
@@ -542,11 +502,10 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                             }
                           }}
                           mode={mode}
-                          orderId={undefined}
-                          isInstantOrder
+                          _isInstantOrder
                           useCustomPrice={useCustomPrice}
                           setUseCustomPrice={setUseCustomPrice}
-                          customPrice={customPrice}
+                          _customPrice={customPrice}
                           setCustomPrice={setCustomPrice}
                         />
                       );

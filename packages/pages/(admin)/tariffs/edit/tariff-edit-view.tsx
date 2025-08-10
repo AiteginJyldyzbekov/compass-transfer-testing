@@ -7,8 +7,10 @@ import { tariffsApi } from '@shared/api/tariffs';
 import { Card, CardContent } from '@shared/ui/layout';
 import { ChapterHeader } from '@shared/ui/layout/chapter-header';
 import { FormSidebar } from '@shared/ui/layout/form-sidebar';
+import { VehicleType } from '@entities/cars/enums';
 import { TariffBasicSection, TariffPricingSection } from '@entities/tariffs';
-import type { TariffDTO } from '@entities/tariffs/interface';
+import { ServiceClass } from '@entities/tariffs/enums';
+import type { GetTariffDTO } from '@entities/tariffs/interface';
 import { TARIFF_FORM_CHAPTERS } from '@entities/tariffs/model/form-chapters/tariff-chapters';
 import type { TariffUpdateFormData } from '@entities/tariffs/schemas/tariffUpdateSchema';
 import { useTariffEditFormLogic } from '@features/tariffs/forms/edit/tariff-edit-form';
@@ -29,7 +31,7 @@ interface TariffEditFormViewProps {
 
 export function TariffEditView({ tariffId }: TariffEditViewProps) {
   const router = useRouter();
-  const [tariff, setTariff] = useState<TariffDTO | null>(null);
+  const [tariff, setTariff] = useState<GetTariffDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,8 +62,8 @@ export function TariffEditView({ tariffId }: TariffEditViewProps) {
     tariffId: tariffId,
     initialData: {
       name: '',
-      serviceClass: 'Economy' as any,
-      carType: 'Sedan' as any,
+      serviceClass: ServiceClass.Economy,
+      carType: VehicleType.Sedan,
       basePrice: 0,
       minutePrice: 0,
       minimumPrice: 0, // Всегда 0
@@ -157,7 +159,6 @@ function TariffEditFormView({
                       labels={{
                         basePrice: 'Базовая цена (сом) *',
                         minutePrice: 'Цена за минуту (сом) *',
-                        minimumPrice: 'Минимальная цена (сом) *',
                         perKmPrice: 'Цена за километр (сом) *',
                         freeWaitingTimeMinutes: 'Бесплатное ожидание (минуты) *',
                       }}

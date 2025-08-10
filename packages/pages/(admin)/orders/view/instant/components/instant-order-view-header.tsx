@@ -1,9 +1,9 @@
 import { Clock, MapPin, DollarSign } from 'lucide-react';
 import { Badge } from '@shared/ui/data-display/badge';
-import { Card, CardContent } from '@shared/ui/layout';
 import { Skeleton } from '@shared/ui/data-display/skeleton';
-import type { GetOrderDTO } from '@entities/orders/interface';
+import { Card, CardContent } from '@shared/ui/layout';
 import { orderStatusLabels, orderSubStatusLabels, orderStatusColors } from '@entities/orders';
+import type { GetOrderDTO } from '@entities/orders/interface';
 import { useLocation } from '@features/locations/hooks/useLocation';
 
 interface InstantOrderViewHeaderProps {
@@ -27,6 +27,7 @@ export function InstantOrderViewHeader({ order }: InstantOrderViewHeaderProps) {
 
   const formatPrice = (price: number | null | undefined) => {
     if (!price || price === 0) return 'В процессе';
+    
     return new Intl.NumberFormat('ru-RU').format(price) + ' сом';
   };
 

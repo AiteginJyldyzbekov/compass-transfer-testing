@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
+import { toast } from 'sonner';
 
 interface SavedFiltersConfig<T> {
   key: string; // Уникальный ключ для localStorage (например, 'cars-filters')
@@ -9,7 +10,7 @@ interface SavedFiltersConfig<T> {
   onFiltersLoad: (filters: T) => void;
 }
 
-export function useSavedFilters<T extends Record<string, any>>({
+export function useSavedFilters<T extends Record<string, unknown>>({
   key,
   defaultFilters,
   currentFilters,
@@ -21,6 +22,7 @@ export function useSavedFilters<T extends Record<string, any>>({
 
   // Используем ref для стабильной ссылки на onFiltersLoad
   const onFiltersLoadRef = useRef(onFiltersLoad);
+
   onFiltersLoadRef.current = onFiltersLoad;
 
   // Загрузка фильтров при инициализации (только один раз)
@@ -40,8 +42,8 @@ export function useSavedFilters<T extends Record<string, any>>({
       } else {
         setHasSaved(false);
       }
-    } catch (error) {
-      console.error(`Ошибка при загрузке сохраненных фильтров для ${key}:`, error);
+    } catch {
+      toast.error(`Ошибка при загрузке сохраненных фильтров для ${key}:`);
       setHasSaved(false);
     }
 
@@ -63,7 +65,7 @@ export function useSavedFilters<T extends Record<string, any>>({
         }
 
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
 
       localStorage.setItem(key, JSON.stringify(filtersToSave));
 
@@ -76,11 +78,11 @@ export function useSavedFilters<T extends Record<string, any>>({
 
       // Показываем уведомление об успешном сохранении
       // Можно заменить на toast уведомление
-      console.log(`Фильтры сохранены для ${key}`);
+      toast.success(`Фильтры сохранены для ${key}`);
 
       return true;
-    } catch (error) {
-      console.error(`Ошибка при сохранении фильтров для ${key}:`, error);
+    } catch {
+      toast.error(`Ошибка при сохранении фильтров для ${key}:`);
 
       return false;
     }
@@ -95,8 +97,8 @@ export function useSavedFilters<T extends Record<string, any>>({
       setJustSaved(false);
 
       return true;
-    } catch (error) {
-      console.error(`Ошибка при очистке сохраненных фильтров для ${key}:`, error);
+    } catch {
+      toast.error(`Ошибка при очистке сохраненных фильтров для ${key}:`);
 
       return false;
     }

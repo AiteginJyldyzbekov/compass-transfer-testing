@@ -6,7 +6,6 @@ import { logger } from '@shared/lib';
 import type { LocationType } from '@entities/locations/enums';
 import type { GetLocationDTO } from '@entities/locations/interface';
 
-
 /**
  * Хук для работы с локациями
  */
@@ -57,7 +56,7 @@ export const useLocations = () => {
   const searchLocations = async (
     query: string = '',
     bounds?: { latFrom: number; latTo: number; longFrom: number; longTo: number },
-    additionalParams?: Record<string, any>,
+    additionalParams?: Record<string, string | number | boolean | string[]>,
   ): Promise<GetLocationDTO[]> => {
     try {
       // Базовые параметры
@@ -211,6 +210,7 @@ export const useLocations = () => {
       return results;
     } catch (error) {
       logger.error('Ошибка загрузки локаций в границах:', error);
+      
       return [];
     }
   }, []);

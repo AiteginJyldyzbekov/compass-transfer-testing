@@ -1,0 +1,1 @@
+export { InstantOrderPage } from './instant-order-page';

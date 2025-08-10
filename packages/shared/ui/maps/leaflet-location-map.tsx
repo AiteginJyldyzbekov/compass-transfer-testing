@@ -1,16 +1,17 @@
 'use client';
 
+import L from 'leaflet';
 import React, { useState, useCallback, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { toast } from 'sonner';
 import { MapClickHandler } from '@shared/components/map/components';
 import { MapSearch } from './components/map-search';
-import L from 'leaflet';
 
 // Импортируем CSS стили Leaflet
 import 'leaflet/dist/leaflet.css';
 
 // Исправляем проблему с иконками маркеров в Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -25,6 +26,7 @@ interface AddressData {
   city: string;
   street: string;
 }
+
 
 interface LeafletLocationMapProps {
   coordinates: [number, number] | null;
@@ -43,7 +45,8 @@ const getAddressByCoordinates = async (lat: number, lon: number): Promise<Addres
     const response = await fetch(url);
 
     if (!response.ok) {
-      console.error(`Ошибка API при геокодировании: ${response.status}`);
+      toast.error(`Ошибка API при геокодировании: ${response.status}`);
+
       return {
         fullAddress: `Координаты: ${lat.toFixed(6)}, ${lon.toFixed(6)}`,
         country: '',
@@ -52,14 +55,12 @@ const getAddressByCoordinates = async (lat: number, lon: number): Promise<Addres
         street: ''
       };
     }
-
     const data = await response.json();
 
-    console.log('Получен адрес:', data);
-
     return data;
-  } catch (error) {
-    console.error('Ошибка при запросе к API геокодирования:', error);
+  } catch  {
+    toast.error('Ошибка при запросе к API геокодирования:');
+
     return {
       fullAddress: `Координаты: ${lat.toFixed(6)}, ${lon.toFixed(6)}`,
       country: '',
@@ -78,6 +79,7 @@ const MapController: React.FC<{ coordinates: [number, number] | null }> = ({ coo
     if (coordinates && map) {
       // Получаем текущий зум карты
       const currentZoom = map.getZoom();
+
       // Плавно перемещаем карту к новым координатам, сохраняя текущий зум
       map.setView(coordinates, currentZoom, { animate: true });
     }
@@ -87,7 +89,7 @@ const MapController: React.FC<{ coordinates: [number, number] | null }> = ({ coo
 };
 
 // Иконка маркера
-const createMarkerIcon = () => {
+const createMarkerIcon = (): L.DivIcon => {
   return L.divIcon({
     html: `<div style="
       background-color: #ef4444;
@@ -120,19 +122,19 @@ export const LeafletLocationMap: React.FC<LeafletLocationMapProps> = ({
 
   // Обработчик клика по карте
   const handleMapClick = useCallback(async (lat: number, lng: number) => {
-    console.log('Клик по карте:', lat, lng);
-    
     const newCoordinates: [number, number] = [lat, lng];
+
     onCoordinatesChange(newCoordinates);
 
     if (onAddressChange) {
       setIsLoading(true);
       try {
         const addressData = await getAddressByCoordinates(lat, lng);
+
         setCurrentAddress(addressData.fullAddress);
         onAddressChange(addressData);
-      } catch (error) {
-        console.error('Ошибка получения адреса:', error);
+      } catch {
+        toast.error('Ошибка получения адреса:');
         setCurrentAddress(`Координаты: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
       } finally {
         setIsLoading(false);
@@ -142,9 +144,8 @@ export const LeafletLocationMap: React.FC<LeafletLocationMapProps> = ({
 
   // Обработчик выбора места из поиска
   const handleSearchSelect = useCallback(async (lat: number, lon: number, address: string) => {
-    console.log('Выбрано место из поиска:', lat, lon, address);
-
     const newCoordinates: [number, number] = [lat, lon];
+
     onCoordinatesChange(newCoordinates);
     setCurrentAddress(address);
 
@@ -152,9 +153,10 @@ export const LeafletLocationMap: React.FC<LeafletLocationMapProps> = ({
       // Получаем структурированный адрес
       try {
         const addressData = await getAddressByCoordinates(lat, lon);
+
         onAddressChange(addressData);
-      } catch (error) {
-        console.error('Ошибка получения структурированного адреса:', error);
+      } catch {
+        toast.error('Ошибка получения структурированного адреса:');
         // Fallback - используем адрес из поиска
         onAddressChange({
           fullAddress: address,
@@ -179,10 +181,10 @@ export const LeafletLocationMap: React.FC<LeafletLocationMapProps> = ({
         zoom={coordinates ? 15 : 10}
         style={{ height: '100%', width: '100%', minHeight: height }}
         className="rounded-md z-0"
-        scrollWheelZoom={true}
-        doubleClickZoom={true}
-        dragging={true}
-        zoomControl={true}
+        scrollWheelZoom
+        doubleClickZoom
+        dragging
+        zoomControl
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

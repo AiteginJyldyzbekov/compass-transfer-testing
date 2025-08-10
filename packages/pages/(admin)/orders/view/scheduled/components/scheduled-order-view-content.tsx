@@ -1,17 +1,17 @@
 'use client'
 
-import { useState } from 'react';
 import { Calendar, MapPin, User, Car, Info, DollarSign, Plane, ExternalLink, Settings } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout';
+import { useState } from 'react';
+import { useDriverById } from '@shared/hooks/useDriverById';
+import { useServices } from '@shared/hooks/useServices';
+import { useTariffById } from '@shared/hooks/useTariffById';
+import { useUserById } from '@shared/hooks/useUserById';
 import { Badge } from '@shared/ui/data-display/badge';
 import { Skeleton } from '@shared/ui/data-display/skeleton';
 import { Button } from '@shared/ui/forms/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout';
 import type { GetOrderDTO } from '@entities/orders/interface';
 import { useLocation } from '@features/locations/hooks/useLocation';
-import { useUserById } from '@shared/hooks/useUserById';
-import { useTariffById } from '@shared/hooks/useTariffById';
-import { useServices } from '@shared/hooks/useServices';
-import { useDriverById } from '@shared/hooks/useDriverById';
 import { DriverSheet } from '@widgets/sidebar/ui/driver-sheet';
 
 interface ScheduledOrderViewContentProps {
@@ -47,6 +47,7 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
 
   const formatPrice = (price: number | null | undefined) => {
     if (!price || price === 0) return 'В процессе';
+
     return new Intl.NumberFormat('ru-RU').format(price) + ' сом';
   };
 
@@ -112,9 +113,9 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
         <CardContent className='space-y-4'>
           <div className='flex gap-3'>
             <div className='flex flex-col items-center pt-1'>
-              <div className='w-3 h-3 bg-green-500 rounded-full flex-shrink-0'></div>
-              <div className='w-0.5 flex-1 bg-gray-300 my-2' style={{ minHeight: '60px' }}></div>
-              <div className='w-3 h-3 bg-red-500 rounded-full flex-shrink-0'></div>
+              <div className='w-3 h-3 bg-green-500 rounded-full flex-shrink-0' />
+              <div className='w-0.5 flex-1 bg-gray-300 my-2' style={{ minHeight: '60px' }} />
+              <div className='w-3 h-3 bg-red-500 rounded-full flex-shrink-0' />
             </div>
             <div className='flex-1 space-y-8'>
               <div>
@@ -461,6 +462,7 @@ export function ScheduledOrderViewContent({ order }: ScheduledOrderViewContentPr
                   order.services.reduce((sum, service) => {
                     const serviceData = findServiceByName(service.name);
                     const actualPrice = serviceData?.price || 0;
+                    
                     return sum + actualPrice * service.quantity;
                   }, 0)
                 )}

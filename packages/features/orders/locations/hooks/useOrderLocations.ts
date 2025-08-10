@@ -3,35 +3,25 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import apiClient from '@shared/api/client';
 import { usersApi } from '@shared/api/users';
-import type { MapBounds } from '@shared/components/map/types';
+import type { MapBounds, RoutePoint } from '@shared/components/map/types';
 import type { GetLocationDTO } from '@entities/locations/interface';
+import type { GetRideDTO } from '@entities/orders/interface';
+import type { GetDriverDTO } from '@entities/users/interface';
 import { useActiveDrivers, type ActiveDriver } from '@features/drivers/hooks/useActiveDrivers';
 import { useLocations } from '@features/locations/hooks/useLocations';
-
-interface RoutePoint {
-  id: string;
-  location: GetLocationDTO | null;
-  type: 'start' | 'end' | 'intermediate';
-  label: string;
-}
-
-interface Ride {
-  id: string;
-  driverId: string;
-}
 
 interface UseOrderLocationsParams {
   startLocationId?: string | null;
   endLocationId?: string | null;
   additionalStops?: string[];
   mode?: 'create' | 'edit';
-  rides?: Ride[]; // Данные поездок для режима редактирования
+  rides?: GetRideDTO[]; // Данные поездок для режима редактирования
 
   // Внешнее состояние для сохранения между табами
   externalRoutePoints?: RoutePoint[];
   setExternalRoutePoints?: (points: RoutePoint[]) => void;
-  externalSelectedDriver?: Driver | null;
-  setExternalSelectedDriver?: (driver: Driver | null) => void;
+  externalSelectedDriver?: GetDriverDTO | null;
+  setExternalSelectedDriver?: (driver: GetDriverDTO | null) => void;
   externalDynamicMapCenter?: { latitude: number; longitude: number } | null;
   setExternalDynamicMapCenter?: (center: { latitude: number; longitude: number } | null) => void;
   externalOpenDriverPopupId?: string | null;
@@ -39,15 +29,6 @@ interface UseOrderLocationsParams {
 
   onRouteChange?: (routePoints: RoutePoint[]) => void;
   onRoutePointsChange?: (startId: string, endId: string, points: RoutePoint[]) => void;
-  // onRouteDistanceChange убираем - не используется в этом хуке
-}
-
-interface Driver {
-  id: string;
-  fullName?: string;
-  phoneNumber?: string;
-  currentLocation?: { latitude: number; longitude: number };
-  [key: string]: unknown;
 }
 
 interface UseOrderLocationsResult {
@@ -62,8 +43,8 @@ interface UseOrderLocationsResult {
 
   // Данные водителей
   drivers: ActiveDriver[]; // Активные водители для карты
-  allDrivers: Driver[]; // Все водители для панели
-  selectedDriver: Driver | null;
+  allDrivers: GetDriverDTO[]; // Все водители для панели
+  selectedDriver: GetDriverDTO | null;
   openDriverPopupId: string | null;
 
   // Состояния UI
@@ -76,7 +57,7 @@ interface UseOrderLocationsResult {
   handleLocationSelect: (location: GetLocationDTO) => void;
   handlePointClear: (index: number) => void;
   handleMapBoundsChange: (bounds: MapBounds) => void;
-  handleDriverSelect: (driver: Driver | null, location?: { latitude: number; longitude: number }, fromSearchPanel?: boolean) => void;
+  handleDriverSelect: (driver: GetDriverDTO | null, location?: { latitude: number; longitude: number }, fromSearchPanel?: boolean) => void;
   handleLocationToggle: (location: GetLocationDTO, isSelected: boolean) => void;
   canSelectLocation: (location: GetLocationDTO) => boolean;
   addIntermediatePoint: (location?: GetLocationDTO) => void;
@@ -112,8 +93,8 @@ export const useOrderLocations = ({
 
   // Состояния
   const [mapLocations, setMapLocations] = useState<GetLocationDTO[]>([]);
-  const [allDrivers, setAllDrivers] = useState<Driver[]>([]); // Список всех водителей для панели
-  const [driversDataCache, setDriversDataCache] = useState<Record<string, Record<string, unknown>>>({}); // Кэш полных данных водителей
+  const [allDrivers, setAllDrivers] = useState<GetDriverDTO[]>([]); // Список всех водителей для панели
+  const [driversDataCache, setDriversDataCache] = useState<Record<string, Record<string, unknown>>>({});
   const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -123,10 +104,26 @@ export const useOrderLocations = ({
 
   // Используем внешнее состояние если передано, иначе локальное
   const [localRoutePoints, setLocalRoutePoints] = useState<RoutePoint[]>([
-    { id: '1', location: null, type: 'start', label: 'Откуда' },
-    { id: '2', location: null, type: 'end', label: 'Куда' },
+    {
+      id: '1',
+      location: null,
+      type: 'start',
+      label: 'Откуда',
+      latitude: 0,
+      longitude: 0,
+      name: 'Откуда'
+    },
+    {
+      id: '2',
+      location: null,
+      type: 'end',
+      label: 'Куда',
+      latitude: 0,
+      longitude: 0,
+      name: 'Куда'
+    },
   ]);
-  const [localSelectedDriver, setLocalSelectedDriver] = useState<Driver | null>(null);
+  const [localSelectedDriver, setLocalSelectedDriver] = useState<GetDriverDTO | null>(null);
   const [localDynamicMapCenter, setLocalDynamicMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
   const [localOpenDriverPopupId, setLocalOpenDriverPopupId] = useState<string | null>(null);
 
@@ -158,31 +155,12 @@ export const useOrderLocations = ({
 
   // Загрузка ВСЕХ локаций для обоих режимов
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('🔄 useOrderLocations: Проверяем загрузку локаций:', {
-      mode,
-      startLocationId,
-      endLocationId,
-      additionalStopsLength: additionalStops?.length,
-      mapLocationsLength: mapLocations.length
-    });
-
     if (mode === 'edit' && (startLocationId || endLocationId || additionalStops?.length)) {
-      // eslint-disable-next-line no-console
-      console.log('🔄 useOrderLocations: Загружаем локации для режима edit');
-
       fetchAllLocations().then(locations => {
-        // eslint-disable-next-line no-console
-        console.log('✅ useOrderLocations: Локации загружены:', locations.length);
         setMapLocations(locations);
       });
     } else if (mode === 'create') {
-      // eslint-disable-next-line no-console
-      console.log('🔄 useOrderLocations: Загружаем локации для режима create');
-
       fetchAllLocations().then(locations => {
-        // eslint-disable-next-line no-console
-        console.log('✅ useOrderLocations: Локации загружены:', locations.length);
         setMapLocations(locations);
       });
     }
@@ -203,7 +181,7 @@ export const useOrderLocations = ({
             const { latitude, longitude } = driverData.currentLocation;
 
             // Устанавливаем водителя как выбранного
-            setSelectedDriver(driverData as unknown as Driver);
+            setSelectedDriver(driverData);
 
             // Перемещаем карту к водителю
             setDynamicMapCenter({ latitude, longitude });
@@ -225,7 +203,7 @@ export const useOrderLocations = ({
     const fetchDrivers = async () => {
       try {
         const response = await apiClient.get<{
-          data: Driver[];
+          data: GetDriverDTO[];
           totalCount: number;
         }>('/User/Driver', {
           params: {
@@ -249,17 +227,26 @@ export const useOrderLocations = ({
   // Инициализируем точки маршрута ОДИН РАЗ при загрузке данных в режиме редактирования
   useEffect(() => {
     if (mode === 'edit' && mapLocations.length > 0 && !isInitializedRef.current) {
-      // eslint-disable-next-line no-console
-      console.log('🔄 Инициализируем routePoints в режиме edit', {
-        startLocationId,
-        endLocationId,
-        additionalStops
-      });
-
       // Создаем базовые точки
       const newRoutePoints: RoutePoint[] = [
-        { id: '1', location: null, type: 'start', label: 'Откуда' },
-        { id: '2', location: null, type: 'end', label: 'Куда' },
+        {
+          id: '1',
+          location: null,
+          type: 'start',
+          label: 'Откуда',
+          latitude: 0,
+          longitude: 0,
+          name: 'Откуда'
+        },
+        {
+          id: '2',
+          location: null,
+          type: 'end',
+          label: 'Куда',
+          latitude: 0,
+          longitude: 0,
+          name: 'Куда'
+        },
       ];
 
       // Устанавливаем начальную локацию
@@ -290,7 +277,10 @@ export const useOrderLocations = ({
               id: `intermediate-${index}`,
               location: stopLocation,
               type: 'intermediate',
-              label: `Остановка ${index + 1}`
+              label: `Остановка ${index + 1}`,
+              latitude: stopLocation.latitude,
+              longitude: stopLocation.longitude,
+              name: stopLocation.name,
             };
 
             // Вставляем промежуточные точки перед конечной
@@ -311,27 +301,12 @@ export const useOrderLocations = ({
     }
   }, [mode]);
 
-  // УБИРАЕМ проблемный useEffect для обновления additionalStops
-  // Полагаемся только на первичную инициализацию в основном useEffect выше
-
   // Синхронизируем изменения routePoints с родительским компонентом
   useEffect(() => {
     if (mode === 'edit' && onRoutePointsChange && routePoints.length > 0) {
       const startPoint = routePoints.find(p => p.type === 'start');
       const endPoint = routePoints.find(p => p.type === 'end');
       const intermediatePoints = routePoints.filter(p => p.type === 'intermediate' && p.location);
-
-      // Отладочная информация только при изменении промежуточных точек
-      if (intermediatePoints.length > 0) {
-        // eslint-disable-next-line no-console
-        console.log('🔄 Синхронизация routePoints с родителем (есть промежуточные):', {
-          startId: startPoint?.location?.id,
-          endId: endPoint?.location?.id,
-          intermediateCount: intermediatePoints.length,
-          intermediateIds: intermediatePoints.map(p => p.location?.id),
-          totalPoints: routePoints.length
-        });
-      }
 
       if (startPoint?.location && endPoint?.location) {
         onRoutePointsChange(startPoint.location.id, endPoint.location.id, routePoints);
@@ -395,299 +370,172 @@ export const useOrderLocations = ({
   // Обработчики
   const handleMapBoundsChange = useCallback(async (bounds: MapBounds) => {
     updateMapBounds(bounds);
-    // Убираем загрузку локаций - используем только fetchAllLocations один раз
   }, [updateMapBounds]);
 
   const handlePointSelect = useCallback((index: number) => {
     setSelectedPointIndex(index);
-    setModalTitle(routePoints[index].label);
+    setModalTitle(routePoints[index].label || 'Выберите локацию');
     setIsModalOpen(true);
   }, [routePoints]);
 
   const handleLocationSelect = useCallback((location: GetLocationDTO) => {
     if (selectedPointIndex !== null) {
       const updatedPoints = [...routePoints];
+      const selectedPoint = { ...updatedPoints[selectedPointIndex] };
+      
+      // Обновляем локацию и берем координаты из выбранной локации
+      selectedPoint.location = location;
 
-      updatedPoints[selectedPointIndex] = {
-        ...updatedPoints[selectedPointIndex],
-        location,
-      };
+      // Обновляем точку
+      updatedPoints[selectedPointIndex] = selectedPoint;
       setRoutePoints(updatedPoints);
-      setSelectedPointIndex(null);
+      setIsModalOpen(false);
     }
-    setIsModalOpen(false);
-  }, [selectedPointIndex, routePoints, setRoutePoints]);
+  }, [routePoints, selectedPointIndex, setRoutePoints]);
 
   const handlePointClear = useCallback((index: number) => {
-    const currentPoints = [...routePoints];
-    const pointToRemove = currentPoints[index];
-
-    // Если это промежуточная точка, удаляем её полностью
-    if (pointToRemove.type === 'intermediate') {
-      // Удаляем промежуточную точку
-      currentPoints.splice(index, 1);
-
-      // Перенумеровываем оставшиеся промежуточные точки
-      let intermediateCounter = 1;
-
-      for (let i = 0; i < currentPoints.length; i++) {
-        if (currentPoints[i].type === 'intermediate') {
-          currentPoints[i] = {
-            ...currentPoints[i],
-            id: `intermediate-${intermediateCounter - 1}`,
-            label: `Остановка ${intermediateCounter}`
-          };
-          intermediateCounter++;
-        }
-      }
-    }
-    // Если это конечная точка "Куда" и есть промежуточные точки
-    else if (pointToRemove.type === 'end' && currentPoints.length > 2) {
-      // Находим последнюю промежуточную точку
-      let lastIntermediateIndex = -1;
-
-      for (let i = currentPoints.length - 2; i >= 0; i--) {
-        if (currentPoints[i].type === 'intermediate') {
-          lastIntermediateIndex = i;
-
-          break;
-        }
-      }
-
-      if (lastIntermediateIndex !== -1) {
-        // Превращаем последнюю промежуточную точку в конечную
-        currentPoints[lastIntermediateIndex] = {
-          ...currentPoints[lastIntermediateIndex],
-          type: 'end',
-          label: 'Куда'
-        };
-
-        // Удаляем старую конечную точку
-        currentPoints.splice(index, 1);
-
-        // Перенумеровываем оставшиеся промежуточные точки
-        let intermediateCounter = 1;
-
-        for (let i = 0; i < currentPoints.length; i++) {
-          if (currentPoints[i].type === 'intermediate') {
-            currentPoints[i] = {
-              ...currentPoints[i],
-              id: `intermediate-${intermediateCounter - 1}`,
-              label: `Остановка ${intermediateCounter}`
-            };
-            intermediateCounter++;
-          }
-        }
-      } else {
-        // Если нет промежуточных точек, просто очищаем конечную точку
-        currentPoints[index] = {
-          ...currentPoints[index],
-          location: null
-        };
-      }
-    }
-    // Если это начальная точка "Откуда", просто очищаем её
-    else if (pointToRemove.type === 'start') {
-      currentPoints[index] = {
-        ...currentPoints[index],
-        location: null
-      };
-    }
-    // Если это единственная конечная точка, просто очищаем её
-    else {
-      currentPoints[index] = {
-        ...currentPoints[index],
-        location: null
-      };
-    }
-
-    setRoutePoints(currentPoints);
+    const updatedPoints = [...routePoints];
+    const clearedPoint = { ...updatedPoints[index], location: null };
+    
+    updatedPoints[index] = clearedPoint;
+    setRoutePoints(updatedPoints);
   }, [routePoints, setRoutePoints]);
 
-  const handleDriverSelect = useCallback((driver: Driver | null, location?: { latitude: number; longitude: number }, fromSearchPanel: boolean = true) => {
-    if (!driver) {
-      // Отменяем выбор водителя
-      setSelectedDriver(null);
-      setDynamicMapCenter(null);
-      setOpenDriverPopupId(null);
+  const canSelectLocation = useCallback((location: GetLocationDTO): boolean => {
+    // Проверка, выбрана ли уже локация в какой-то точке маршрута
+    return !routePoints.some(point => point.location?.id === location.id);
+  }, [routePoints]);
 
-      return;
+  const addIntermediatePoint = useCallback((location?: GetLocationDTO) => {
+    const newPoints = [...routePoints];
+    const endPoint = newPoints.pop(); // Временно удаляем конечную точку
+    
+    if (!endPoint) {
+      return; // На случай если в массиве нет точек (не должно происходить)
     }
 
-    setSelectedDriver(driver);
+    // Создаем новую промежуточную точку
+    const newIntermediateIndex = newPoints.filter(p => p.type === 'intermediate').length + 1;
+    const newPoint: RoutePoint = {
+      id: `intermediate-${Date.now()}`, // Уникальный ID
+      type: 'intermediate',
+      label: `Остановка ${newIntermediateIndex}`,
+      location: location || null,
+      latitude: location?.latitude || 0,
+      longitude: location?.longitude || 0,
+      name: location?.name || `Остановка ${newIntermediateIndex}`
+    };
 
-    // Перемещаем карту только если выбор происходит из панели поиска
-    if (fromSearchPanel) {
-      // Если переданы координаты, используем их
-      if (location) {
-        // Смещаем центр карты вниз, чтобы водитель был виден над панелью
-        // Панель занимает примерно 200-250px снизу, смещаем на ~0.0015 градуса вниз
-        const offsetLatitude = location.latitude - 0.0015;
+    // Добавляем промежуточную точку перед конечной
+    newPoints.push(newPoint);
+    newPoints.push(endPoint); // Возвращаем конечную точку
+    
+    setRoutePoints(newPoints);
 
-        const newCenter = {
-          latitude: offsetLatitude,
-          longitude: location.longitude
-        };
-
-        setDynamicMapCenter(newCenter);
-
-        // Автоматически открываем попап водителя
-        setOpenDriverPopupId(driver.id);
-
-      } else {
-        // Если координаты не переданы, пытаемся найти водителя в списке активных водителей
-        const activeDriver = drivers.find(d => d.id === driver.id);
-
-        if (activeDriver && activeDriver.currentLocation) {
-          const offsetLatitude = activeDriver.currentLocation.latitude - 0.0015;
-
-          const newCenter = {
-            latitude: offsetLatitude,
-            longitude: activeDriver.currentLocation.longitude
-          };
-
-          setDynamicMapCenter(newCenter);
-
-          // Автоматически открываем попап водителя
-          setOpenDriverPopupId(driver.id);
-        } else {
-          // Если водитель не найден на карте, все равно пытаемся открыть popup
-          // Это может произойти если водитель не в зоне видимости карты
-          setOpenDriverPopupId(driver.id);
-        }
-      }
+    // Если локация не передана, открываем диалог выбора
+    if (!location) {
+      setTimeout(() => {
+        handlePointSelect(newPoints.length - 2); // Индекс только что добавленной точки
+      }, 0);
     }
-    // Если выбор НЕ из панели поиска (т.е. из popup на карте), не перемещаем карту
-  }, [drivers, setSelectedDriver, setDynamicMapCenter, setOpenDriverPopupId]);
+  }, [routePoints, handlePointSelect, setRoutePoints]);
 
   const handleLocationToggle = useCallback((location: GetLocationDTO, isSelected: boolean) => {
-    if (!isSelected) {
-      // Убираем локацию из маршрута
-      const updatedPoints = routePoints.map(point => {
-        if (point.location?.id === location.id) {
-          return { ...point, location: null };
-        }
-
-        return point;
-      });
-
-      setRoutePoints(updatedPoints);
-
-      return;
-    }
-
-    // Добавляем локацию в первую свободную точку
-    if (selectedPointIndex !== null && selectedPointIndex >= 0) {
-      const updatedPoints = [...routePoints];
-
-      updatedPoints[selectedPointIndex] = {
-        ...updatedPoints[selectedPointIndex],
-        location: location
-      };
-      setRoutePoints(updatedPoints);
-      setSelectedPointIndex(null);
-      setIsModalOpen(false);
+    if (isSelected) {
+      // Если локация выбрана на карте, находим точку с этой локацией и снимаем выбор
+      const pointIndex = routePoints.findIndex(p => p.location?.id === location.id);
+      if (pointIndex !== -1) {
+        handlePointClear(pointIndex);
+      }
     } else {
-      const emptyPointIndex = routePoints.findIndex(point => !point.location);
-
+      // Если локация не выбрана и есть пустые точки, выбираем первую пустую
+      const emptyPointIndex = routePoints.findIndex(p => p.location === null);
+      
       if (emptyPointIndex !== -1) {
+        // Есть пустая точка - заполняем её
         const updatedPoints = [...routePoints];
-        
         updatedPoints[emptyPointIndex] = {
           ...updatedPoints[emptyPointIndex],
           location: location
         };
+        
         setRoutePoints(updatedPoints);
+      } else if (routePoints.length < 5) {
+        // Нет пустых точек, но можно добавить промежуточную
+        addIntermediatePoint(location);
       }
     }
-  }, [routePoints, selectedPointIndex, setRoutePoints]);
+  }, [routePoints, handlePointClear, addIntermediatePoint, setRoutePoints]);
 
-  const canSelectLocation = useCallback((location: GetLocationDTO) => {
-    // Если локация уже выбрана, можно отменить
-    const isLocationSelected = routePoints.some(point => point.location?.id === location.id);
+  const handleDriverSelect = useCallback((driver: GetDriverDTO | null, location?: { latitude: number; longitude: number }, fromSearchPanel?: boolean) => {
+    setSelectedDriver(driver);
 
-    if (isLocationSelected) return true;
+    if (driver && location) {
+      setDynamicMapCenter(location);
+      setOpenDriverPopupId(driver.id);
+    } else if (driver && driver.currentLocation) {
+      // Если водитель выбран из списка и у него есть координаты
+      setDynamicMapCenter({
+        latitude: driver.currentLocation.latitude,
+        longitude: driver.currentLocation.longitude
+      });
+      setOpenDriverPopupId(driver.id);
+    } else {
+      // Если водитель отменен
+      setDynamicMapCenter(null);
+      setOpenDriverPopupId(null);
+    }
+  }, [setSelectedDriver, setDynamicMapCenter, setOpenDriverPopupId]);
 
-    // Если есть активная точка для выбора, можно выбрать
-    if (selectedPointIndex !== null && selectedPointIndex >= 0) return true;
-
-    // Если есть пустые точки в маршруте, можно выбрать
-    const hasEmptyPoints = routePoints.some(point => !point.location);
-
-    return hasEmptyPoints;
-  }, [routePoints, selectedPointIndex]);
-
-  const addIntermediatePoint = useCallback((location?: GetLocationDTO) => {
-    if (routePoints.length >= 5) return; // Максимум 5 точек
-
-    // Считаем количество промежуточных точек для правильной нумерации
-    const intermediateCount = routePoints.filter(p => p.type === 'intermediate').length;
-
-    const newPoint: RoutePoint = {
-      id: `intermediate-${intermediateCount}`,
-      location: location || null,
-      type: 'intermediate',
-      label: `Остановка ${intermediateCount + 1}`,
-    };
-
-    // Вставляем перед последней точкой (конечной)
-    const updatedPoints = [...routePoints];
-
-    updatedPoints.splice(-1, 0, newPoint);
-    setRoutePoints(updatedPoints);
-  }, [routePoints, setRoutePoints]);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedPointIndex(null);
-  }, []);
-
-  // Функция для получения полных данных водителя из кэша
   const getDriverById = useCallback((id: string): Record<string, unknown> | null => {
     return driversDataCache[id] || null;
   }, [driversDataCache]);
 
-  // Функция для загрузки полных данных водителя
   const loadDriverData = useCallback(async (id: string): Promise<void> => {
-    // Если данные уже есть в кэше, не загружаем повторно
-    if (driversDataCache[id]) {
-      return;
-    }
-
     try {
+      // Проверяем, есть ли уже данные в кэше
+      if (driversDataCache[id]) {
+        return;
+      }
+      
+      // Загружаем данные водителя
       const driverData = await usersApi.getDriver(id);
-
+      
       // Сохраняем в кэш
-      setDriversDataCache(prev => ({
-        ...prev,
-        [id]: driverData as unknown as Record<string, unknown>
+      setDriversDataCache(prevCache => ({
+        ...prevCache,
+        [id]: driverData as Record<string, unknown>
       }));
     } catch (error) {
-      throw error;
+      console.error('Ошибка при загрузке данных водителя:', error);
     }
   }, [driversDataCache]);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
 
   return {
     // Данные маршрута
     routePoints,
     isReady,
-    
+
     // Данные карты
     mapLocations,
     mapCenter,
     dynamicMapCenter,
-    
+
     // Данные водителей
-    drivers, // Активные водители для карты
-    allDrivers, // Все водители для панели
+    drivers,
+    allDrivers,
     selectedDriver,
     openDriverPopupId,
-    
+
     // Состояния UI
     isModalOpen,
     modalTitle,
     selectedPointIndex,
-    
+
     // Обработчики
     handlePointSelect,
     handleLocationSelect,
@@ -701,6 +549,6 @@ export const useOrderLocations = ({
 
     // Функции для работы с данными водителей
     getDriverById,
-    loadDriverData
+    loadDriverData,
   };
 };

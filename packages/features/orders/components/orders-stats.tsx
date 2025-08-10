@@ -3,16 +3,14 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ordersApi, type OrderStatsResponse } from '@shared/api/orders';
-import { orderStatsLabels, orderStatsColors } from '@entities/orders';
 import { useUserRole } from '@shared/contexts/user-role-context';
+import { orderStatsLabels, orderStatsColors } from '@entities/orders';
 import { Role } from '@entities/users/enums';
 
 interface OrderStatsProps {
   className?: string;
   activeStatus?: string | null;
 }
-
-
 
 export function OrdersStats({ className, activeStatus }: OrderStatsProps) {
   const [stats, setStats] = useState<OrderStatsResponse | null>(null);

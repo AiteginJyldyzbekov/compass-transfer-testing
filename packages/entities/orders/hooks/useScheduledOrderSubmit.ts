@@ -1,6 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
+import type { GetRideDTO } from '@entities/rides/interface/GetRideDTO';
 import { OrdersApi, type CreateScheduledOrderRequest } from '../api/orders';
 import type { GetOrderDTO } from '../interface';
+import type { CreateScheduledRideDTO } from '../interface/CreateScheduledRideDTO';
 
 /**
  * Опции для хука отправки запланированного заказа
@@ -112,7 +114,7 @@ export function useScheduledOrderSubmit(
  */
 export interface UseScheduledRideSubmitOptions {
   /** Колбэк при успешном назначении */
-  onSuccess?: (ride: any) => void;
+  onSuccess?: (ride: GetRideDTO) => void;
   
   /** Колбэк при ошибке */
   onError?: (error: Error) => void;
@@ -120,7 +122,7 @@ export interface UseScheduledRideSubmitOptions {
 
 export interface UseScheduledRideSubmitResult {
   /** Функция назначения водителя */
-  assignDriver: (orderId: string, data: any) => Promise<any>;
+  assignDriver: (orderId: string, data: CreateScheduledRideDTO) => Promise<GetRideDTO>;
   
   /** Состояние загрузки */
   isLoading: boolean;
@@ -129,7 +131,7 @@ export interface UseScheduledRideSubmitResult {
   error: Error | null;
   
   /** Результат */
-  data: any | null;
+  data: GetRideDTO | null;
   
   /** Сброс состояния */
   reset: () => void;
@@ -145,10 +147,10 @@ export function useScheduledRideSubmit(
   const { onSuccess, onError } = options;
 
   const mutation = useMutation({
-    mutationFn: ({ orderId, data }: { orderId: string; data: any }) => 
+    mutationFn: ({ orderId, data }: { orderId: string; data: CreateScheduledRideDTO }) => 
       OrdersApi.createScheduledRide(orderId, data),
     
-    onSuccess: (data: any) => {
+    onSuccess: (data: GetRideDTO) => {
       onSuccess?.(data);
     },
 
@@ -157,7 +159,7 @@ export function useScheduledRideSubmit(
     }
   });
 
-  const assignDriver = async (orderId: string, data: any) => {
+  const assignDriver = async (orderId: string, data: CreateScheduledRideDTO) => {
     return mutation.mutateAsync({ orderId, data });
   };
 

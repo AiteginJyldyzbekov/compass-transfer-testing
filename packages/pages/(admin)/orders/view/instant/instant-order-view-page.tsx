@@ -4,11 +4,11 @@ import { useRouter } from 'next/navigation';
 import { OrderType } from '@entities/orders/enums/OrderType.enum';
 import { useInstantOrderById } from '@entities/orders/hooks';
 import { getOrderEditRoute } from '@entities/orders/utils/order-routes';
-import { InstantOrderViewHeader } from './components/instant-order-view-header';
-import { InstantOrderViewContent } from './components/instant-order-view-content';
 import { InstantOrderViewActions } from './components/instant-order-view-actions';
-import { InstantOrderViewLoading } from './components/instant-order-view-loading';
+import { InstantOrderViewContent } from './components/instant-order-view-content';
 import { InstantOrderViewError } from './components/instant-order-view-error';
+import { InstantOrderViewHeader } from './components/instant-order-view-header';
+import { InstantOrderViewLoading } from './components/instant-order-view-loading';
 
 interface InstantOrderViewPageProps {
   orderId: string;

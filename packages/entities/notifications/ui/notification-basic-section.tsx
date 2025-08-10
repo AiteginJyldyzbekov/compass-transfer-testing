@@ -1,14 +1,16 @@
 'use client';
 
 import { useFormContext } from 'react-hook-form';
+import { cn } from '@shared/lib/utils';
 import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
-import { cn } from '@shared/lib/utils';
-import { NotificationType, NotificationTypeValues, NotificationTypeLabels } from '../enums/NotificationType.enum';
+import { NotificationTypeValues, NotificationTypeLabels, type NotificationType } from '../enums/NotificationType.enum';
 import type { NotificationCreateFormData } from '../schemas/notificationCreateSchema';
 
 // Типы заказов
+type OrderType = 'Unknown' | 'Instant' | 'Scheduled' | 'Partner' | 'Shuttle' | 'Subscription';
+
 const OrderTypeOptions = [
   { value: 'Unknown', label: 'Неизвестный' },
   { value: 'Instant', label: 'Мгновенный' },
@@ -19,7 +21,7 @@ const OrderTypeOptions = [
 ];
 
 interface NotificationBasicSectionProps {
-  showOptionalWarning?: boolean;
+  _showOptionalWarning?: boolean; // Префикс _ для неиспользуемого параметра
   labels?: {
     type?: string;
     title?: string;
@@ -33,7 +35,7 @@ interface NotificationBasicSectionProps {
 }
 
 export function NotificationBasicSection({
-  showOptionalWarning = false,
+  _showOptionalWarning = false, // Префикс _ для неиспользуемого параметра
   labels = {},
   placeholders = {},
 }: NotificationBasicSectionProps) {
@@ -116,7 +118,7 @@ export function NotificationBasicSection({
         </Label>
         <Select
           value={orderType}
-          onValueChange={(value) => setValue('orderType', value as any)}
+          onValueChange={(value) => setValue('orderType', value as OrderType)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Выберите тип заказа (необязательно)" />

@@ -7,8 +7,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { locationsApi } from '@shared/api/locations';
 import { logger } from '@shared/lib';
-import { parseAddress } from '@entities/locations/lib/address-parser';
 import { LocationType } from '@entities/locations/enums';
+import { parseAddress } from '@entities/locations/lib/address-parser';
 import {
   getBasicLocationDataStatus,
   getMapLocationDataStatus,
@@ -176,7 +176,7 @@ export function useLocationFormLogic({
 
       return;
     }
-    await handleSubmit(onSubmit as any)();
+    await handleSubmit(onSubmit as (data: LocationCreateFormData) => Promise<void>)();
   }, [trigger, handleSubmit, onSubmit, form.formState.errors, setFocus]);
 
   const handleChapterClick = useCallback((chapterId: string) => {

@@ -1,4 +1,5 @@
-import type { RideStatus } from '@entities/order/enums';
+import type { GetLocationDTO } from '@entities/locations/interface';
+import type { RideStatus } from '@entities/orders/enums';
 
 /**
  * Интерфейс для получения поездки
@@ -24,7 +25,7 @@ export interface GetRideDTO {
  */
 export interface GetRideWaypointDTO {
   locationId?: string | null;
-  location?: any; // Детальная информация о локации
+  location?: GetLocationDTO;
   arrivalTime?: string | null;
   departureTime?: string | null;
 }

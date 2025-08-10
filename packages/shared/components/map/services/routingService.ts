@@ -1,13 +1,7 @@
 /**
  * Сервис для построения маршрутов с поддержкой разных типов
  */
-
-import { RouteType, type RouteTypeInfo, type RouteResult } from '../types';
-
-export interface RoutePoint {
-  latitude: number;
-  longitude: number;
-}
+import { type RoutePoint, RouteType, type RouteTypeInfo, type RouteResult } from '@shared/components/map/types'
 
 interface OSRMRoute {
   distance: number;

@@ -8,9 +8,23 @@ import { Card, CardContent } from '@shared/ui/layout';
 import { ChapterHeader } from '@shared/ui/layout/chapter-header';
 import { FormSidebar } from '@shared/ui/layout/form-sidebar';
 import { NotificationBasicSection, NotificationRelationsSection } from '@entities/notifications';
+import { NotificationType } from '@entities/notifications/enums/NotificationType.enum';
 import { NOTIFICATION_FORM_CHAPTERS } from '@entities/notifications/model/form-chapters/notification-chapters';
 import type { NotificationUpdateFormData } from '@entities/notifications/schemas/notificationUpdateSchema';
 import { useNotificationEditFormLogic } from '@features/notifications/forms/edit/notification-edit-form';
+
+// Тип для заказов, определенный локально, так как модуль не найден
+type NotificationOrderType = 'Unknown' | 'Instant' | 'Scheduled' | 'Partner' | 'Shuttle' | 'Subscription';
+
+// Объект для доступа к типам заказов как к значениям
+const NotificationOrderType = {
+  Unknown: 'Unknown' as NotificationOrderType,
+  Instant: 'Instant' as NotificationOrderType,
+  Scheduled: 'Scheduled' as NotificationOrderType,
+  Partner: 'Partner' as NotificationOrderType,
+  Shuttle: 'Shuttle' as NotificationOrderType,
+  Subscription: 'Subscription' as NotificationOrderType
+};
 
 interface NotificationEditViewProps {
   notificationId: string;
@@ -58,12 +72,12 @@ export function NotificationEditView({ notificationId }: NotificationEditViewPro
   const logic = useNotificationEditFormLogic({
     notificationId: notificationId,
     initialData: {
-      type: 'System' as any,
+      type: NotificationType.System,
       title: '',
       content: '',
       orderId: '',
       rideId: '',
-      orderType: 'Unknown',
+      orderType: NotificationOrderType.Unknown,
       isRead: false,
     },
     onBack: () => router.push('/notifications'),
@@ -130,7 +144,7 @@ function NotificationEditFormView({
                     {/* Вертикальная линия */}
                     <div className='absolute -left-8 top-0 bottom-0 w-0.5 border-l-2 border-dashed border-gray-300' />
                     <NotificationBasicSection
-                      showOptionalWarning={getChapterStatus('basic') === 'warning'}
+                      _showOptionalWarning={getChapterStatus('basic') === 'warning'}
                       labels={{
                         type: 'Тип уведомления *',
                         title: 'Заголовок уведомления *',
@@ -157,7 +171,7 @@ function NotificationEditFormView({
                         rideId: 'ID поездки',
                         isRead: 'Уведомление прочитано',
                       }}
-                      showIsRead={true}
+                      showIsRead
                     />
                   </div>
                 </div>

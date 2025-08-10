@@ -4,11 +4,11 @@ import { useRouter } from 'next/navigation';
 import { OrderType } from '@entities/orders/enums/OrderType.enum';
 import { useGetScheduledOrder } from '@entities/orders/hooks';
 import { getOrderEditRoute } from '@entities/orders/utils/order-routes';
-import { ScheduledOrderViewHeader } from './components/scheduled-order-view-header';
-import { ScheduledOrderViewContent } from './components/scheduled-order-view-content';
 import { ScheduledOrderViewActions } from './components/scheduled-order-view-actions';
-import { ScheduledOrderViewLoading } from './components/scheduled-order-view-loading';
+import { ScheduledOrderViewContent } from './components/scheduled-order-view-content';
 import { ScheduledOrderViewError } from './components/scheduled-order-view-error';
+import { ScheduledOrderViewHeader } from './components/scheduled-order-view-header';
+import { ScheduledOrderViewLoading } from './components/scheduled-order-view-loading';
 
 interface ScheduledOrderViewPageProps {
   orderId: string;

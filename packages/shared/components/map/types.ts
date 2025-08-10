@@ -56,6 +56,9 @@ export interface RoutePoint {
   type?: 'start' | 'end' | 'driver' | 'waypoint' | 'intermediate';
   id?: string; // Добавляем опциональный ID для локаций
   heading?: number; // Направление движения для водителя
+  // Дополнительные поля для форм заказов
+  location?: GetLocationDTO | null; // Полная информация о локации
+  label?: string; // Метка для отображения в форме
 }
 
 /**

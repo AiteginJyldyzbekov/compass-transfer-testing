@@ -10,14 +10,14 @@ import {
   AlertTriangle,
   CheckCircle,
   Info,
-  Mail
+  type LucideProps
 } from 'lucide-react';
 import type { NotificationType } from '../enums/NotificationType.enum';
 
 /**
  * Иконки для типов уведомлений
  */
-export const NotificationTypeIcons: Record<NotificationType, React.ComponentType<any>> = {
+export const NotificationTypeIcons: Record<NotificationType, React.ComponentType<LucideProps>> = {
   Unknown: Bell,
 
   // Уведомления о заказах
