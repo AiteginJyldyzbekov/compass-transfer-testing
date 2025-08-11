@@ -3,7 +3,9 @@ import type { GetRideDTO } from '@entities/rides/interface/GetRideDTO';
 import type {
   CreateScheduledOrderDTO,
   CreateScheduledRideDTO,
-  GetOrderDTO
+  GetOrderDTO,
+  UpdateInstantOrderDTO,
+  UpdateScheduledOrderDTO
 } from '../interface';
 
 /**
@@ -173,6 +175,68 @@ export class OrdersApi {
     }
 
     return response.data;
+  }
+
+  /**
+   * Обновление моментального заказа
+   * PUT /Order/instant/{uuid}
+   */
+  static async updateInstantOrder(
+    id: string,
+    data: UpdateInstantOrderDTO
+  ): Promise<GetOrderDTO> {
+    const response = await apiPut<GetOrderDTO>(`/Order/instant/${id}`, data);
+
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to update instant order');
+    }
+
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Обновление запланированного заказа
+   * PUT /Order/scheduled/{uuid}
+   */
+  static async updateScheduledOrder(
+    id: string,
+    data: UpdateScheduledOrderDTO
+  ): Promise<GetOrderDTO> {
+    const response = await apiPut<GetOrderDTO>(`/Order/scheduled/${id}`, data);
+
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to update scheduled order');
+    }
+
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Обновление пассажиров в заказе
+   * PUT /Order/{uuid}/passengers
+   */
+  static async updateOrderPassengers(
+    orderId: string,
+    passengers: Array<{
+      customerId: string | null;
+      firstName: string;
+      lastName: string | null;
+      isMainPassenger: boolean;
+    }>
+  ): Promise<void> {
+    const response = await apiPut<void>(`/Order/${orderId}/passengers`, passengers);
+
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to update order passengers');
+    }
   }
 
   /**

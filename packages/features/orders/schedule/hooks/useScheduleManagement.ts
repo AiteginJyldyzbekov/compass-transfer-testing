@@ -72,6 +72,39 @@ export function useScheduleManagement({
   const [selectedTime, setSelectedTime] = useState<string | null>(initialValues.time);
   const [selectedHour, setSelectedHour] = useState<number>(initialValues.hour);
   const [selectedMinute, setSelectedMinute] = useState<number>(initialValues.minute);
+  
+  // Инициализируем состояние валидности при первой загрузке
+  useEffect(() => {
+    // Используем отдельную функцию, чтобы избежать повторных вызовов useEffect
+    const initializeValidity = () => {
+      // Проверяем валидность начальных значений
+      if (initialScheduledTime) {
+        if (onValidityChange) {
+          onValidityChange(true);
+        }
+      } else if (selectedDate && selectedTime) {
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        const scheduledTimeString = `${year}-${month}-${day}T${selectedTime}`;
+        
+        // Проверяем, что выбранное время валидно
+        const selectedDateTime = new Date(scheduledTimeString);
+        const now = new Date();
+        const minAllowedTime = new Date(now.getTime() + 5 * 60 * 1000);
+        
+        if (selectedDateTime > minAllowedTime && onValidityChange) {
+          onValidityChange(true);
+          if (onScheduleChange) {
+            onScheduleChange(scheduledTimeString);
+          }
+        }
+      }
+    };
+    
+    // Вызываем функцию инициализации один раз при загрузке
+    initializeValidity();
+  }, []);
 
   const isTimeDisabled = (hour: number, minute: number): boolean => {
     if (!selectedDate) return false;

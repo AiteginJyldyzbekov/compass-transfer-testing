@@ -23,9 +23,8 @@ export default async function OrdersPage({
             <h1 className='text-3xl font-bold tracking-tight'>Заказы</h1>
             <p className='text-muted-foreground'>Управление заказами системы</p>
           </div>
-
-          <OrdersStats className='mb-4' activeStatus={params.status} />
         </div>
+        <OrdersStats className='m-4' activeStatus={params.status} />
 
         <OrdersTable initialFilters={params} />
       </div>

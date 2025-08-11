@@ -23,7 +23,9 @@ td[data-selected] button:active {
   color: hsl(var(--primary-foreground)) !important;
   font-weight: bold !important;
   transform: scale(1.1) !important;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
 }
 
 @layer base {
@@ -265,6 +267,11 @@ td[data-selected] button:active {
   }
 }
 
-  .rdp-caption_label {
-    display: none !important;
-  }
+.rdp-caption_label {
+  display: none !important;
+}
+
+.leaflet-touch .leaflet-control-attribution, .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
+  box-shadow: none;
+  display: none;
+}

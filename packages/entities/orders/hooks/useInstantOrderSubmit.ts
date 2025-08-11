@@ -1,12 +1,41 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { OrdersApi, type CreateInstantOrderRequest, type CreateInstantOrderByPartnerRequest } from '../api/orders';
-import type { GetOrderDTO } from '../interface';
+import { OrderStatus } from '../enums';
+import type { GetOrderDTO, UpdateInstantOrderDTO } from '../interface';
 
 /**
- * Опции для хука создания моментального заказа
+ * Преобразует данные создания заказа в данные для обновления
+ */
+function convertToUpdateData(data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest): UpdateInstantOrderDTO {
+  // Создаем базовый объект с обязательными полями
+  const updateData: UpdateInstantOrderDTO = {
+    tariffId: data.tariffId,
+    routeId: data.routeId || null,
+    services: data.services || [],
+    initialPrice: data.initialPrice,
+    status: OrderStatus.Pending // По умолчанию статус Pending при обновлении
+  };
+
+  // Добавляем поля локаций, если они есть в исходных данных
+  if ('startLocationId' in data) {
+    (updateData as any).startLocationId = data.startLocationId || null;
+  }
+  if ('endLocationId' in data) {
+    (updateData as any).endLocationId = data.endLocationId || null;
+  }
+  if ('additionalStops' in data) {
+    (updateData as any).additionalStops = data.additionalStops || [];
+  }
+
+  return updateData;
+}
+
+/**
+ * Опции для хука создания/обновления моментального заказа
  */
 export interface UseInstantOrderSubmitOptions {
-  /** Колбэк при успешном создании */
+  /** Колбэк при успешном создании/обновлении */
   onSuccess?: (order: GetOrderDTO) => void;
 
   /** Колбэк при ошибке */
@@ -17,13 +46,27 @@ export interface UseInstantOrderSubmitOptions {
 
   /** Роль пользователя для выбора правильного API */
   userRole?: 'admin' | 'operator' | 'partner' | 'driver';
+
+  /** ID заказа для режима обновления */
+  orderId?: string;
+
+  /** Пассажиры для обновления (только в режиме редактирования) */
+  passengers?: Array<{
+    customerId: string | null;
+    firstName: string;
+    lastName: string | null;
+    isMainPassenger: boolean;
+  }>;
+
+  /** Нужно ли обновлять пассажиров отдельным запросом */
+  shouldUpdatePassengers?: boolean;
 }
 
 /**
- * Результат хука создания моментального заказа
+ * Результат хука создания/обновления моментального заказа
  */
 export interface UseInstantOrderSubmitResult {
-  /** Функция создания заказа */
+  /** Функция создания/обновления заказа */
   createOrder: (data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest) => void;
 
   /** Состояние загрузки */
@@ -32,7 +75,7 @@ export interface UseInstantOrderSubmitResult {
   /** Ошибка */
   error: Error | null;
 
-  /** Данные созданного заказа */
+  /** Данные созданного/обновленного заказа */
   data: GetOrderDTO | null;
 
   /** Сброс состояния */
@@ -40,17 +83,35 @@ export interface UseInstantOrderSubmitResult {
 }
 
 /**
- * Хук для создания моментального заказа
+ * Хук для создания/обновления моментального заказа
  */
 export function useInstantOrderSubmit(
   options: UseInstantOrderSubmitOptions = {}
 ): UseInstantOrderSubmitResult {
-  const { onSuccess, onError, onSettled, userRole = 'operator' } = options;
+  const { 
+    onSuccess, 
+    onError, 
+    onSettled, 
+    userRole = 'operator', 
+    orderId
+  } = options;
+
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest) => {
-      // eslint-disable-next-line no-console
-      console.log('📦 useInstantOrderSubmit: Создаем моментальный заказ', data);
+    mutationFn: async (data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest) => {
+      // Режим обновления
+      if (orderId) {
+        const updateData = convertToUpdateData(data);
+        const updatedOrder = await OrdersApi.updateInstantOrder(orderId, updateData);
+
+        // Обновляем пассажиров отдельным запросом (если переданы)
+        if (options.shouldUpdatePassengers && options.passengers && options.passengers.length > 0) {
+          await OrdersApi.updateOrderPassengers(orderId, options.passengers);
+        }
+
+        return updatedOrder;
+      }
 
       // Для партнеров используем отдельный API
       if (userRole === 'partner') {
@@ -60,13 +121,23 @@ export function useInstantOrderSubmit(
       return OrdersApi.createInstantOrder(data as CreateInstantOrderRequest);
     },
     onSuccess: (data) => {
-      // eslint-disable-next-line no-console
-      console.log('✅ useInstantOrderSubmit: Заказ создан успешно', data);
+      toast.success(
+        `✅ useInstantOrderSubmit: Заказ ${orderId ? 'обновлен' : 'создан'} успешно`,
+        data
+      );
+      
+      // Инвалидируем кэш для обновленного заказа
+      if (orderId) {
+        queryClient.invalidateQueries({
+          queryKey: ['instant-order', orderId]
+        });
+      }
+      
       onSuccess?.(data);
     },
     onError: (error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error('❌ useInstantOrderSubmit: Ошибка создания заказа', error);
+      toast.error(
+        `❌ useInstantOrderSubmit: Ошибка ${orderId ? 'обновления' : 'создания'} заказа`);
       onError?.(error);
     },
     onSettled,

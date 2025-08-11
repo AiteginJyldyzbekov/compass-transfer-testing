@@ -66,7 +66,7 @@ export function AppFooter({
           {/* Социальные сети слева */}
           <div className='flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6'>
             <div className='flex items-center space-x-3'>
-              <span className='text-sm font-medium text-foreground'>Мы в соцсетях:</span>
+              <span className='text-sm font-medium text-foreground'>Подпишись:</span>
               <div className='flex items-center space-x-3'>
                 {socialLinks.map((social) => {
                   const Icon = social.icon;

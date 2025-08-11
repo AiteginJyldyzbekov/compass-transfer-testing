@@ -1,7 +1,9 @@
 'use client';
 
+import { Car, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { RoutePoint, ActiveDriverDTO } from '@shared/components/map/types';
+import { Button } from '@shared/ui/forms/button';
 import type { GetRideDTO } from '@entities/orders/interface';
 import type { GetDriverDTO } from '@entities/users/interface';
 import { DriverPanel } from '@features/orders/components/DriverPanel';
@@ -84,7 +86,10 @@ export function MapTab({
     }
   };
 
-  // ВСЯ ЛОГИКА В ХУКЕ!
+  // Состояние для управления видимостью маркеров
+  const [showDrivers, setShowDrivers] = useState<boolean>(true);
+  const [showLocations, setShowLocations] = useState<boolean>(true);
+
   const {
     routePoints,
     isReady,
@@ -187,14 +192,34 @@ export function MapTab({
 
       {/* Правая колонка - Карта */}
       <div className='flex-[2] w-full lg:w-1/2 relative'>
+        {/* Кнопки управления видимостью */}
+        <div className="absolute top-6 right-6 z-[500] flex gap-2">
+          <Button 
+            variant={showDrivers ? "default" : "outline"} 
+            size="icon"
+            onClick={() => setShowDrivers(!showDrivers)} 
+            title={showDrivers ? "Скрыть водителей" : "Показать водителей"}
+          >
+            <Car className={showDrivers ? "text-white" : "text-gray-500"} />
+          </Button>
+          <Button 
+            variant={showLocations ? "default" : "outline"} 
+            size="icon"
+            onClick={() => setShowLocations(!showLocations)} 
+            title={showLocations ? "Скрыть локации" : "Показать локации"}
+          >
+            <MapPin className={showLocations ? "text-white" : "text-gray-500"} />
+          </Button>
+        </div>
+
         <LocationMap
           mapCenter={mapCenter}
           dynamicMapCenter={dynamicMapCenter}
           routePoints={routePoints}
-          mapLocations={mapLocations}
+          mapLocations={showLocations ? mapLocations : []}
           routeError={routeError}
           _routeLoading={routeLoading}
-          activeDrivers={drivers as unknown as ActiveDriverDTO[]}
+          activeDrivers={showDrivers ? (drivers as ActiveDriverDTO[]) : []}
           selectedDriverId={selectedDriver?.id}
           openDriverPopupId={openDriverPopupId}
           showDriverSearchZone={showDriverRadius}
@@ -221,7 +246,7 @@ export function MapTab({
             getDriverById={(id: string) => {
               const driver = (allDrivers as GetDriverDTO[]).find((d: GetDriverDTO) => d.id === id);
 
-              return driver ? (driver as unknown as GetDriverDTO) : null;
+              return driver ? (driver as GetDriverDTO) : null;
             }}
             isInstantOrder={isInstantOrder}
             userRole={userRole}

@@ -21,8 +21,11 @@ export function SelectedServices({
   formatPrice,
 }: SelectedServicesProps) {
   // Расчет общей стоимости
-  
   const totalPrice = selectedServices.reduce((total, selectedService) => {
+    if (!services || !Array.isArray(services)) {
+      return total;
+    }
+    
     const service = services.find(s => s.id === selectedService.serviceId);
     
     return total + (service ? service.price * selectedService.quantity : 0);
@@ -47,6 +50,10 @@ export function SelectedServices({
           ) : (
             <div className="flex flex-col gap-0">
               {selectedServices.map((selectedService) => {
+                if (!services || !Array.isArray(services)) {
+                  return null;
+                }
+                
                 const service = services.find(s => s.id === selectedService.serviceId);
 
                 if (!service) return null;

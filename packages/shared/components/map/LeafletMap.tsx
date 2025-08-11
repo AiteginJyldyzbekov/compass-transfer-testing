@@ -98,17 +98,11 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
 
   // Передаем расстояние маршрута через колбэк
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('🗺️ LeafletMap routeDistance изменилось:', routeDistance, 'routeStatus:', routeStatus, 'onRouteDistanceChange:', !!onRouteDistanceChange);
 
     if (onRouteDistanceChange) {
       if (routeStatus === 'success' && routeDistance > 0) {
-        // eslint-disable-next-line no-console
-        console.log('🚀 Вызываем onRouteDistanceChange с:', routeDistance);
         onRouteDistanceChange(routeDistance);
       } else if (routeStatus === 'error') {
-        // eslint-disable-next-line no-console
-        console.log('❌ Маршрут не построен - передаем 0');
         onRouteDistanceChange(0);
       }
     }

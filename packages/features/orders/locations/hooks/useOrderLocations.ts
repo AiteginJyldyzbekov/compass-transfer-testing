@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { toast } from 'react-toastify';
 import apiClient from '@shared/api/client';
 import { usersApi } from '@shared/api/users';
 import type { MapBounds, RoutePoint } from '@shared/components/map/types';
@@ -306,7 +307,6 @@ export const useOrderLocations = ({
     if (mode === 'edit' && onRoutePointsChange && routePoints.length > 0) {
       const startPoint = routePoints.find(p => p.type === 'start');
       const endPoint = routePoints.find(p => p.type === 'end');
-      const intermediatePoints = routePoints.filter(p => p.type === 'intermediate' && p.location);
 
       if (startPoint?.location && endPoint?.location) {
         onRoutePointsChange(startPoint.location.id, endPoint.location.id, routePoints);
@@ -416,11 +416,30 @@ export const useOrderLocations = ({
 
     // Создаем новую промежуточную точку
     const newIntermediateIndex = newPoints.filter(p => p.type === 'intermediate').length + 1;
+    
+    // Если локация передана, создаем безопасную копию без циклических ссылок
+    const safeLocation = location ? {
+      id: location.id,
+      name: location.name,
+      address: location.address,
+      type: location.type,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      city: location.city,
+      country: location.country,
+      region: location.region,
+      isActive: location.isActive,
+      district: location.district,
+      popular1: location.popular1,
+      popular2: location.popular2,
+    } : null;
+    
+    // Создаем новую точку - всегда null для локации, если не передана
     const newPoint: RoutePoint = {
       id: `intermediate-${Date.now()}`, // Уникальный ID
       type: 'intermediate',
       label: `Остановка ${newIntermediateIndex}`,
-      location: location || null,
+      location: location ? safeLocation : null, // Только если локация передана
       latitude: location?.latitude || 0,
       longitude: location?.longitude || 0,
       name: location?.name || `Остановка ${newIntermediateIndex}`
@@ -441,19 +460,21 @@ export const useOrderLocations = ({
   }, [routePoints, handlePointSelect, setRoutePoints]);
 
   const handleLocationToggle = useCallback((location: GetLocationDTO, isSelected: boolean) => {
-    if (isSelected) {
-      // Если локация выбрана на карте, находим точку с этой локацией и снимаем выбор
+    if (!isSelected) { // Если нажата кнопка "Отменить точку"
+      // Находим точку с этой локацией и снимаем выбор
       const pointIndex = routePoints.findIndex(p => p.location?.id === location.id);
+
       if (pointIndex !== -1) {
         handlePointClear(pointIndex);
       }
-    } else {
+    } else { // Если нажата кнопка "Выбрать точку"
       // Если локация не выбрана и есть пустые точки, выбираем первую пустую
       const emptyPointIndex = routePoints.findIndex(p => p.location === null);
       
       if (emptyPointIndex !== -1) {
         // Есть пустая точка - заполняем её
         const updatedPoints = [...routePoints];
+
         updatedPoints[emptyPointIndex] = {
           ...updatedPoints[emptyPointIndex],
           location: location
@@ -461,13 +482,12 @@ export const useOrderLocations = ({
         
         setRoutePoints(updatedPoints);
       } else if (routePoints.length < 5) {
-        // Нет пустых точек, но можно добавить промежуточную
         addIntermediatePoint(location);
       }
     }
   }, [routePoints, handlePointClear, addIntermediatePoint, setRoutePoints]);
 
-  const handleDriverSelect = useCallback((driver: GetDriverDTO | null, location?: { latitude: number; longitude: number }, fromSearchPanel?: boolean) => {
+  const handleDriverSelect = useCallback((driver: GetDriverDTO | null, location?: { latitude: number; longitude: number }, _fromSearchPanel?: boolean) => {
     setSelectedDriver(driver);
 
     if (driver && location) {
@@ -504,10 +524,10 @@ export const useOrderLocations = ({
       // Сохраняем в кэш
       setDriversDataCache(prevCache => ({
         ...prevCache,
-        [id]: driverData as Record<string, unknown>
+        [id]: driverData as unknown as Record<string, unknown>
       }));
-    } catch (error) {
-      console.error('Ошибка при загрузке данных водителя:', error);
+    } catch {
+      toast.error('Ошибка при загрузке данных водителя:');
     }
   }, [driversDataCache]);
 

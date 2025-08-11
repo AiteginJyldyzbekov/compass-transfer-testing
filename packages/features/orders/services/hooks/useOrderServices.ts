@@ -85,6 +85,10 @@ export const useOrderServices = ({
 
   // Расчет общей стоимости всех выбранных услуг
   const calculateTotalPrice = () => {
+    if (!services || !Array.isArray(services)) {
+      return 0;
+    }
+    
     return selectedServices.reduce((total, selectedService) => {
       const service = services.find(s => s.id === selectedService.serviceId);
       

@@ -72,7 +72,7 @@ export function RoutePointItem({
 
           {/* Действия */}
           <div className='flex items-center gap-2'>
-          {point.location ? (
+          {point.location && point.location.name ? (
             <Button
               variant='outline'
               size='sm'

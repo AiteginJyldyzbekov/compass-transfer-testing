@@ -13,8 +13,8 @@ import { orderStatusLabels } from '@entities/orders/constants/order-status-label
 import { OrderStatus } from '@entities/orders/enums';
 import {
   useScheduledOrderSubmit,
-  useGetScheduledOrder,
-  useUpdateScheduledOrder,
+  useUpdateOrderPassengers,
+  useScheduledOrderById,
   useScheduledRideSubmit,
 } from '@entities/orders/hooks';
 import type { PassengerDTO, GetOrderServiceDTO } from '@entities/orders/interface';
@@ -253,7 +253,6 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
 
   // Состояние расстояния маршрута (в метрах)
   const [routeDistance, setRouteDistance] = useState<number>(0);
-  // Состояние загрузки маршрута
   const [routeLoading, setRouteLoading] = useState<boolean>(false);
   // Состояние валидности времени в schedule-tab
   const [scheduleValid, setScheduleValid] = useState<boolean>(true);
@@ -261,6 +260,20 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
   // Состояние для кастомной цены
   const [useCustomPrice, setUseCustomPrice] = useState<boolean>(false);
   const [customPrice, setCustomPrice] = useState<string>('');
+
+  // Функция для обработки изменения кастомной цены
+  const handleCustomPriceChange = (value: string) => {
+    setCustomPrice(value);
+  };
+
+  // Функция для переключения использования кастомной цены
+  const toggleCustomPrice = () => {
+    setUseCustomPrice(!useCustomPrice);
+    if (!useCustomPrice) {
+      // При включении кастомной цены устанавливаем текущую рассчитанную цену
+      setCustomPrice(currentPrice.toString());
+    }
+  };
 
   // Состояние для статуса заказа (для редактирования)
   const [orderStatus, setOrderStatus] = useState<OrderStatus>(OrderStatus.Pending);
@@ -292,27 +305,42 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
 
   // Создаем объект routeState для совместимости с существующими компонентами
   const routeState = useMemo(
-    () => ({
-      routeLocations: routeLocations || [],
-      flatLocations: routeLocations || [],
-      routePoints: routePoints, // Используем реальные точки маршрута
+    () => {
+      // Находим начальную, конечную и промежуточные точки из маршрутных точек
+      const startPoint = routePoints.find(p => p.type === 'start');
+      const endPoint = routePoints.find(p => p.type === 'end');
+      const intermediatePoints = routePoints
+        .filter(p => p.type === 'intermediate' && p.location)
+        .map(p => p.location as GetLocationDTO);
 
-      addLocationSmart: (_location: GetLocationDTO) => {
-        // Функция для добавления локации
-      },
-      selectLocationForPoint: (_location: GetLocationDTO, _pointIndex: number) => {
-        // Функция для выбора локации для точки
-      },
-      removeRoutePoint: (_index: number) => {
-        // Функция для удаления точки маршрута
-      },
-    }),
+      return {
+        routeLocations: routeLocations || [],
+        flatLocations: routeLocations || [],
+        routePoints: routePoints, // Используем реальные точки маршрута
+        
+        // Добавляем правильные объекты локаций для передачи в RouteInfoCard
+        startLocation: startPoint?.location || null,
+        endLocation: endPoint?.location || null,
+        intermediatePoints: intermediatePoints,
+
+        addLocationSmart: (_location: GetLocationDTO) => {
+          // Функция для добавления локации
+        },
+        selectLocationForPoint: (_location: GetLocationDTO, _pointIndex: number) => {
+          // Функция для выбора локации для точки
+        },
+        removeRoutePoint: (_index: number) => {
+          // Функция для удаления точки маршрута
+        },
+      };
+    },
     [routeLocations, routePoints],
   );
 
-  const [selectedServices, setSelectedServices] = useState<GetOrderServiceDTO[]>([]);
-  const [currentPrice, setCurrentPrice] = useState(200);
+  // Состояния формы заказа
   const [selectedTariff, setSelectedTariff] = useState<GetTariffDTO | null>(null);
+  const [selectedServices, setSelectedServices] = useState<GetOrderServiceDTO[]>([]);
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
 
   // Автоматический выбор тарифа при создании заказа
   useEffect(() => {
@@ -327,6 +355,40 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
       }
     }
   }, [mode, initialTariffId, tariffs, selectedTariff]);
+  
+  // Автоматический расчет цены при изменении тарифа, расстояния или услуг
+  useEffect(() => {
+    if (selectedTariff) {
+      // Рассчитываем базовую цену за маршрут
+      let baseRoutePrice = selectedTariff.basePrice;
+      
+      // Добавляем стоимость за расстояние, если оно известно
+      if (routeDistance > 0) {
+        const apiDistanceKm = routeDistance / 1000;
+        const roundedDistanceKm = Math.round(apiDistanceKm * 10) / 10; // Округляем до 1 знака
+        
+        baseRoutePrice += roundedDistanceKm * selectedTariff.perKmPrice;
+      }
+
+      // Добавляем стоимость выбранных услуг
+      
+      // Получаем цены из сервисов по ID
+      const servicesPrice = selectedServices.reduce((total, service) => {
+        const quantity = service.quantity || 1;
+        // Цену берем из справочника услуг (services) или устанавливаем в 0
+        const serviceInfo = services.find(s => s.id === service.serviceId);
+        const price = serviceInfo?.price || 0;
+        
+        return total + (price * quantity);
+      }, 0);
+
+      // Итоговая цена = базовая цена за маршрут + стоимость услуг
+      setCurrentPrice(Math.round(baseRoutePrice + servicesPrice));
+    } else {
+      // Если нет тарифа, цена = 0
+      setCurrentPrice(0);
+    }
+  }, [selectedTariff, routeDistance, selectedServices, services]);
 
   const handlePassengersChange = (newPassengers: PassengerDTO[]) => {
     // Обновляем форму с новыми пассажирами
@@ -385,7 +447,7 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
   );
 
   // Функция для определения, нужно ли назначать водителя в режиме редактирования
-  const shouldAssignDriverInEditMode = useCallback(() => {
+  const _shouldAssignDriverInEditMode = useCallback(() => {
     if (!isEditMode) {
       return false;
     }
@@ -415,7 +477,7 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
   const [isOrderDataLoaded, setIsOrderDataLoaded] = useState(false);
 
   // Хук для загрузки заказа при редактировании
-  const { order: existingOrder, isLoading: isLoadingOrder, refetch: _refetchOrder } = useGetScheduledOrder(
+  const { order: existingOrder, isLoading: isLoadingOrder, refetch: _refetchOrder } = useScheduledOrderById(
     isEditMode ? id : null,
     {
       enabled: isEditMode,
@@ -438,8 +500,12 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
 
       setOrderStatus(currentStatus);
       setOriginalOrderStatus(currentStatus); // Сохраняем оригинальный статус
+      
+      // initialPrice уже в сомах, не нужно конвертировать
       setCustomPrice(existingOrder.initialPrice?.toString() || '');
-      setUseCustomPrice(true); // Включаем кастомную цену, так как цена уже установлена
+      
+      // Включаем кастомную цену только если она отличается от автоматически рассчитанной
+      // (будет проверено позже в useEffect после расчета currentPrice)
 
       // 2. Устанавливаем выбранный тариф
       if (existingOrder.tariffId) {
@@ -536,12 +602,43 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
     }
   }, [existingOrder, isOrderDataLoaded, tariffs, services, methods, getDriverById]);
 
+  // Автоматическое управление кастомной ценой в зависимости от разности с рассчитанной
+  useEffect(() => {
+    if (isEditMode && existingOrder && currentPrice > 0 && customPrice) {
+      const customPriceValue = parseFloat(customPrice);
+      const priceDifference = Math.abs(customPriceValue - currentPrice);
+      
+      // Если разница больше 1 сома, включаем кастомную цену
+      if (priceDifference > 1) {
+        setUseCustomPrice(true);
+      } else {
+        // Если цены совпадают (разница <= 1 сом), выключаем кастомную цену
+        setUseCustomPrice(false);
+      }
+    }
+  }, [isEditMode, existingOrder, currentPrice, customPrice]);
+
+  // Хук для обновления пассажиров заказа (не используется, обновление происходит в useScheduledOrderSubmit)
+  const {
+    updatePassengers: _updatePassengers,
+    isLoading: _isUpdatingPassengers,
+    error: _updatePassengersError,
+  } = useUpdateOrderPassengers();
+
   // Хук для отправки/обновления заказа
   const {
     submitOrder,
     isLoading: isSubmittingOrder,
     error: submitError,
   } = useScheduledOrderSubmit({
+    orderId: isEditMode ? id : undefined, // Передаем ID для режима редактирования
+    shouldUpdatePassengers: isEditMode, // Обновляем пассажиров только при редактировании
+    passengers: isEditMode ? methods.getValues('passengers')?.map((p: any) => ({
+      customerId: p.customerId,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      isMainPassenger: p.isMainPassenger,
+    })) : undefined,
     onSuccess: _order => {
       // Не переходим сразу к списку заказов, если нужно назначить водителя
       // Переход происходит после назначения водителя или если водитель не выбран
@@ -550,31 +647,22 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
       }
     },
     onError: _error => {
-      // Обработка ошибки создания заказа
+      // Обработка ошибки создания/обновления заказа
     },
   });
 
-  // Хук для обновления заказа
-  const { updateOrder, isLoading: isUpdatingOrder } = useUpdateScheduledOrder({
-    onSuccess: _order => {
-      // Не переходим сразу к списку заказов, если нужно назначить водителя
-      if (!shouldAssignDriverInEditMode()) {
-        router.push('/orders');
-      }
-    },
-    onError: _error => {
-      // Обработка ошибки обновления заказа
-    },
-  });
+  // Унификация с instant-order-page (переменные не используются, но сохранены для совместимости)
+  const _updateOrder = submitOrder;
+  const _isUpdatingOrder = isSubmittingOrder;
 
-  // Хук для назначения водителя на заказ
-  const { assignDriver, isLoading: isAssigningDriver } = useScheduledRideSubmit({
-    onSuccess: _ride => {
-      // Водитель успешно назначен, переходим к списку заказов
+  // Хук для назначения водителя на запланированный заказ
+  const {
+    assignDriver,
+    isLoading: isAssigningDriver,
+  } = useScheduledRideSubmit({
+    onSuccess: () => {
+      // После назначения водителя переходим к списку заказов
       router.push('/orders');
-    },
-    onError: _error => {
-      // Обработка ошибки назначения водителя
     },
   });
 
@@ -676,52 +764,34 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
       };
 
       // Отправляем или обновляем заказ в зависимости от режима
-      if (isEditMode && id) {
-        // Добавляем статус для редактирования
-        const updateData = {
-          ...orderData,
-          status: orderStatus,
+      // Обновление пассажиров теперь обрабатывается внутри хука useScheduledOrderSubmit
+      const finalOrderData = isEditMode ? {
+        ...orderData,
+        status: orderStatus,
+      } : orderData;
+
+      const resultOrder = await submitOrder(finalOrderData);
+
+      // Назначаем водителя, если он выбран
+      if (selectedDriver) {
+        const carId = selectedDriver.activeCar?.id || selectedDriver.activeCarId;
+
+        if (!carId) {
+          throw new Error('У выбранного водителя нет активного автомобиля');
+        }
+
+        const rideData = {
+          driverId: selectedDriver.id,
+          carId: carId,
+          waypoints: [], // Пока waypoints не реализованы
         };
 
-        await updateOrder(id, updateData);
-
-        // В режиме редактирования назначаем водителя только если нужно
-        if (shouldAssignDriverInEditMode() && selectedDriver) {
-          const carId = selectedDriver.activeCar?.id || selectedDriver.activeCarId;
-
-          if (!carId) {
-            throw new Error('У выбранного водителя нет активного автомобиля');
-          }
-
-          const rideData = {
-            driverId: selectedDriver.id,
-            carId: carId,
-            waypoints: [], // Пока waypoints не реализованы
-          };
-
-          // Назначаем водителя на обновленный заказ
-          await assignDriver(id, rideData);
-        }
-      } else {
-        // Создаем новый заказ
-        const createdOrder = await submitOrder(orderData);
-
-        // Если выбран водитель, назначаем его на заказ
-        if (selectedDriver && createdOrder?.id) {
-          const carId = selectedDriver.activeCar?.id || selectedDriver.activeCarId;
-
-          if (!carId) {
-            throw new Error('У выбранного водителя нет активного автомобиля');
-          }
-
-          const rideData = {
-            driverId: selectedDriver.id,
-            carId: carId,
-            waypoints: [], // Пока waypoints не реализованы
-          };
-
-          // Назначаем водителя на созданный заказ
-          await assignDriver(createdOrder.id, rideData);
+        // Определяем ID заказа для назначения водителя
+        const orderIdForDriver = isEditMode ? id : resultOrder?.id;
+        
+        if (orderIdForDriver) {
+          // Назначаем водителя на заказ
+          await assignDriver(orderIdForDriver, rideData);
         }
       }
     } catch {
@@ -858,10 +928,18 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
                   return (
                     <TabComponentAny
                       {...({} as Record<string, unknown>)}
-                      // Данные
-                      tariffs={tariffs}
-                      services={services}
-                      users={users}
+                       // Данные
+                       tariffs={tariffs}
+                       services={services}
+                       _services={services}
+                       users={users}
+                      // Информация о водителе
+                      _selectedDriver={selectedDriver}
+                      _onTabChange={undefined}
+                      _getDriverById={getDriverById}
+                      _updateDriverCache={updateDriverCache}
+                      _orderStatus={orderStatus}
+                      _setOrderStatus={setOrderStatus}
                       // Состояние маршрута
                       routeState={routeState}
                       routeLocations={routeLocations}
@@ -925,8 +1003,13 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
                       // Кастомная цена
                       useCustomPrice={useCustomPrice}
                       setUseCustomPrice={setUseCustomPrice}
-                      customPrice={customPrice}
+                      _customPrice={customPrice}
                       setCustomPrice={setCustomPrice}
+                      _handleCustomPriceChange={handleCustomPriceChange}
+                      _toggleCustomPrice={toggleCustomPrice}
+                      // Данные маршрута для SummaryTab
+                      // Не передаем routeState дважды, так как он уже передан выше
+                      _routeLoading={routeLoading}
                       // Мета
                       mode={mode}
                       orderId={id}
@@ -1019,7 +1102,7 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
               <Button
                 onClick={handleSave}
                 className='flex items-center gap-2 bg-green-600 hover:bg-green-700'
-                disabled={isSubmittingOrder || isUpdatingOrder || isAssigningDriver}
+                disabled={isSubmittingOrder || _isUpdatingOrder || isAssigningDriver}
               >
                 <Check className='h-4 w-4' />
                 {isAssigningDriver

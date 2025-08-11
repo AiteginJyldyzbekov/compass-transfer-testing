@@ -252,7 +252,7 @@ export function PassengersTab({ users, passengers: initialPassengers, handlePass
               <Users className='h-5 w-5' />
               Выбор пассажиров
             </CardTitle>
-            <p className='text-sm text-muted-foreground'>Показаны только клиенты и партнеры</p>
+            <p className='text-sm text-muted-foreground'>Показаны только клиенты и контр-агенты</p>
             {/* Поиск */}
             <div className='relative'>
               <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />

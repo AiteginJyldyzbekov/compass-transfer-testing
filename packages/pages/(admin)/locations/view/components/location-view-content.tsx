@@ -1,29 +1,12 @@
-import { MapPin, Globe, Building, Map, Info, Star } from 'lucide-react';
+import { MapPin, Map, Star } from 'lucide-react';
 import { Badge } from '@shared/ui/data-display/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout';
 import { Separator } from '@shared/ui/layout/separator';
 import type { LocationDTO } from '@entities/locations/interface';
-import { LocationType } from '@entities/locations/enums';
 
 interface LocationViewContentProps {
   location: LocationDTO;
 }
-
-// Переводы типов локаций
-const locationTypeLabels: Record<LocationType, string> = {
-  [LocationType.Home]: 'Дом',
-  [LocationType.Work]: 'Работа',
-  [LocationType.Airport]: 'Аэропорт',
-  [LocationType.Hotel]: 'Отель',
-  [LocationType.Restaurant]: 'Ресторан',
-  [LocationType.Mall]: 'Торговый центр',
-  [LocationType.Hospital]: 'Больница',
-  [LocationType.School]: 'Школа',
-  [LocationType.University]: 'Университет',
-  [LocationType.Park]: 'Парк',
-  [LocationType.Station]: 'Станция',
-  [LocationType.Other]: 'Другое',
-};
 
 export function LocationViewContent({ location }: LocationViewContentProps) {
   return (
@@ -95,19 +78,6 @@ export function LocationViewContent({ location }: LocationViewContentProps) {
               <label className='text-sm font-medium text-gray-500'>Долгота</label>
               <p className='text-base text-gray-900 mt-1 font-mono'>{location.longitude.toFixed(6)}</p>
             </div>
-          </div>
-
-          {/* Ссылка на карты */}
-          <div className='mt-4 pt-4 border-t'>
-            <a
-              href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium'
-            >
-              <Globe className='h-4 w-4' />
-              Открыть в Google Maps
-            </a>
           </div>
         </CardContent>
       </Card>

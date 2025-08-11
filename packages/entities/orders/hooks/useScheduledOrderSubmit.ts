@@ -1,8 +1,30 @@
-import { useMutation } from '@tanstack/react-query';
-import type { GetRideDTO } from '@entities/rides/interface/GetRideDTO';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { OrdersApi, type CreateScheduledOrderRequest } from '../api/orders';
-import type { GetOrderDTO } from '../interface';
-import type { CreateScheduledRideDTO } from '../interface/CreateScheduledRideDTO';
+import { OrderStatus } from '../enums';
+import type { GetOrderDTO, UpdateScheduledOrderDTO } from '../interface';
+
+/**
+ * Преобразует данные создания заказа в данные для обновления
+ */
+function convertToUpdateData(data: CreateScheduledOrderRequest, orderId: string): UpdateScheduledOrderDTO {
+  // Создаем базовый объект с обязательными полями
+  const updateData: UpdateScheduledOrderDTO = {
+    orderId,
+    tariffId: data.tariffId,
+    routeId: data.routeId || null,
+    startLocationId: data.startLocationId || null,
+    endLocationId: data.endLocationId || null,
+    additionalStops: data.additionalStops || [],
+    services: data.services || [],
+    initialPrice: data.initialPrice,
+    scheduledTime: data.scheduledTime,
+    passengers: [], // Пассажиры обновляются отдельным запросом
+    status: OrderStatus.Pending // По умолчанию статус Pending при обновлении
+  };
+
+  return updateData;
+}
 
 /**
  * Опции для хука отправки запланированного заказа
@@ -16,6 +38,20 @@ export interface UseScheduledOrderSubmitOptions {
 
   /** Колбэк при завершении (успех или ошибка) */
   onSettled?: () => void;
+
+  /** ID заказа для режима обновления */
+  orderId?: string;
+
+  /** Нужно ли обновлять пассажиров отдельным запросом */
+  shouldUpdatePassengers?: boolean;
+
+  /** Данные пассажиров для обновления */
+  passengers?: Array<{
+    customerId: string | null;
+    firstName: string;
+    lastName: string | null;
+    isMainPassenger: boolean;
+  }>;
 }
 
 /**
@@ -40,58 +76,59 @@ export interface UseScheduledOrderSubmitResult {
 
 /**
  * Хук для отправки запланированного заказа
- * 
- * @param options - Опции хука
- * @returns Результат хука
- * 
- * @example
- * ```tsx
- * const { submitOrder, isLoading, error } = useScheduledOrderSubmit({
- *   onSuccess: (order) => {
- *     console.log('Order created:', order);
- *     router.push(`/orders/${order.id}`);
- *   },
- *   onError: (error) => {
- *     console.error('Failed to create order:', error);
- *   }
- * });
- * 
- * const handleSubmit = async () => {
- *   try {
- *     const order = await submitOrder({
- *       tariffId: 'tariff-id',
- *       startLocationId: 'start-location-id',
- *       endLocationId: 'end-location-id',
- *       additionalStops: [],
- *       services: [],
- *       initialPrice: 100,
- *       scheduledTime: new Date().toISOString(),
- *       passengers: [{
- *         firstName: 'John',
- *         lastName: 'Doe',
- *         isMainPassenger: true
- *       }]
- *     });
- *   } catch (error) {
- *     // Ошибка уже обработана в onError
- *   }
- * };
- * ```
  */
 export function useScheduledOrderSubmit(
   options: UseScheduledOrderSubmitOptions = {}
 ): UseScheduledOrderSubmitResult {
-  const { onSuccess, onError, onSettled } = options;
+  const { 
+    onSuccess, 
+    onError, 
+    onSettled, 
+    orderId,
+    shouldUpdatePassengers,
+    passengers
+  } = options;
+
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: CreateScheduledOrderRequest) => 
-      OrdersApi.createScheduledOrder(data),
+    mutationFn: async (data: CreateScheduledOrderRequest) => {
+      // Режим обновления
+      if (orderId) {
+        const updateData = convertToUpdateData(data, orderId);
+        const updatedOrder = await OrdersApi.updateScheduledOrder(orderId, updateData);
+
+        // Обновляем пассажиров отдельным запросом (если переданы)
+        if (shouldUpdatePassengers && passengers && passengers.length > 0) {
+          await OrdersApi.updateOrderPassengers(orderId, passengers);
+        }
+
+        return updatedOrder;
+      }
+
+      // Режим создания
+      return OrdersApi.createScheduledOrder(data);
+    },
     
     onSuccess: (data: GetOrderDTO) => {
+      toast.success(
+        `✅ useScheduledOrderSubmit: Заказ ${orderId ? 'обновлен' : 'создан'} успешно`
+      );
+      
+      // Инвалидируем кэш для обновленного заказа
+      if (orderId) {
+        queryClient.invalidateQueries({
+          queryKey: ['scheduled-order', orderId]
+        });
+      }
+      
       onSuccess?.(data);
     },
 
     onError: (error: Error) => {
+      toast.error(
+        `❌ useScheduledOrderSubmit: Ошибка ${orderId ? 'обновления' : 'создания'} заказа: ${error.message}`
+      );
       onError?.(error);
     },
     
@@ -109,65 +146,4 @@ export function useScheduledOrderSubmit(
   };
 }
 
-/**
- * Хук для назначения водителя на запланированный заказ
- */
-export interface UseScheduledRideSubmitOptions {
-  /** Колбэк при успешном назначении */
-  onSuccess?: (ride: GetRideDTO) => void;
-  
-  /** Колбэк при ошибке */
-  onError?: (error: Error) => void;
-}
 
-export interface UseScheduledRideSubmitResult {
-  /** Функция назначения водителя */
-  assignDriver: (orderId: string, data: CreateScheduledRideDTO) => Promise<GetRideDTO>;
-  
-  /** Состояние загрузки */
-  isLoading: boolean;
-  
-  /** Ошибка */
-  error: Error | null;
-  
-  /** Результат */
-  data: GetRideDTO | null;
-  
-  /** Сброс состояния */
-  reset: () => void;
-}
-
-/**
- * Хук для назначения водителя на запланированный заказ
- * POST /Order/scheduled/{uuid}/ride
- */
-export function useScheduledRideSubmit(
-  options: UseScheduledRideSubmitOptions = {}
-): UseScheduledRideSubmitResult {
-  const { onSuccess, onError } = options;
-
-  const mutation = useMutation({
-    mutationFn: ({ orderId, data }: { orderId: string; data: CreateScheduledRideDTO }) => 
-      OrdersApi.createScheduledRide(orderId, data),
-    
-    onSuccess: (data: GetRideDTO) => {
-      onSuccess?.(data);
-    },
-
-    onError: (error: Error) => {
-      onError?.(error);
-    }
-  });
-
-  const assignDriver = async (orderId: string, data: CreateScheduledRideDTO) => {
-    return mutation.mutateAsync({ orderId, data });
-  };
-
-  return {
-    assignDriver,
-    isLoading: mutation.isPending,
-    error: mutation.error,
-    data: mutation.data || null,
-    reset: mutation.reset
-  };
-}

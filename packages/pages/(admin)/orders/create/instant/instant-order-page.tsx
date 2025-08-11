@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { RoutePoint } from '@shared/components/map/types';
@@ -10,9 +10,11 @@ import { useOrderData } from '@shared/hooks/useOrderData';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent } from '@shared/ui/layout/card';
 import { SidebarHeader } from '@shared/ui/layout/sidebar';
+import type { GetLocationDTO } from '@entities/locations/interface';
 import { useInstantOrderSubmit, useInstantOrderById } from '@entities/orders/hooks';
 import type { GetOrderServiceDTO } from '@entities/orders/interface';
 import type { GetTariffDTO } from '@entities/tariffs/interface';
+import type { GetDriverDTO } from '@entities/users/interface';
 // Импорт интерфейсов компонентов
 import {
   TariffPricingTab,
@@ -58,6 +60,7 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
 
   // Состояние для отслеживания выбранных данных
   const [selectedTariff, setSelectedTariff] = useState<GetTariffDTO | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState<GetDriverDTO | null>(null); 
   const [selectedServices, _setSelectedServices] = useState<GetOrderServiceDTO[]>([]);
   // Убираем состояние passengers - используем дефолтного пассажира
   const [routePoints, setRoutePoints] = useState<RoutePoint[]>([
@@ -93,15 +96,28 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   const [routeDistance, setRouteDistance] = useState<number>(0);
   const [routeLoading, setRouteLoading] = useState<boolean>(false);
 
-  // Хук для создания заказа
+  // Формируем пассажиров для режима редактирования
+  const passengersForUpdate = mode === 'edit' && userRole !== 'partner' ? [
+    {
+      customerId: null,
+      firstName: "",
+      lastName: null,
+      isMainPassenger: true
+    }
+  ] : undefined;
+
+  // Хук для создания/обновления заказа
   const { createOrder, isLoading: isCreatingOrder } = useInstantOrderSubmit({
     userRole,
+    orderId: mode === 'edit' ? id : undefined, // Передаем ID для режима редактирования
+    passengers: passengersForUpdate, // Передаем пассажиров для обновления
+    shouldUpdatePassengers: mode === 'edit' && userRole !== 'partner', // Обновляем пассажиров только в режиме редактирования
     onSuccess: () => {
       // Переходим к списку заказов (не админ-панель!)
       router.push('/orders');
     },
     onError: (error) => {
-      toast.error(`Ошибка создания заказа: ${error.message}`);
+      toast.error(`Ошибка ${mode === 'edit' ? 'обновления' : 'создания'} заказа: ${error.message}`);
     },
   });
 
@@ -131,6 +147,8 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
       // 3. Устанавливаем цену
       if (orderData.initialPrice) {
         setCurrentPrice(orderData.initialPrice);
+        // Устанавливаем кастомную цену из initialPrice (уже в сомах)
+        setCustomPrice(orderData.initialPrice.toString());
       }
 
       // 4. Устанавливаем локации маршрута
@@ -157,6 +175,22 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
       }
     }
   }, [mode, orderData, tariffs, routePoints.length, methods]);
+
+  // Автоматическое управление кастомной ценой в зависимости от разности с рассчитанной
+  useEffect(() => {
+    if (mode === 'edit' && orderData && currentPrice > 0 && customPrice) {
+      const customPriceValue = parseFloat(customPrice);
+      const priceDifference = Math.abs(customPriceValue - currentPrice);
+      
+      // Если разница больше 1 сома, включаем кастомную цену
+      if (priceDifference > 1) {
+        setUseCustomPrice(true);
+      } else {
+        // Если цены совпадают (разница <= 1 сом), выключаем кастомную цену
+        setUseCustomPrice(false);
+      }
+    }
+  }, [mode, orderData, currentPrice, customPrice]);
 
   // Определяем доступные вкладки для моментального заказа (без расписания, пассажиров и доп. услуг)
   const tabs = [
@@ -291,51 +325,83 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
     router.push('/orders');
   };
 
-  // Автоматический расчет цены при изменении тарифа или расстояния
+  // Автоматический расчет цены при изменении тарифа, расстояния или услуг
   useEffect(() => {
-    if (selectedTariff && routeDistance > 0) {
-      // Рассчитываем цену ТОЧНО ТАК ЖЕ как в summary-tab.tsx
-      const apiDistanceKm = routeDistance / 1000;
-      const roundedDistanceKm = Math.round(apiDistanceKm * 10) / 10; // ТАКОЕ ЖЕ ОКРУГЛЕНИЕ!
-      const calculatedPrice = selectedTariff.basePrice + (roundedDistanceKm * selectedTariff.perKmPrice);
+    if (selectedTariff) {
+      // Рассчитываем базовую цену за маршрут
+      let baseRoutePrice = selectedTariff.basePrice;
+      
+      // Добавляем стоимость за расстояние, если оно известно
+      if (routeDistance > 0) {
+        const apiDistanceKm = routeDistance / 1000;
+        const roundedDistanceKm = Math.round(apiDistanceKm * 10) / 10; // Округляем до 1 знака
+        
+        baseRoutePrice += roundedDistanceKm * selectedTariff.perKmPrice;
+      }
 
-      setCurrentPrice(Math.round(calculatedPrice));
+      // Добавляем стоимость выбранных услуг
+      
+      // Получаем цены из сервисов по ID
+      const servicesPrice = selectedServices.reduce((total, service) => {
+        const quantity = service.quantity || 1;
+        // Цену берем из справочника услуг (services) или устанавливаем в 0
+        const serviceInfo = services.find(s => s.id === service.serviceId);
+        const price = serviceInfo?.price || 0;
+        
+        return total + (price * quantity);
+      }, 0);
 
-    } else if (selectedTariff && routeDistance === 0) {
-      // Если нет расстояния, используем только базовую цену
-      setCurrentPrice(selectedTariff.basePrice);
+      // Итоговая цена = базовая цена за маршрут + стоимость услуг
+      setCurrentPrice(Math.round(baseRoutePrice + servicesPrice));
     } else {
       // Если нет тарифа, цена = 0
       setCurrentPrice(0);
     }
-  }, [selectedTariff, routeDistance]);
+  }, [selectedTariff, routeDistance, selectedServices, services]);
 
   // Проверка готовности к созданию заказа (убираем проверку пассажиров)
-  const isReadyToCreate = useMemo(() => {
-    return (
+  const isReadyToCreate = (): boolean => {
+    return !!(
       selectedTariff &&
-      routePoints.length >= 2 &&
+      routePoints.some(p => p.type === 'start' && p.location) &&
+      routePoints.some(p => p.type === 'end' && p.location) &&
       currentPrice > 0
     );
-  }, [selectedTariff, routePoints, currentPrice]);
+  };
 
-  // Создание заказа
-  const handleSave = async () => {
-    if (!isReadyToCreate) {
-      // eslint-disable-next-line no-console
+  // Функция для отправки заказа
+  const handleSave = () => {
+    if (!isReadyToCreate()) {
+      toast.error('Заполните все обязательные поля');
       console.warn('Не все обязательные поля заполнены');
 
       return;
     }
 
     try {
+      // Определяем итоговую цену: кастомная или автоматическая
+      const finalPrice = useCustomPrice && customPrice 
+        ? Math.round(parseFloat(customPrice.replace(/[^\d.,]/g, '').replace(',', '.'))) 
+        : currentPrice;
+
+      console.log('📦 Отправляем заказ:', {
+        mode,
+        useCustomPrice,
+        customPrice,
+        currentPrice,
+        finalPrice
+      });
+
       // Формируем данные для создания заказа
       const baseOrderData = {
         tariffId: selectedTariff!.id,
         routeId: null, // Для моментальных заказов обычно не используется
-        startLocationId,
-        endLocationId,
-        additionalStops,
+        startLocationId: routePoints.find(p => p.type === 'start')?.location?.id || null,
+        endLocationId: routePoints.find(p => p.type === 'end')?.location?.id || null,
+        additionalStops: routePoints
+          .filter(p => p.type === 'intermediate')
+          .map(p => p.location?.id)
+          .filter(Boolean) as string[],
         services: selectedServices
           .filter((service) => !!service.serviceId)
           .map((service) => ({
@@ -343,7 +409,7 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
             quantity: service.quantity || 1,
             notes: service.notes || null,
           })),
-        initialPrice: currentPrice,
+        initialPrice: finalPrice, // ✅ Используем кастомную цену, если она установлена
         paymentId: null, // Для мгновенных заказов пока null
       };
 
@@ -404,8 +470,8 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
             <h1 className='text-3xl font-bold tracking-tight text-left'>
               {mode === 'edit' ? 'Редактировать мгновенный заказ' : 'Создать моментальный заказ'}
             </h1>
-            <p className='text-gray-600 mt-1'>
-              {mode === 'edit' ? 'Изменение данных мгновенного заказа' : 'Заказ будет выполнен немедленно'}
+            <p className='text-gray-600 mt-1 max-w-[900px]'>
+              {mode === 'edit' ? 'Изменение данных мгновенного заказа' : 'Заказ будет выполнен немедленно, поиск водителя будет произведен автоматически, поиск составляет до 3 минут, если не найден водитель, заказ будет отменен'}
             </p>
           </div>
         </div>
@@ -453,6 +519,9 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                           showDriverRadius
                           isInstantOrder
                           userRole={userRole}
+                          // Передаем и получаем выбранного водителя
+                          selectedDriver={selectedDriver}
+                          onDriverSelect={setSelectedDriver}
                         />
                       );
 
@@ -463,6 +532,12 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                           _services={services}
                           _users={users}
                           routeState={{
+                            startLocation: routePoints.find(p => p.type === 'start')?.location || null,
+                            endLocation: routePoints.find(p => p.type === 'end')?.location || null,
+                            intermediatePoints: routePoints
+                              .filter(p => p.type === 'intermediate')
+                              .map(p => p.location)
+                              .filter(Boolean) as GetLocationDTO[],
                             routePoints: routePoints
                           }}
                           _pricing={{}}
@@ -488,7 +563,10 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                               isMainPassenger: true
                             }
                           ]}
-                          _routeLocations={[]}
+                          _routeLocations={routePoints
+                            .filter(point => point.location) // Только точки с локациями
+                            .map(point => point.location!) // Используем реальные GetLocationDTO объекты
+                          }
                           _orderId={id ?? undefined}
                           routeDistance={routeDistance > 0 ? routeDistance : undefined} // Реальное расстояние маршрута
                           methods={{
@@ -501,12 +579,13 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                               return '';
                             }
                           }}
-                          mode={mode}
+                          _mode={mode}
                           _isInstantOrder
                           useCustomPrice={useCustomPrice}
                           setUseCustomPrice={setUseCustomPrice}
                           _customPrice={customPrice}
                           setCustomPrice={setCustomPrice}
+                          _selectedDriver={selectedDriver} // Передаем выбранного водителя в SummaryTab
                         />
                       );
 

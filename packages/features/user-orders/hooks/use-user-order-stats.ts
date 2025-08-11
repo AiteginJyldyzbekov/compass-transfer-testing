@@ -24,6 +24,7 @@ export function useUserOrderStats(userId: string): UseUserOrderStatsReturn {
       
       if (userId) {
         const result = await ordersApi.getUserOrdersStats(userId);
+        
         setStats(result);
       }
     } catch (err) {
