@@ -146,7 +146,7 @@ export class OrdersApi {
    * POST /Order/instant/by-operator
    */
   static async createInstantOrder(data: CreateInstantOrderRequest): Promise<GetOrderDTO> {
-    const response = await apiPost<GetOrderDTO>('/Order/instant/by-operator', data);
+    const response = await apiPost<GetOrderDTO, CreateInstantOrderRequest>('/Order/instant/by-operator', data);
 
     if (response.error) {
       throw new Error(response.error.message || 'Failed to create instant order');
@@ -164,7 +164,7 @@ export class OrdersApi {
    * POST /Order/instant/by-customer
    */
   static async createInstantOrderByPartner(data: CreateInstantOrderByPartnerRequest): Promise<GetOrderDTO> {
-    const response = await apiPost<GetOrderDTO>('/Order/instant/by-customer', data);
+    const response = await apiPost<GetOrderDTO, CreateInstantOrderByPartnerRequest>('/Order/instant/by-customer', data);
 
     if (response.error) {
       throw new Error(response.error.message || 'Failed to create instant order by partner');
@@ -185,7 +185,7 @@ export class OrdersApi {
     id: string,
     data: UpdateInstantOrderDTO
   ): Promise<GetOrderDTO> {
-    const response = await apiPut<GetOrderDTO>(`/Order/instant/${id}`, data);
+    const response = await apiPut<GetOrderDTO, UpdateInstantOrderDTO>(`/Order/instant/${id}`, data);
 
     if (response.error) {
       throw new Error(response.error.message || 'Failed to update instant order');
@@ -206,7 +206,7 @@ export class OrdersApi {
     id: string,
     data: UpdateScheduledOrderDTO
   ): Promise<GetOrderDTO> {
-    const response = await apiPut<GetOrderDTO>(`/Order/scheduled/${id}`, data);
+    const response = await apiPut<GetOrderDTO, UpdateScheduledOrderDTO>(`/Order/scheduled/${id}`, data);
 
     if (response.error) {
       throw new Error(response.error.message || 'Failed to update scheduled order');
@@ -232,7 +232,7 @@ export class OrdersApi {
       isMainPassenger: boolean;
     }>
   ): Promise<void> {
-    const response = await apiPut<void>(`/Order/${orderId}/passengers`, passengers);
+    const response = await apiPut<void, Array<{customerId: string | null; firstName: string; lastName: string | null; isMainPassenger: boolean}>>(`/Order/${orderId}/passengers`, passengers);
 
     if (response.error) {
       throw new Error(response.error.message || 'Failed to update order passengers');
@@ -299,26 +299,7 @@ export class OrdersApi {
     return response.data;
   }
 
-  /**
-   * Обновление запланированного заказа
-   * PUT /Order/scheduled/{id}
-   */
-  static async updateScheduledOrder(
-    id: string,
-    data: Partial<CreateScheduledOrderRequest>
-  ): Promise<GetOrderDTO> {
-    const response = await apiPut<GetOrderDTO>(`/Order/scheduled/${id}`, data);
 
-    if (response.error) {
-      throw new Error(response.error.message || 'Failed to update scheduled order');
-    }
-
-    if (!response.data) {
-      throw new Error('No data received from server');
-    }
-
-    return response.data;
-  }
 
   /**
    * Отмена заказа

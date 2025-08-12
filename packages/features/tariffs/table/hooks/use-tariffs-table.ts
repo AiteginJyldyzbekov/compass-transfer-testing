@@ -2,10 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { tariffsApi, type TariffFilters, type GetTariffDTOWithArchived } from '@shared/api/tariffs';
+import { toast } from 'sonner';
+import { tariffsApi, type TariffFilters } from '@shared/api/tariffs';
 import { useSavedFilters } from '@shared/hooks';
 import type { CarType } from '@entities/tariffs/enums/CarType.enum';
 import type { ServiceClass } from '@entities/tariffs/enums/ServiceClass.enum';
+import type { GetTariffDTO } from '@entities/tariffs/interface/GetTariffDTO';
 
 interface ColumnVisibility {
   name: boolean;
@@ -30,13 +32,18 @@ interface SavedTariffFilters {
   minutePriceToFilter: string;
 }
 
-export function useTariffsTable() {
+export function useTariffsTable(_initialFilters?: {
+  name?: string;
+  priceFrom?: string;
+  priceTo?: string;
+  isActive?: string;
+}) {
   const router = useRouter();
   
   // Данные
-  const [tariffs, setTariffs] = useState<GetTariffDTOWithArchived[]>([]);
-  const [filteredTariffs, setFilteredTariffs] = useState<GetTariffDTOWithArchived[]>([]);
-  const [paginatedTariffs, setPaginatedTariffs] = useState<GetTariffDTOWithArchived[]>([]);
+  const [tariffs, setTariffs] = useState<GetTariffDTO[]>([]);
+  const [filteredTariffs, setFilteredTariffs] = useState<GetTariffDTO[]>([]);
+  const [paginatedTariffs, setPaginatedTariffs] = useState<GetTariffDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,8 +98,8 @@ export function useTariffsTable() {
       if (saved) {
         try {
           return JSON.parse(saved);
-        } catch (error) {
-          console.error('Ошибка при парсинге сохраненной видимости колонок:', error);
+        } catch {
+          toast.error('Ошибка при парсинге сохраненной видимости колонок:');
         }
       }
     }
@@ -176,9 +183,9 @@ export function useTariffsTable() {
 
       const response = await tariffsApi.getTariffs(params);
 
-      setTariffs(response.data as GetTariffDTOWithArchived[]);
-      setFilteredTariffs(response.data as GetTariffDTOWithArchived[]);
-      setPaginatedTariffs(response.data as GetTariffDTOWithArchived[]);
+      setTariffs(response.data as GetTariffDTO[]);
+      setFilteredTariffs(response.data as GetTariffDTO[]);
+      setPaginatedTariffs(response.data as GetTariffDTO[]);
       setTotalCount(response.totalCount);
       setHasNext(response.hasNext);
       setHasPrevious(response.hasPrevious);
@@ -247,9 +254,9 @@ export function useTariffsTable() {
   // Хук для сохранения фильтров
   const { saveFilters, clearSavedFilters, hasSaved, justSaved } = useSavedFilters({
     key: 'tariffs-filters',
-    defaultFilters,
-    currentFilters,
-    onFiltersLoad,
+    defaultFilters: defaultFilters as unknown as Record<string, unknown>,
+    currentFilters: currentFilters as unknown as Record<string, unknown>,
+    onFiltersLoad: onFiltersLoad as unknown as (filters: Record<string, unknown>) => void,
   });
 
   // Обработчики

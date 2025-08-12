@@ -2,7 +2,7 @@
 
 import { Table, LayoutGrid } from 'lucide-react';
 import { Button } from '@shared/ui/forms/button';
-import { Tooltip } from '@pages/(admin)/dashboard/operator/components/tooltip';
+import { SimpleTooltip } from '@shared/ui/modals/tooltip';
 
 interface CarViewToggleProps {
   defaultView: 'table' | 'cards';
@@ -12,7 +12,7 @@ interface CarViewToggleProps {
 export function CarViewToggle({ defaultView, onViewChange }: CarViewToggleProps) {
   return (
     <div className='flex items-center gap-1 border rounded-lg p-1 bg-gray-50'>
-      <Tooltip content="Табличный вид" position="bottom">
+      <SimpleTooltip content="Табличный вид"  variant='premium'>
         <Button
           variant={defaultView === 'table' ? 'default' : 'ghost'}
           size='sm'
@@ -21,9 +21,9 @@ export function CarViewToggle({ defaultView, onViewChange }: CarViewToggleProps)
         >
           <Table className='h-4 w-4' />
         </Button>
-      </Tooltip>
+      </SimpleTooltip>
 
-      <Tooltip content="Карточки" position="bottom">
+      <SimpleTooltip content="Карточки" variant='premium'>
         <Button
           variant={defaultView === 'cards' ? 'default' : 'ghost'}
           size='sm'
@@ -32,7 +32,7 @@ export function CarViewToggle({ defaultView, onViewChange }: CarViewToggleProps)
         >
           <LayoutGrid className='h-4 w-4' />
         </Button>
-      </Tooltip>
+      </SimpleTooltip>
     </div>
   );
 }

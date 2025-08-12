@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   Car,
   Users,
@@ -20,14 +17,14 @@ import {
   Circle,
   Settings
 } from 'lucide-react';
-import { Button } from '@shared/ui/forms/button';
-import { Badge } from '@shared/ui/data-display/badge';
-import type { GetCarDTO } from '@entities/cars/interface';
-import { CarColor, CarFeature, VehicleType, ServiceClass, VehicleStatus } from '@entities/cars/enums';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { SimpleTooltip } from '@shared/ui/modals/tooltip';
+import { CarFeature, type CarColor } from '@entities/cars/enums';
 import { CarColorTranslations } from '@entities/cars/enums/CarColor.enum';
+import type { GetCarDTO } from '@entities/cars/interface';
 import { CarTypeValues } from '@entities/tariffs/enums/CarType.enum';
 import { ServiceClassValues } from '@entities/tariffs/enums/ServiceClass.enum';
-import { Tooltip } from './tooltip';
 
 interface PremiumCarShowcaseProps {
   cars: GetCarDTO[];
@@ -50,6 +47,7 @@ export function PremiumCarShowcase({ cars, isLoading, tariffName, cardWidth = 10
     
     if (container) {
       const totalCardWidth = cardWidth + 24; // ширина карточки + gap
+
       container.scrollTo({
         left: index * totalCardWidth,
         behavior: 'smooth'
@@ -121,11 +119,11 @@ export function PremiumCarShowcase({ cars, isLoading, tariffName, cardWidth = 10
     return (
       <div className='bg-white rounded-3xl shadow-2xl overflow-hidden'>
         <div className='animate-pulse'>
-          <div className='h-96 bg-gray-200'></div>
+          <div className='h-96 bg-gray-200' />
           <div className='p-8'>
-            <div className='h-8 bg-gray-200 rounded mb-4'></div>
-            <div className='h-4 bg-gray-200 rounded mb-2'></div>
-            <div className='h-4 bg-gray-200 rounded w-3/4'></div>
+            <div className='h-8 bg-gray-200 rounded mb-4' />
+            <div className='h-4 bg-gray-200 rounded mb-2' />
+            <div className='h-4 bg-gray-200 rounded w-3/4' />
           </div>
         </div>
       </div>
@@ -160,8 +158,6 @@ export function PremiumCarShowcase({ cars, isLoading, tariffName, cardWidth = 10
       </div>
     );
   }
-
-
 
   return (
     <div className='space-y-8'>
@@ -198,7 +194,7 @@ export function PremiumCarShowcase({ cars, isLoading, tariffName, cardWidth = 10
               {/* Тип автомобиля в верхнем левом углу */}
               <div className='absolute top-6 left-6'>
                 <span className='bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-medium'>
-                  {CarTypeValues[car.type as keyof typeof CarTypeValues] || car.type}
+                  {CarTypeValues[car.type as unknown as keyof typeof CarTypeValues] || car.type}
                 </span>
               </div>
 
@@ -235,18 +231,18 @@ export function PremiumCarShowcase({ cars, isLoading, tariffName, cardWidth = 10
                   {/* Оснащение слева */}
                   <div className='flex flex-wrap gap-2'>
                     {car.features.slice(0, 6).map((feature, index) => (
-                      <Tooltip key={index} content={getFeatureName(feature)} position='top'>
+                      <SimpleTooltip key={index} content={getFeatureName(feature)} side='top' variant='premium'>
                         <div className='p-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors cursor-help'>
                           {getFeatureIcon(feature)}
                         </div>
-                      </Tooltip>
+                      </SimpleTooltip>
                     ))}
                     {car.features.length > 6 && (
-                      <Tooltip content={`+${car.features.length - 6} дополнительных опций`} position='top'>
+                      <SimpleTooltip content={`+${car.features.length - 6} дополнительных опций`} side='top' variant='premium'>
                         <div className='p-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-colors cursor-help flex items-center justify-center'>
                           <span className='text-sm font-medium'>+{car.features.length - 6}</span>
                         </div>
-                      </Tooltip>
+                      </SimpleTooltip>
                     )}
                   </div>
 
@@ -265,8 +261,6 @@ export function PremiumCarShowcase({ cars, isLoading, tariffName, cardWidth = 10
             </div>
           ))}
         </div>
-
-
       </div>
 
       {/* Индикаторы слайдов для прокрутки */}

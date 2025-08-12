@@ -10,7 +10,7 @@ import {
   type UserApi,
 } from '@entities/users';
 
-export function useUsersTable() {
+export function useUsersTable(_initialRoleFilter?: string) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<UserApi[]>([]);

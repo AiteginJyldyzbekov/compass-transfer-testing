@@ -3829,6 +3829,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"compass-driver-mobile@workspace:apps/compass-driver-mobile":
+  version: 0.0.0-use.local
+  resolution: "compass-driver-mobile@workspace:apps/compass-driver-mobile"
+  languageName: unknown
+  linkType: soft
+
 "compass-driver@workspace:apps/compass-driver":
   version: 0.0.0-use.local
   resolution: "compass-driver@workspace:apps/compass-driver"

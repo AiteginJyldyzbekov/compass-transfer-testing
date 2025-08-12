@@ -1,11 +1,11 @@
 'use client';
 
+import type { ColumnDef } from '@tanstack/react-table';
 import { ShoppingCart, Eye, Calendar, DollarSign } from 'lucide-react';
 import { Badge } from '@shared/ui/data-display/badge';
-import { Button } from '@shared/ui/forms/button';
 import { DataTable } from '@shared/ui/data-table';
+import { Button } from '@shared/ui/forms/button';
 import type { GetOrderDTO } from '@entities/orders/interface';
-import type { ColumnDef } from '@tanstack/react-table';
 
 interface UserOrdersListProps {
   orders: GetOrderDTO[];

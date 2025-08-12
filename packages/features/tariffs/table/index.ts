@@ -1,3 +1,3 @@
 export { TariffsTable } from './tariffs-table';
 export { useTariffsTable } from './hooks/use-tariffs-table';
-export { TariffsTableFilters, TariffsTableContent, TariffsTablePagination } from './components';
+export { TariffsTableFilters, TariffsTableContent } from './components';

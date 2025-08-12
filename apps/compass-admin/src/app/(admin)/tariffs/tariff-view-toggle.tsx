@@ -1,9 +1,9 @@
 'use client';
 
-import { Grid3X3, Table, LayoutGrid } from 'lucide-react';
+import { Table, LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@shared/ui/forms/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@shared/ui/modals/tooltip';
+import { SimpleTooltip } from '@shared/ui/modals/tooltip';
 
 interface TariffViewToggleProps {
   onViewChange: (view: 'table' | 'cards') => void;
@@ -20,37 +20,27 @@ export function TariffViewToggle({ onViewChange, defaultView = 'table' }: Tariff
 
   return (
     <div className='flex items-center gap-1 border rounded-lg p-1'>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={currentView === 'table' ? 'default' : 'ghost'}
-            size='sm'
-            onClick={() => handleViewChange('table')}
-            className='h-8 w-8 p-0'
-          >
-            <Table className='h-4 w-4' />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Табличный вид</p>
-        </TooltipContent>
-      </Tooltip>
+      <SimpleTooltip content="Табличный вид" variant='premium'>
+        <Button
+          variant={currentView === 'table' ? 'default' : 'ghost'}
+          size='sm'
+          onClick={() => handleViewChange('table')}
+          className='h-8 w-8 p-0'
+        >
+          <Table className='h-4 w-4' />
+        </Button>
+      </SimpleTooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={currentView === 'cards' ? 'default' : 'ghost'}
-            size='sm'
-            onClick={() => handleViewChange('cards')}
-            className='h-8 w-8 p-0'
-          >
-            <LayoutGrid className='h-4 w-4' />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Карточки</p>
-        </TooltipContent>
-      </Tooltip>
+      <SimpleTooltip content="Карточки" variant='premium'>
+        <Button
+          variant={currentView === 'cards' ? 'default' : 'ghost'}
+          size='sm'
+          onClick={() => handleViewChange('cards')}
+          className='h-8 w-8 p-0'
+        >
+          <LayoutGrid className='h-4 w-4' />
+        </Button>
+      </SimpleTooltip>
     </div>
   );
 }

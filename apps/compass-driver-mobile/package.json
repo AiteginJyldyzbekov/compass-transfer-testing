@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3017 --turbopack -H compass.local",
+    "dev": "next dev -p 3010 --turbopack -H compass.local",
     "build": "next build",
     "start": "next start -p 3028",
     "lint": "next lint"

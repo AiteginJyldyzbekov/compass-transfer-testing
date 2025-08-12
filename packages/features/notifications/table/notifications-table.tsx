@@ -1,12 +1,13 @@
 'use client';
 
+import { DataTablePagination, DataTableErrorState, DataTableLoader } from '@shared/ui/data-table';
 import { DeleteConfirmationModal } from '@shared/ui/modals';
 import { useDeleteNotification, useNotificationActions } from '@features/notifications/hooks';
-import { NotificationsTableFilters, NotificationsTableContent, NotificationsTablePagination } from './components';
+import { NotificationsTableFilters, NotificationsTableContent } from './components';
 import { useNotificationsTable } from './hooks/use-notifications-table';
 
 export function NotificationsTable({
-  initialFilters: _initialFilters,
+  initialFilters,
 }: {
   initialFilters?: {
     type?: string;
@@ -16,7 +17,7 @@ export function NotificationsTable({
   };
 }) {
   const {
-    filteredNotifications,
+    filteredNotifications: _filteredNotifications,
     paginatedNotifications,
     loading,
     error,
@@ -27,12 +28,9 @@ export function NotificationsTable({
     isReadFilter,
     userIdFilter,
     showAdvancedFilters,
-    currentCursor,
-    isFirstPage,
     currentPageNumber,
     pageSize,
     columnVisibility,
-    totalPages,
     totalCount,
     hasNext,
     hasPrevious,
@@ -59,7 +57,7 @@ export function NotificationsTable({
     clearSavedFilters,
     hasSavedFilters,
     justSavedFilters,
-  } = useNotificationsTable();
+  } = useNotificationsTable(initialFilters);
 
   // Хук для удаления уведомлений
   const {
@@ -87,17 +85,11 @@ export function NotificationsTable({
 
   if (error) {
     return (
-      <div className='space-y-4'>
-        <div className='text-center py-8'>
-          <p className='text-red-600 mb-4'>Ошибка загрузки уведомлений: {error}</p>
-          <button
-            onClick={loadNotifications}
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-          >
-            Попробовать снова
-          </button>
-        </div>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={loadNotifications} 
+        entityName="уведомлений" 
+      />
     );
   }
 
@@ -131,40 +123,33 @@ export function NotificationsTable({
         justSavedFilters={justSavedFilters}
       />
 
-      <NotificationsTableContent
-        paginatedNotifications={paginatedNotifications}
-        columnVisibility={columnVisibility}
-        router={router}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        handleSort={handleSort}
-        onDeleteNotification={openDeleteModal}
-        onToggleReadStatus={toggleReadStatus}
-        showMyNotifications={showMyNotifications}
-        isUpdating={isUpdating}
-      />
+      <DataTableLoader loading={loading} entityName="уведомлений">
+        <NotificationsTableContent
+          paginatedNotifications={paginatedNotifications}
+          columnVisibility={columnVisibility}
+          router={router}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          handleSort={handleSort}
+          onDeleteNotification={openDeleteModal}
+          onToggleReadStatus={toggleReadStatus}
+          showMyNotifications={showMyNotifications}
+          isUpdating={isUpdating}
+        />
 
-      {loading && (
-        <div className='text-center py-4'>
-          <p>Загрузка уведомлений...</p>
-        </div>
-      )}
-
-      <NotificationsTablePagination
-        paginatedNotifications={paginatedNotifications}
-        filteredNotifications={filteredNotifications}
-        currentCursor={currentCursor}
-        isFirstPage={isFirstPage}
-        currentPageNumber={currentPageNumber}
-        totalPages={totalPages}
-        pageSize={pageSize}
-        totalCount={totalCount}
-        hasNext={hasNext}
-        hasPrevious={hasPrevious}
-        handleNextPage={handleNextPage}
-        handlePrevPage={handlePrevPage}
-        handleFirstPage={handleFirstPage}
-      />
+        <DataTablePagination
+          currentItems={paginatedNotifications}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          hasNext={hasNext}
+          hasPrevious={hasPrevious}
+          currentPageNumber={currentPageNumber}
+          handleNextPage={handleNextPage}
+          handlePrevPage={handlePrevPage}
+          handleFirstPage={handleFirstPage}
+          itemName="уведомлений"
+        />
+      </DataTableLoader>
 
       {/* Модальное окно удаления */}
       <DeleteConfirmationModal

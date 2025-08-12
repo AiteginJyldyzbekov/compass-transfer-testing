@@ -48,6 +48,7 @@ export function DriverInfoCard({ driver, onDriverChange }: DriverInfoCardProps) 
   // Функция для формирования полного имени водителя
   const getFullName = () => {
     if (!driver) return '';
+    
     return [
       driver.lastName || '',
       driver.firstName || '',

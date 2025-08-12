@@ -36,6 +36,7 @@ const filterMenuItemsByRole = (items: typeof sidebarData.navMain, userRole: Role
     // Для роли Partner оставляем только "Дашбоард" и "Заказы"
     if (userRole === Role.Partner) {
       const allowedItems = ['Дашбоард', 'Заказы'];
+      
       return allowedItems.includes(item.title);
     }
 
@@ -49,6 +50,7 @@ const filterDocumentsByRole = (items: typeof sidebarData.documents, userRole: Ro
     // Для роли Partner оставляем только "Тарифы"
     if (userRole === Role.Partner) {
       const allowedItems = ['Тарифы'];
+
       return allowedItems.includes(item.name);
     }
 

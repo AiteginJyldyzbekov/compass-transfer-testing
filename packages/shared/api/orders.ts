@@ -2,7 +2,7 @@ import type { OrderStatus } from '@entities/orders/enums/OrderStatus.enum';
 import type { OrderSubStatus } from '@entities/orders/enums/OrderSubStatus.enum';
 import type { OrderType } from '@entities/orders/enums/OrderType.enum';
 import type { GetOrderDTO } from '@entities/orders/interface/GetOrderDTO';
-import { apiGet, apiDelete } from './client';
+import { apiGet, apiDelete, apiPost } from './client';
 
 export interface OrderFilters {
   first?: boolean;
@@ -197,6 +197,47 @@ export const orderService = {
   // Создание поездки для запланированного заказа
   createScheduledRide: async (orderId: string, data: unknown): Promise<{ id: string }> => {
     const result = await apiPost<{ id: string }>(`/Order/scheduled/${orderId}/ride`, data);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data!;
+  },
+};
+
+// Интерфейсы для работы водителя с заказами
+export interface AcceptOrderResponse {
+  orderId: string | null;
+  driverId: string;
+  carId: string;
+  id: string;
+  status: 'Requested' | 'Searching' | 'Accepted' | 'Arrived' | 'InProgress' | 'Completed' | 'Cancelled';
+  driverArrivedAt: string | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  passengerWaitingTime: string | null;
+  distance: number | null;
+  duration: string | null;
+  waypoints: Array<{
+    locationId: string;
+    location: {
+      id: string;
+      name: string;
+      address: string;
+      latitude: number;
+      longitude: number;
+    };
+    arrivalTime: string | null;
+    departureTime: string | null;
+  }>;
+}
+
+// API методы для водителя
+export const driverOrderApi = {
+  // Принятие мгновенного заказа водителем
+  acceptInstantOrder: async (orderId: string): Promise<AcceptOrderResponse> => {
+    const result = await apiPost<AcceptOrderResponse>(`/Order/instant/${orderId}/accept-by-driver`);
 
     if (result.error) {
       throw new Error(result.error.message);

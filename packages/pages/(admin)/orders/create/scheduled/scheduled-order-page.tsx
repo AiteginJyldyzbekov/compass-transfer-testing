@@ -633,7 +633,7 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
   } = useScheduledOrderSubmit({
     orderId: isEditMode ? id : undefined, // Передаем ID для режима редактирования
     shouldUpdatePassengers: isEditMode, // Обновляем пассажиров только при редактировании
-    passengers: isEditMode ? methods.getValues('passengers')?.map((p: any) => ({
+    passengers: isEditMode ? (methods.getValues('passengers') as Array<{customerId: string; firstName: string; lastName: string; isMainPassenger: boolean}>)?.map((p) => ({
       customerId: p.customerId,
       firstName: p.firstName,
       lastName: p.lastName,

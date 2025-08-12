@@ -3,15 +3,19 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { notificationsApi, type NotificationFilters, type GetNotificationDTO, type OrderType } from '@shared/api/notifications';
-import type { NotificationType } from '@entities/notifications';
 import { useSavedFilters } from '@shared/hooks';
+import type { NotificationType } from '@entities/notifications';
 
-interface ColumnVisibility {
+interface NotificationsColumnVisibility {
   type: boolean;
   content: boolean;
   orderType: boolean;
   isRead: boolean;
   actions: boolean;
+  title: boolean;
+  orderId: boolean;
+  rideId: boolean;
+  createdAt: boolean;
 }
 
 interface SavedNotificationFilters {
@@ -21,7 +25,12 @@ interface SavedNotificationFilters {
   userIdFilter: string;
 }
 
-export function useNotificationsTable() {
+export function useNotificationsTable(initialFilters?: {
+  type?: string;
+  isRead?: string;
+  orderType?: string;
+  userId?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -36,17 +45,27 @@ export function useNotificationsTable() {
   // Фильтры
   const [searchTerm, setSearchTerm] = useState('');
   const [contentFilter, setContentFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState<NotificationType[]>([]);
-  const [orderTypeFilter, setOrderTypeFilter] = useState<OrderType[]>([]);
+  const [typeFilter, setTypeFilter] = useState<NotificationType[]>(() => {
+    const typeParam = searchParams.get('type') || initialFilters?.type;
+
+    return typeParam ? [typeParam as NotificationType] : [];
+  });
+  const [orderTypeFilter, setOrderTypeFilter] = useState<OrderType[]>(() => {
+    const orderTypeParam = searchParams.get('orderType') || initialFilters?.orderType;
+
+    return orderTypeParam ? [orderTypeParam as OrderType] : [];
+  });
   const [isReadFilter, setIsReadFilter] = useState<boolean | null>(() => {
-    const isReadParam = searchParams.get('isRead');
+    const isReadParam = searchParams.get('isRead') || initialFilters?.isRead;
 
     if (isReadParam === 'true') return true;
     if (isReadParam === 'false') return false;
 
     return null;
   });
-  const [userIdFilter, setUserIdFilter] = useState('');
+  const [userIdFilter, setUserIdFilter] = useState(() => {
+    return searchParams.get('userId') || initialFilters?.userId || '';
+  });
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Пагинация (cursor-based с историей)
@@ -57,8 +76,10 @@ export function useNotificationsTable() {
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('notifications-page-size');
+
       return saved ? parseInt(saved, 10) : 10;
     }
+
     return 10;
   });
   const [totalPages, setTotalPages] = useState(1);
@@ -71,9 +92,10 @@ export function useNotificationsTable() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Видимость колонок
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(() => {
+  const [columnVisibility, setColumnVisibility] = useState<NotificationsColumnVisibility>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('notifications-column-visibility');
+
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -82,12 +104,17 @@ export function useNotificationsTable() {
         }
       }
     }
+
     return {
       type: true,
       content: true,
       orderType: false,
       isRead: true,
       actions: true,
+      title: true,
+      orderId: false,
+      rideId: false,
+      createdAt: true,
     };
   });
 
@@ -117,9 +144,9 @@ export function useNotificationsTable() {
   // Хук для сохранения фильтров
   const { saveFilters, clearSavedFilters, hasSaved, justSaved } = useSavedFilters({
     key: 'notifications-filters',
-    defaultFilters,
-    currentFilters,
-    onFiltersLoad,
+    defaultFilters: defaultFilters as unknown as Record<string, unknown>,
+    currentFilters: currentFilters as unknown as Record<string, unknown>,
+    onFiltersLoad: onFiltersLoad as unknown as (filters: Record<string, unknown>) => void,
   });
 
   // Загрузка данных
@@ -259,11 +286,12 @@ export function useNotificationsTable() {
     }
   };
 
-  const handleColumnVisibilityChange = (column: keyof ColumnVisibility, visible: boolean) => {
+  const handleColumnVisibilityChange = (column: keyof NotificationsColumnVisibility, visible: boolean) => {
     const newVisibility = {
       ...columnVisibility,
       [column]: visible,
     };
+    
     setColumnVisibility(newVisibility);
     if (typeof window !== 'undefined') {
       localStorage.setItem('notifications-column-visibility', JSON.stringify(newVisibility));

@@ -1,12 +1,13 @@
 'use client';
 
+import { DataTablePagination, DataTableErrorState, DataTableLoader } from '@shared/ui/data-table';
 import { DeleteConfirmationModal } from '@shared/ui/modals';
 import { useDeleteService } from '@features/services/hooks';
-import { ServicesTableFilters, ServicesTableContent, ServicesTablePagination } from './components';
+import { ServicesTableFilters, ServicesTableContent } from './components';
 import { useServicesTable } from './hooks/use-services-table';
 
 export function ServicesTable({
-  initialFilters: _initialFilters,
+  initialFilters,
 }: {
   initialFilters?: {
     name?: string;
@@ -52,7 +53,7 @@ export function ServicesTable({
     clearSavedFilters,
     hasSavedFilters,
     justSavedFilters,
-  } = useServicesTable();
+  } = useServicesTable(initialFilters);
 
   // Хук для удаления услуг
   const {
@@ -67,17 +68,11 @@ export function ServicesTable({
 
   if (error) {
     return (
-      <div className='space-y-4'>
-        <div className='text-center py-8'>
-          <p className='text-red-600 mb-4'>Ошибка загрузки услуг: {error}</p>
-          <button
-            onClick={loadServices}
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-          >
-            Попробовать снова
-          </button>
-        </div>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={loadServices} 
+        entityName="услуг" 
+      />
     );
   }
 
@@ -107,24 +102,19 @@ export function ServicesTable({
         justSavedFilters={justSavedFilters}
       />
 
-      <ServicesTableContent
-        paginatedServices={paginatedServices}
-        columnVisibility={columnVisibility}
-        router={router}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        handleSort={handleSort}
-        onDeleteService={openDeleteModal}
-      />
+      <DataTableLoader loading={loading} entityName="услуг">
+        <ServicesTableContent
+          paginatedServices={paginatedServices}
+          columnVisibility={columnVisibility}
+          router={router}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          handleSort={handleSort}
+          onDeleteService={openDeleteModal}
+        />
 
-      {loading && (
-        <div className='text-center py-4'>
-          <p>Загрузка услуг...</p>
-        </div>
-      )}
-
-      <ServicesTablePagination
-        paginatedServices={paginatedServices}
+        <DataTablePagination
+        currentItems={paginatedServices}
         totalCount={totalCount}
         pageSize={pageSize}
         hasNext={hasNext}
@@ -133,7 +123,9 @@ export function ServicesTable({
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         handleFirstPage={handleFirstPage}
+        itemName="услуг"
       />
+      </DataTableLoader>
 
       {/* Модальное окно удаления */}
       <DeleteConfirmationModal

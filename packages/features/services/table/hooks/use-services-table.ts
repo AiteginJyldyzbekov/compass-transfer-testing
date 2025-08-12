@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import { servicesApi, type ServiceFilters } from '@shared/api/services';
 import { useSavedFilters } from '@shared/hooks';
 import type { GetServiceDTO } from '@entities/services/interface/GetServiceDTO';
@@ -20,7 +21,12 @@ interface SavedServiceFilters {
   priceToFilter: string;
 }
 
-export function useServicesTable() {
+export function useServicesTable(_initialFilters?: {
+  name?: string;
+  priceFrom?: string;
+  priceTo?: string;
+  isQuantifiable?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -38,8 +44,10 @@ export function useServicesTable() {
   const [priceToFilter, setPriceToFilter] = useState('');
   const [isQuantifiableFilter, setIsQuantifiableFilter] = useState<boolean | null>(() => {
     const quantifiableParam = searchParams.get('isQuantifiable');
+
     if (quantifiableParam === 'true') return true;
     if (quantifiableParam === 'false') return false;
+
     return null;
   });
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -79,14 +87,16 @@ export function useServicesTable() {
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('services-column-visibility');
+
       if (saved) {
         try {
           return JSON.parse(saved);
         } catch {
-          // Если не удалось распарсить, используем значения по умолчанию
+          toast.error('Ошибка при парсинге сохраненной видимости колонок:');
         }
       }
     }
+
     return {
       name: true,
       description: true,
@@ -165,13 +175,14 @@ export function useServicesTable() {
     loadServices();
   }, [loadServices]);
 
-  // Синхронизируем фильтр количественная с URL параметрами
+  // Синхронизируем фильтр статуса с URL параметрами
+  const isQuantifiableParam = searchParams.get('isQuantifiable');
+
   useEffect(() => {
-    const quantifiableParam = searchParams.get('isQuantifiable');
     let newQuantifiableFilter: boolean | null = null;
 
-    if (quantifiableParam === 'true') newQuantifiableFilter = true;
-    if (quantifiableParam === 'false') newQuantifiableFilter = false;
+    if (isQuantifiableParam === 'true') newQuantifiableFilter = true;
+    if (isQuantifiableParam === 'false') newQuantifiableFilter = false;
 
     // Обновляем только если значение действительно отличается
     // Используем внутреннюю функцию состояния, чтобы не вызывать обновление URL
@@ -181,7 +192,7 @@ export function useServicesTable() {
       setCurrentCursor(null);
       setIsFirstPage(true);
     }
-  }, [searchParams.get('isQuantifiable')]); // Реагируем на изменения URL параметра
+  }, [isQuantifiableParam, isQuantifiableFilter]); // Реагируем на изменения URL параметра и текущего состояния
 
   // Конфигурация для сохранения фильтров
   const defaultFilters: SavedServiceFilters = {
@@ -206,9 +217,9 @@ export function useServicesTable() {
   // Хук для сохранения фильтров
   const { saveFilters, clearSavedFilters, hasSaved, justSaved } = useSavedFilters({
     key: 'services-filters',
-    defaultFilters,
-    currentFilters,
-    onFiltersLoad,
+    defaultFilters: defaultFilters as unknown as Record<string, unknown>,
+    currentFilters: currentFilters as unknown as Record<string, unknown>,
+    onFiltersLoad: onFiltersLoad as unknown as (filters: Record<string, unknown>) => void,
   });
 
   // Обработчики
@@ -357,6 +368,7 @@ export function useServicesTable() {
 
       // Обновляем URL
       const params = new URLSearchParams(searchParams.toString());
+
       if (isQuantifiable === null) {
         params.delete('isQuantifiable');
       } else {
@@ -364,6 +376,7 @@ export function useServicesTable() {
       }
 
       const newURL = params.toString() ? `/services?${params.toString()}` : '/services';
+
       router.push(newURL);
 
       setCursorsHistory([]);

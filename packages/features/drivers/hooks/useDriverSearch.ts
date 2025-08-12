@@ -25,6 +25,14 @@ export interface DriverSearchParams {
 }
 
 /**
+ * Расширенный тип для API запроса с параметрами пагинации
+ */
+type DriverSearchApiParams = DriverSearchParams & {
+  First?: boolean;
+  Size?: number;
+};
+
+/**
  * Хук для поиска водителей
  */
 export const useDriverSearch = () => {
@@ -40,7 +48,7 @@ export const useDriverSearch = () => {
     setError(null);
 
     try {
-      const searchParams: Record<string, unknown> = {
+      const searchParams: DriverSearchApiParams = {
         First: true,
         Size: 50,
         ...params

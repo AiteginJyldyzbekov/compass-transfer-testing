@@ -1,12 +1,13 @@
 'use client';
 
+import { DataTablePagination, DataTableErrorState } from '@shared/ui/data-table';
 import { DeleteConfirmationModal } from '@shared/ui/modals';
 import { useDeleteLocation } from '@features/locations/hooks';
-import { LocationsTableFilters, LocationsTableContent, LocationsTablePagination } from './components';
+import { LocationsTableFilters, LocationsTableContent } from './components';
 import { useLocationsTable } from './hooks/use-locations-table';
 
 export function LocationsTable({
-  initialFilters: _initialFilters,
+  initialFilters,
 }: {
   initialFilters?: {
     type?: string;
@@ -17,7 +18,7 @@ export function LocationsTable({
   };
 }) {
   const {
-    filteredLocations,
+    filteredLocations: _filteredLocations,
     paginatedLocations,
     loading,
     error,
@@ -32,12 +33,9 @@ export function LocationsTable({
     isActiveFilter,
     popular1Filter,
     showAdvancedFilters,
-    currentCursor,
-    isFirstPage,
     currentPageNumber,
     pageSize,
     columnVisibility,
-    totalPages,
     totalCount,
     hasNext,
     hasPrevious,
@@ -67,7 +65,7 @@ export function LocationsTable({
     hasSavedFilters,
     justSavedFilters,
     handleIsActiveFilterChange,
-  } = useLocationsTable();
+  } = useLocationsTable(initialFilters);
 
   // Хук для удаления локаций
   const {
@@ -82,17 +80,11 @@ export function LocationsTable({
 
   if (error) {
     return (
-      <div className='space-y-4'>
-        <div className='text-center py-8'>
-          <p className='text-red-600 mb-4'>Ошибка загрузки локаций: {error}</p>
-          <button
-            onClick={loadLocations}
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-          >
-            Попробовать снова
-          </button>
-        </div>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={loadLocations} 
+        entityName="локаций" 
+      />
     );
   }
 
@@ -148,20 +140,17 @@ export function LocationsTable({
         </div>
       )}
 
-      <LocationsTablePagination
-        paginatedLocations={paginatedLocations}
-        filteredLocations={filteredLocations}
-        currentCursor={currentCursor}
-        isFirstPage={isFirstPage}
-        currentPageNumber={currentPageNumber}
-        totalPages={totalPages}
-        pageSize={pageSize}
+      <DataTablePagination
+        currentItems={paginatedLocations}
         totalCount={totalCount}
+        pageSize={pageSize}
         hasNext={hasNext}
         hasPrevious={hasPrevious}
+        currentPageNumber={currentPageNumber}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         handleFirstPage={handleFirstPage}
+        itemName="локаций"
       />
 
       {/* Модальное окно удаления */}

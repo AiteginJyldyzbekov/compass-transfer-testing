@@ -2,14 +2,15 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { toast } from 'sonner'
 import { carsApi, type CarFilters } from '@shared/api/cars';
 import { useSavedFilters } from '@shared/hooks';
 import {
-  CarColor,
-  VehicleType,
-  ServiceClass,
+  type CarColor,
+  type VehicleType,
+  type ServiceClass,
   VehicleStatus,
-  CarFeature,
+  type CarFeature,
 } from '@entities/cars/enums';
 import type { GetCarDTO } from '@entities/cars/interface';
 
@@ -27,7 +28,7 @@ interface ColumnVisibility {
   drivers: boolean;
 }
 
-interface SavedCarsFilters {
+interface SavedCarsFilters extends Record<string, unknown> {
   makeFilter: string;
   modelFilter: string;
   yearFilter: string;
@@ -40,7 +41,13 @@ interface SavedCarsFilters {
   featuresFilter: CarFeature[];
 }
 
-export function useCarsTable() {
+export function useCarsTable(initialFilters?: {
+  make?: string;
+  model?: string;
+  status?: string;
+  type?: string;
+  serviceClass?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -64,10 +71,12 @@ export function useCarsTable() {
   const [typeFilter, setTypeFilter] = useState<VehicleType[]>([]);
   const [serviceClassFilter, setServiceClassFilter] = useState<ServiceClass[]>([]);
   const [statusFilter, setStatusFilter] = useState<VehicleStatus[]>(() => {
-    const statusParam = searchParams.get('status');
+    const statusParam = searchParams.get('status') || initialFilters?.status;
+
     if (statusParam && Object.values(VehicleStatus).includes(statusParam as VehicleStatus)) {
       return [statusParam as VehicleStatus];
     }
+
     return [];
   });
   const [passengerCapacityFilter, setPassengerCapacityFilter] = useState('');
@@ -113,8 +122,8 @@ export function useCarsTable() {
       if (saved) {
         try {
           return JSON.parse(saved);
-        } catch (error) {
-          console.error('Ошибка при парсинге сохраненной видимости колонок:', error);
+        } catch {
+          toast.error('Ошибка при загрузке сохраненных настроек')
         }
       }
     }
@@ -312,6 +321,7 @@ export function useCarsTable() {
     passengerCapacityFilter,
     featuresFilter,
     searchTerm,
+    loadCars,
   ]);
 
   // Синхронизируем фильтр статуса с URL параметрами
@@ -327,7 +337,7 @@ export function useCarsTable() {
     if (JSON.stringify(newStatusFilter) !== JSON.stringify(statusFilter)) {
       setStatusFilter(newStatusFilter);
     }
-  }, [searchParams]);
+  }, [searchParams, statusFilter]);
 
   // Обработчики
   const handleNextPage = () => {
@@ -361,6 +371,26 @@ export function useCarsTable() {
     setCurrentCursor(null);
     setIsFirstPage(true);
     setCurrentPageNumber(1);
+  };
+
+  const handlePageChange = (targetPage: number) => {
+    if (targetPage === 1) {
+      handleFirstPage();
+    } else if (targetPage > currentPageNumber) {
+      // Переход вперед - используем handleNextPage несколько раз
+      const pagesToAdvance = targetPage - currentPageNumber;
+
+      for (let i = 0; i < pagesToAdvance; i++) {
+        handleNextPage();
+      }
+    } else if (targetPage < currentPageNumber) {
+      // Переход назад - используем handlePrevPage несколько раз
+      const pagesToGoBack = currentPageNumber - targetPage;
+
+      for (let i = 0; i < pagesToGoBack; i++) {
+        handlePrevPage();
+      }
+    }
   };
 
   const handlePageSizeChange = (size: number) => {
@@ -426,6 +456,7 @@ export function useCarsTable() {
 
     // Обновляем URL
     const params = new URLSearchParams(searchParams.toString());
+
     if (statuses.length === 1) {
       params.set('status', statuses[0]);
     } else {
@@ -433,6 +464,7 @@ export function useCarsTable() {
     }
 
     const newURL = params.toString() ? `/cars?${params.toString()}` : '/cars';
+    
     router.push(newURL);
 
     setCurrentCursor(null);
@@ -528,6 +560,7 @@ export function useCarsTable() {
     handleNextPage,
     handlePrevPage,
     handleFirstPage,
+    handlePageChange,
     handlePageSizeChange,
     handleSort,
     handleColumnVisibilityChange,

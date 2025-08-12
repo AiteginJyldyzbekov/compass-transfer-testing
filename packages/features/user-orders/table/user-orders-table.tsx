@@ -1,13 +1,26 @@
 'use client';
 
-import { UserOrdersTableFilters, UserOrdersTableContent, UserOrdersTablePagination } from './components';
+import { DataTablePagination, DataTableErrorState } from '@shared/ui/data-table';
+import { OrderType } from '@entities/orders/enums/OrderType.enum';
+import { getOrderViewRoute } from '@entities/orders/utils/order-routes';
+import { UserOrdersTableFilters, UserOrdersTableContent } from './components';
 import { useUserOrdersTable } from './hooks/use-user-orders-table';
 
 interface UserOrdersTableProps {
   userId: string;
 }
 
-export function UserOrdersTable({ userId }: UserOrdersTableProps) {
+export function UserOrdersTable({
+  initialFilters,
+  userId,
+}: {
+  initialFilters?: {
+    status?: string;
+    orderType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  };
+} & UserOrdersTableProps) {
   const {
     paginatedOrders,
     loading,
@@ -37,13 +50,9 @@ export function UserOrdersTable({ userId }: UserOrdersTableProps) {
     handleSubStatusFilterChange,
     handleSortChange,
     refetch,
-  } = useUserOrdersTable(userId);
+  } = useUserOrdersTable(initialFilters, userId);
 
   const handleViewDetails = (orderId: string, orderType: string) => {
-    // Импортируем функцию и enum
-    const { getOrderViewRoute } = require('@entities/orders/utils/order-routes');
-    const { OrderType } = require('@entities/orders/enums/OrderType.enum');
-
     // Преобразуем строку в enum
     const orderTypeEnum = orderType as keyof typeof OrderType;
     const route = getOrderViewRoute(orderId, OrderType[orderTypeEnum] || OrderType.Instant);
@@ -53,16 +62,11 @@ export function UserOrdersTable({ userId }: UserOrdersTableProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
-        <div className="text-red-500 text-lg font-semibold">Ошибка загрузки заказов</div>
-        <div className="text-muted-foreground">{error}</div>
-        <button 
-          onClick={refetch}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Попробовать снова
-        </button>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={refetch} 
+        entityName="заказов" 
+      />
     );
   }
 
@@ -100,8 +104,8 @@ export function UserOrdersTable({ userId }: UserOrdersTableProps) {
       />
 
       {/* Пагинация */}
-      <UserOrdersTablePagination
-        paginatedOrders={paginatedOrders}
+      <DataTablePagination
+        currentItems={paginatedOrders}
         totalCount={totalCount}
         pageSize={pageSize}
         hasNext={hasNext}
@@ -110,6 +114,7 @@ export function UserOrdersTable({ userId }: UserOrdersTableProps) {
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         handleFirstPage={handleFirstPage}
+        itemName="заказов пользователя"
       />
     </div>
   );

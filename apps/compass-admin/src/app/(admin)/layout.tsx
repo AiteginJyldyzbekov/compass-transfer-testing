@@ -2,14 +2,14 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
 import { SignalRProvider, NotificationProvider, QueryClientProvider } from '@app/providers';
+import { UserRoleProvider } from '@shared/contexts';
 import { SheetProvider } from '@shared/lib';
 import { getUserFromCookie, getRawCookie } from '@shared/lib/parse-cookie';
 import { SidebarInset, SidebarProvider } from '@shared/ui/layout';
-import { UserRoleProvider } from '@shared/contexts';
 import type { Role } from '@entities/users/enums';
+import { AppFooter } from '@widgets/footer';
 import { SiteHeader } from '@widgets/header';
 import { AppSidebar } from '@widgets/sidebar';
-import { AppFooter } from '@widgets/footer';
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',

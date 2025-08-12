@@ -1,12 +1,13 @@
 'use client';
 
+import { DataTablePagination, DataTableErrorState, DataTableLoader } from '@shared/ui/data-table';
 import { DeleteConfirmationModal } from '@shared/ui/modals';
 import { useDeleteCar } from '@features/cars/hooks';
-import { CarsTableFilters, CarsTableContent, CarsTablePagination } from './components';
+import { CarsTableFilters, CarsTableContent } from './components';
 import { useCarsTable } from './hooks/use-cars-table';
 
 export function CarsTable({
-  initialFilters: _initialFilters,
+  initialFilters,
 }: {
   initialFilters?: {
     make?: string;
@@ -50,6 +51,7 @@ export function CarsTable({
     handleNextPage,
     handlePrevPage,
     handleFirstPage,
+    handlePageChange: _handlePageChange,
     handlePageSizeChange,
     handleColumnVisibilityChange,
     handleColorFilterChange,
@@ -64,7 +66,7 @@ export function CarsTable({
     clearSavedFilters,
     hasSavedFilters,
     justSavedFilters,
-  } = useCarsTable();
+  } = useCarsTable(initialFilters);
 
   // Хук для удаления автомобилей
   const {
@@ -79,17 +81,11 @@ export function CarsTable({
 
   if (error) {
     return (
-      <div className='space-y-4'>
-        <div className='text-center py-8'>
-          <p className='text-red-600 mb-4'>Ошибка загрузки автомобилей: {error}</p>
-          <button
-            onClick={loadCars}
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-          >
-            Попробовать снова
-          </button>
-        </div>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={loadCars} 
+        entityName="автомобилей" 
+      />
     );
   }
 
@@ -130,33 +126,30 @@ export function CarsTable({
         justSavedFilters={justSavedFilters}
       />
 
-      <CarsTableContent
-        paginatedCars={paginatedCars}
-        columnVisibility={columnVisibility}
-        router={router}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        handleSort={handleSort}
-        onDeleteCar={openDeleteModal}
-      />
+      <DataTableLoader loading={loading} entityName="автомобилей">
+        <CarsTableContent
+          paginatedCars={paginatedCars}
+          columnVisibility={columnVisibility}
+          router={router}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          handleSort={handleSort}
+          onDeleteCar={openDeleteModal}
+        />
 
-      {loading && (
-        <div className='text-center py-4'>
-          <p>Загрузка автомобилей...</p>
-        </div>
-      )}
-
-      <CarsTablePagination
-        paginatedCars={paginatedCars}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        hasNext={hasNext}
-        hasPrevious={hasPrevious}
-        currentPageNumber={currentPageNumber}
-        handleNextPage={handleNextPage}
-        handlePrevPage={handlePrevPage}
-        handleFirstPage={handleFirstPage}
-      />
+        <DataTablePagination
+          currentItems={paginatedCars}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          hasNext={hasNext}
+          hasPrevious={hasPrevious}
+          currentPageNumber={currentPageNumber}
+          handleNextPage={handleNextPage}
+          handlePrevPage={handlePrevPage}
+          handleFirstPage={handleFirstPage}
+          itemName="автомобилей"
+        />
+      </DataTableLoader>
 
       {/* Модальное окно удаления */}
       <DeleteConfirmationModal

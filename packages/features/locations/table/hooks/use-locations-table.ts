@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import { locationsApi, type LocationFilters } from '@shared/api/locations';
 import { useSavedFilters } from '@shared/hooks';
 import type { LocationType } from '@entities/locations/enums';
@@ -30,7 +31,13 @@ interface SavedLocationFilters {
   regionFilter: string;
 }
 
-export function useLocationsTable() {
+export function useLocationsTable(_initialFilters?: {
+  type?: string;
+  city?: string;
+  region?: string;
+  isActive?: string;
+  popular1?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -52,8 +59,10 @@ export function useLocationsTable() {
   const [typeFilter, setTypeFilter] = useState<LocationType[]>([]);
   const [isActiveFilter, setIsActiveFilter] = useState<boolean | null>(() => {
     const isActiveParam = searchParams.get('isActive');
+
     if (isActiveParam === 'true') return true;
     if (isActiveParam === 'false') return false;
+
     return null;
   });
   const [popular1Filter, setPopular1Filter] = useState<boolean | null>(null);
@@ -67,13 +76,16 @@ export function useLocationsTable() {
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('locations-page-size');
+
       if (saved) {
         const parsed = parseInt(saved, 10);
+
         if (!isNaN(parsed) && parsed > 0) {
           return parsed;
         }
       }
     }
+
     return 10;
   });
   const [totalPages, setTotalPages] = useState(1);
@@ -89,14 +101,16 @@ export function useLocationsTable() {
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('locations-column-visibility');
+
       if (saved) {
         try {
           return JSON.parse(saved);
         } catch {
-          // Если не удалось распарсить, используем значения по умолчанию
+          toast.error('Ошибка при парсинге сохраненной видимости колонок:');
         }
       }
     }
+
     return {
       type: true,
       name: true,
@@ -202,8 +216,9 @@ export function useLocationsTable() {
   }, [loadLocations]);
 
   // Синхронизируем фильтр статуса с URL параметрами
+  const isActiveParam = searchParams.get('isActive');
+
   useEffect(() => {
-    const isActiveParam = searchParams.get('isActive');
     let newIsActiveFilter: boolean | null = null;
 
     if (isActiveParam === 'true') newIsActiveFilter = true;
@@ -217,7 +232,7 @@ export function useLocationsTable() {
       setIsFirstPage(true);
       setCurrentPageNumber(1);
     }
-  }, [searchParams.get('isActive')]); // Реагируем на изменения URL параметра
+  }, [isActiveParam, isActiveFilter]); // Реагируем на изменения URL параметра и текущего состояния
 
   // Конфигурация для сохранения фильтров
   const defaultFilters: SavedLocationFilters = {
@@ -251,9 +266,9 @@ export function useLocationsTable() {
   // Хук для сохранения фильтров
   const { saveFilters, clearSavedFilters, hasSaved, justSaved } = useSavedFilters({
     key: 'locations-filters',
-    defaultFilters,
-    currentFilters,
-    onFiltersLoad,
+    defaultFilters: defaultFilters as unknown as Record<string, unknown>,
+    currentFilters: currentFilters as unknown as Record<string, unknown>,
+    onFiltersLoad: onFiltersLoad as unknown as (filters: Record<string, unknown>) => void,
   });
 
   // Функция для обработки изменения статуса с обновлением URL
@@ -262,6 +277,7 @@ export function useLocationsTable() {
 
     // Обновляем URL
     const params = new URLSearchParams(searchParams.toString());
+
     if (isActive === null) {
       params.delete('isActive');
     } else {
@@ -269,6 +285,7 @@ export function useLocationsTable() {
     }
 
     const newURL = params.toString() ? `/locations?${params.toString()}` : '/locations';
+    
     router.push(newURL);
 
     setCurrentCursor(null);

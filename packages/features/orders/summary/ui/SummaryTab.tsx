@@ -1,13 +1,12 @@
 'use client';
 
-import type { GetDriverDTO } from '@entities/users/interface';
+
 import { useSummary } from '../hooks/useSummary';
 import type { UseSummaryParams } from '../interfaces';
 import { DriverInfoCard } from './DriverInfoCard';
 import { PassengersInfoCard } from './PassengersInfoCard';
 import { PriceInfoCard } from './PriceInfoCard';
 import { RouteInfoCard } from './RouteInfoCard';
-import { ServicesInfoCard } from './ServicesInfoCard';
 import { TariffInfoCard } from './TariffInfoCard';
 
 /**
@@ -19,8 +18,6 @@ export function SummaryTabContent(props: UseSummaryParams) {
   const {
     routeInfo,
     priceInfo,
-    // passengerInfo не используется в данном компоненте
-    formatPrice,
   } = useSummary(props);
 
   return (
@@ -45,13 +42,6 @@ export function SummaryTabContent(props: UseSummaryParams) {
             toggleCustomPrice={priceInfo.toggleCustomPrice}
             showCustomPrice={props._mode === 'edit'}
           />
-
-          {props._selectedServices.length > 0 && (
-            <ServicesInfoCard 
-              services={props._selectedServices}
-              formatPrice={formatPrice}
-            />
-          )}
         </div>
 
         {/* Правая колонка */}
@@ -62,7 +52,11 @@ export function SummaryTabContent(props: UseSummaryParams) {
           
           {props._mode === 'edit' && props._selectedDriver && (
             <DriverInfoCard 
-              driver={props._selectedDriver as GetDriverDTO}
+              driver={{
+                ...props._selectedDriver,
+                phoneNumber: props._selectedDriver.phoneNumber || undefined,
+                avatarUrl: props._selectedDriver.avatarUrl || undefined
+              }}
               onDriverChange={() => props._onTabChange && props._onTabChange('driver')}
             />
           )}

@@ -5,11 +5,20 @@ import { OrderStatus } from '../enums';
 import type { GetOrderDTO, UpdateInstantOrderDTO } from '../interface';
 
 /**
+ * Расширенный тип для обновления моментального заказа с полями локаций
+ */
+type ExtendedUpdateInstantOrderDTO = UpdateInstantOrderDTO & {
+  startLocationId?: string | null;
+  endLocationId?: string | null;
+  additionalStops?: string[];
+};
+
+/**
  * Преобразует данные создания заказа в данные для обновления
  */
-function convertToUpdateData(data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest): UpdateInstantOrderDTO {
-  // Создаем базовый объект с обязательными полями
-  const updateData: UpdateInstantOrderDTO = {
+function convertToUpdateData(data: CreateInstantOrderRequest | CreateInstantOrderByPartnerRequest): ExtendedUpdateInstantOrderDTO {
+  // Базовые поля для обновления заказа
+  const updateData: ExtendedUpdateInstantOrderDTO = {
     tariffId: data.tariffId,
     routeId: data.routeId || null,
     services: data.services || [],
@@ -19,13 +28,13 @@ function convertToUpdateData(data: CreateInstantOrderRequest | CreateInstantOrde
 
   // Добавляем поля локаций, если они есть в исходных данных
   if ('startLocationId' in data) {
-    (updateData as any).startLocationId = data.startLocationId || null;
+    updateData.startLocationId = data.startLocationId || null;
   }
   if ('endLocationId' in data) {
-    (updateData as any).endLocationId = data.endLocationId || null;
+    updateData.endLocationId = data.endLocationId || null;
   }
   if ('additionalStops' in data) {
-    (updateData as any).additionalStops = data.additionalStops || [];
+    updateData.additionalStops = data.additionalStops || [];
   }
 
   return updateData;
@@ -122,7 +131,7 @@ export function useInstantOrderSubmit(
     },
     onSuccess: (data) => {
       toast.success(
-        `✅ useInstantOrderSubmit: Заказ ${orderId ? 'обновлен' : 'создан'} успешно`,
+        `✅ Заказ ${orderId ? 'обновлен' : 'создан'} успешно`,
         data
       );
       
@@ -137,7 +146,7 @@ export function useInstantOrderSubmit(
     },
     onError: (error: Error) => {
       toast.error(
-        `❌ useInstantOrderSubmit: Ошибка ${orderId ? 'обновления' : 'создания'} заказа`);
+        `❌ Ошибка ${orderId ? 'обновления' : 'создания'} заказа`);
       onError?.(error);
     },
     onSettled,

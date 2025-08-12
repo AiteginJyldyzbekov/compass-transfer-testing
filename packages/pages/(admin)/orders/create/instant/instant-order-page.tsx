@@ -90,9 +90,9 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   const [customPrice, setCustomPrice] = useState<string>('');
 
   // Состояние для данных маршрута
-  const [startLocationId, setStartLocationId] = useState<string | null>(null);
-  const [endLocationId, setEndLocationId] = useState<string | null>(null);
-  const [additionalStops, setAdditionalStops] = useState<string[]>([]);
+  const [_startLocationId, setStartLocationId] = useState<string | null>(null);
+  const [_endLocationId, setEndLocationId] = useState<string | null>(null);
+  const [_additionalStops, setAdditionalStops] = useState<string[]>([]);
   const [routeDistance, setRouteDistance] = useState<number>(0);
   const [routeLoading, setRouteLoading] = useState<boolean>(false);
 
@@ -373,7 +373,7 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   const handleSave = () => {
     if (!isReadyToCreate()) {
       toast.error('Заполните все обязательные поля');
-      console.warn('Не все обязательные поля заполнены');
+      // Не все обязательные поля заполнены
 
       return;
     }
@@ -384,13 +384,7 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
         ? Math.round(parseFloat(customPrice.replace(/[^\d.,]/g, '').replace(',', '.'))) 
         : currentPrice;
 
-      console.log('📦 Отправляем заказ:', {
-        mode,
-        useCustomPrice,
-        customPrice,
-        currentPrice,
-        finalPrice
-      });
+      // Отправляем заказ с параметрами: mode, useCustomPrice, customPrice, currentPrice, finalPrice
 
       // Формируем данные для создания заказа
       const baseOrderData = {
@@ -521,7 +515,7 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                           userRole={userRole}
                           // Передаем и получаем выбранного водителя
                           selectedDriver={selectedDriver}
-                          onDriverSelect={setSelectedDriver}
+                          setSelectedDriver={setSelectedDriver}
                         />
                       );
 
@@ -585,7 +579,11 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
                           setUseCustomPrice={setUseCustomPrice}
                           _customPrice={customPrice}
                           setCustomPrice={setCustomPrice}
-                          _selectedDriver={selectedDriver} // Передаем выбранного водителя в SummaryTab
+                          _selectedDriver={selectedDriver ? {
+                            ...selectedDriver,
+                            phoneNumber: selectedDriver.phoneNumber || undefined,
+                            avatarUrl: selectedDriver.avatarUrl || undefined
+                          } : null} // Передаем выбранного водителя в SummaryTab
                         />
                       );
 

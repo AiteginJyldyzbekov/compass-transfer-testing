@@ -32,7 +32,7 @@ interface ColumnVisibility {
   actions: boolean;
 }
 
-export function useUserRidesTable(userId: string) {
+export function useUserRidesTable(_initialFilters: unknown, userId: string) {
   const [paginatedRides, setPaginatedRides] = useState<GetRideDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

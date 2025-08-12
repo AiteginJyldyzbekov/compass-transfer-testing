@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
   type ColumnDef,
 } from '@tanstack/react-table';
+import type { LucideIcon } from 'lucide-react';
 import { Skeleton } from '../data-display/skeleton';
-import { Card, CardContent } from '../layout/card';
 import {
   Table,
   TableBody,
@@ -17,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '../data-display/table';
-import type { LucideIcon } from 'lucide-react';
+import { Card, CardContent } from '../layout/card';
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -69,6 +68,7 @@ export function DataTable<TData>({
 
   if (data.length === 0 && emptyState) {
     const { icon: Icon, title, description } = emptyState;
+    
     return (
       <Card className={`p-12 ${className}`}>
         <CardContent className='flex flex-col items-center justify-center text-center space-y-4'>

@@ -1,11 +1,11 @@
 'use client';
 
+import type { ColumnDef } from '@tanstack/react-table';
 import { Car, MapPin, Clock, Route, Eye } from 'lucide-react';
 import { Badge } from '@shared/ui/data-display/badge';
-import { Button } from '@shared/ui/forms/button';
 import { DataTable } from '@shared/ui/data-table';
+import { Button } from '@shared/ui/forms/button';
 import type { GetRideDTO } from '@entities/rides/interface';
-import type { ColumnDef } from '@tanstack/react-table';
 
 interface UserRidesListProps {
   rides: GetRideDTO[];
@@ -39,6 +39,7 @@ const getStatusLabel = (status: string) => {
 
 const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) return '-';
+
   return new Date(dateString).toLocaleString('ru-RU', {
     year: 'numeric',
     month: 'short',
@@ -74,6 +75,7 @@ export function UserRidesList({ rides, isLoading, onViewDetails }: UserRidesList
       header: 'Маршрут',
       cell: ({ row }) => {
         const waypoints = row.original.waypoints || [];
+
         if (waypoints.length === 0) return '-';
         
         const firstLocation = waypoints[0]?.location;
@@ -117,7 +119,9 @@ export function UserRidesList({ rides, isLoading, onViewDetails }: UserRidesList
       header: 'Расстояние',
       cell: ({ row }) => {
         const distance = row.original.distance;
+
         if (!distance) return '-';
+
         return (
           <div className='flex items-center gap-2'>
             <Route className='h-4 w-4 text-muted-foreground' />

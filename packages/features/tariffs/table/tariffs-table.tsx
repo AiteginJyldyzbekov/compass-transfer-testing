@@ -1,18 +1,19 @@
 'use client';
 
+import { DataTablePagination, DataTableErrorState, DataTableLoader } from '@shared/ui/data-table';
 import { DeleteConfirmationModal } from '@shared/ui/modals';
 import { useDeleteTariff, useArchiveTariff } from '@features/tariffs/hooks';
-import { TariffsTableFilters, TariffsTableContent, TariffsTablePagination } from './components';
+import { TariffsTableFilters, TariffsTableContent } from './components';
 import { useTariffsTable } from './hooks/use-tariffs-table';
 
 export function TariffsTable({
-  initialFilters: _initialFilters,
+  initialFilters,
 }: {
   initialFilters?: {
     name?: string;
-    serviceClass?: string;
-    carType?: string;
-    archived?: string;
+    priceFrom?: string;
+    priceTo?: string;
+    isActive?: string;
   };
 }) {
   const {
@@ -60,7 +61,7 @@ export function TariffsTable({
     hasSavedFilters,
     justSavedFilters,
     handleArchivedFilterChange,
-  } = useTariffsTable();
+  } = useTariffsTable(initialFilters);
 
   // Хук для удаления тарифов
   const {
@@ -83,17 +84,11 @@ export function TariffsTable({
 
   if (error) {
     return (
-      <div className='space-y-4'>
-        <div className='text-center py-8'>
-          <p className='text-red-600 mb-4'>Ошибка загрузки тарифов: {error}</p>
-          <button
-            onClick={loadTariffs}
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-          >
-            Попробовать снова
-          </button>
-        </div>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={loadTariffs} 
+        entityName="тарифов" 
+      />
     );
   }
 
@@ -131,35 +126,32 @@ export function TariffsTable({
         justSavedFilters={justSavedFilters}
       />
 
-      <TariffsTableContent
-        paginatedTariffs={paginatedTariffs}
-        columnVisibility={columnVisibility}
-        router={router}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        handleSort={handleSort}
-        onDeleteTariff={openDeleteModal}
-        onToggleArchive={toggleArchive}
-        isArchiving={isArchiving}
-      />
+      <DataTableLoader loading={loading} entityName="тарифов">
+        <TariffsTableContent
+          paginatedTariffs={paginatedTariffs}
+          columnVisibility={columnVisibility}
+          router={router}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          handleSort={handleSort}
+          onDeleteTariff={openDeleteModal}
+          onToggleArchive={toggleArchive}
+          isArchiving={isArchiving}
+        />
 
-      {loading && (
-        <div className='text-center py-4'>
-          <p>Загрузка тарифов...</p>
-        </div>
-      )}
-
-      <TariffsTablePagination
-        paginatedTariffs={paginatedTariffs}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        hasNext={hasNext}
-        hasPrevious={hasPrevious}
-        currentPageNumber={currentPageNumber}
-        handleNextPage={handleNextPage}
-        handlePrevPage={handlePrevPage}
-        handleFirstPage={handleFirstPage}
-      />
+        <DataTablePagination
+          currentItems={paginatedTariffs}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          hasNext={hasNext}
+          hasPrevious={hasPrevious}
+          currentPageNumber={currentPageNumber}
+          handleNextPage={handleNextPage}
+          handlePrevPage={handlePrevPage}
+          handleFirstPage={handleFirstPage}
+          itemName="тарифов"
+        />
+      </DataTableLoader>
 
       {/* Модальное окно удаления */}
       <DeleteConfirmationModal

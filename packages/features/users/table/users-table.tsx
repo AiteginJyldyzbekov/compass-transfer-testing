@@ -1,18 +1,17 @@
 'use client';
 
-
+import { DataTablePagination, DataTableErrorState, DataTableLoader } from '@shared/ui/data-table';
 import { DeleteConfirmationModal } from '@shared/ui/modals';
 import { useDeleteUser } from '@features/users/hooks';
-import { UsersTableFilters, UsersTableContent, UsersTablePagination } from './components';
+import { UsersTableFilters, UsersTableContent } from './components';
 import { useUsersTable } from './hooks/use-users-table';
 
 export function UsersTable({
-  initialRoleFilter: _initialRoleFilter,
+  initialRoleFilter,
 }: {
   initialRoleFilter?: string;
 }) {
   const {
-    filteredUsers,
     paginatedUsers,
     loading,
     error,
@@ -25,7 +24,6 @@ export function UsersTable({
     currentPageNumber,
     pageSize,
     columnVisibility,
-    totalPages,
     totalCount,
     hasNext,
     hasPrevious,
@@ -36,7 +34,6 @@ export function UsersTable({
     setPhoneFilter,
     setOnlineFilter,
     setShowAdvancedFilters,
-    handlePageChange,
     handleNextPage,
     handlePrevPage,
     handleFirstPage,
@@ -46,7 +43,7 @@ export function UsersTable({
     handleSort,
     loadUsers,
     router,
-  } = useUsersTable();
+  } = useUsersTable(initialRoleFilter);
 
   // Хук для удаления пользователей
   const {
@@ -61,17 +58,11 @@ export function UsersTable({
 
   if (error) {
     return (
-      <div className='space-y-4'>
-        <div className='text-center py-8'>
-          <p className='text-red-600 mb-4'>Ошибка загрузки пользователей: {error}</p>
-          <button
-            onClick={loadUsers}
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-          >
-            Попробовать снова
-          </button>
-        </div>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={loadUsers} 
+        entityName="пользователей" 
+      />
     );
   }
 
@@ -96,35 +87,30 @@ export function UsersTable({
         handleColumnVisibilityChange={handleColumnVisibilityChange}
       />
 
-      <UsersTableContent
-        paginatedUsers={paginatedUsers}
-        columnVisibility={columnVisibility}
-        router={router}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        handleSort={handleSort}
-        onDeleteUser={openDeleteModal}
-      />
+      <DataTableLoader loading={loading} entityName="пользователей">
+        <UsersTableContent
+          paginatedUsers={paginatedUsers}
+          columnVisibility={columnVisibility}
+          router={router}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          handleSort={handleSort}
+          onDeleteUser={openDeleteModal}
+        />
 
-      {loading && (
-        <div className='text-center py-4'>
-          <p>Загрузка пользователей...</p>
-        </div>
-      )}
-
-      <UsersTablePagination
-        paginatedUsers={paginatedUsers}
-        filteredUsers={filteredUsers}
-        currentPage={currentPageNumber}
-        totalPages={totalPages}
+        <DataTablePagination
+        currentItems={paginatedUsers}
         totalCount={totalCount}
+        pageSize={pageSize}
         hasNext={hasNext}
         hasPrevious={hasPrevious}
-        handlePageChange={handlePageChange}
+        currentPageNumber={currentPageNumber}
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         handleFirstPage={handleFirstPage}
+        itemName="пользователей"
       />
+      </DataTableLoader>
 
       {/* Модальное окно удаления */}
       <DeleteConfirmationModal

@@ -1,33 +1,39 @@
-import { SheetProvider } from '@shared/lib/sheet-context';
-import { SidebarInset, SidebarProvider } from '@shared/ui/layout/sidebar';
-import { SiteHeader } from '@widgets/header';
-import { AppSidebar } from '@widgets/sidebar';
+import { NotificationProvider , SignalRProvider } from '@app/providers';
+import { getRawCookie } from '@shared/lib/parse-cookie';
+import { DriverQueueProvider } from '@features/driver-queue';
+import { IncomingOrderProvider, IncomingOrderWrapper } from '@features/incoming-order';
+import { DriverMobileFooter } from '@widgets/footer';
+import { DriverMobileHeader } from '@widgets/header';
 
-export default async function ClientLayout({ children }: { children: React.ReactNode }) {
+interface DriverLayoutProps {
+  children: React.ReactNode;
+}
+
+/**
+ * Layout для мобильного приложения водителей
+ * Включает хедер и футер на всех страницах
+ */
+export default async function DriverLayout({ children }: DriverLayoutProps) {
+  const accessToken = await getRawCookie('.AspNetCore.Identity.Application');
 
   return (
-    <div
-      className='mx-auto my-auto flex overflow-hidden w-full h-full'
-    >
-      <div
-        className='mx-auto my-auto w-full h-full flex flex-row gap-4 overflow-hidden p-5'
-      >
-        <SheetProvider>
-          <SidebarProvider defaultOpen>
-            <AppSidebar />
-            <SidebarInset>
-              <div className='rounded-2xl'>
-                <SiteHeader />
-              </div>
-              <div
-                className='flex-1 overflow-auto border bg-white rounded-2xl md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-[0_10px_40px_rgba(255,255,255,0.3)] scrollbar-hide'
-              >
-                {children}
-              </div>
-            </SidebarInset>
-          </SidebarProvider>
-        </SheetProvider>
-      </div>
-    </div>
+    <SignalRProvider accessToken={accessToken || undefined}>
+      <NotificationProvider>
+    <DriverQueueProvider>
+      <IncomingOrderProvider>
+        <div className='flex flex-col bg-gray-50 h-screen'>
+          <DriverMobileHeader />
+          <main className='flex-1 overflow-y-auto pb-safe'>
+            {children}
+          </main>
+          <DriverMobileFooter />
+          
+          {/* Модальное окно для входящих заказов */}
+          <IncomingOrderWrapper />
+        </div>
+      </IncomingOrderProvider>
+    </DriverQueueProvider>
+    </NotificationProvider>
+    </SignalRProvider>
   );
 }

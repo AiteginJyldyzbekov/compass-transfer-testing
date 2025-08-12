@@ -34,9 +34,9 @@ export function useDeleteOrder({ onSuccess }: UseDeleteOrderProps = {}) {
         onSuccess();
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Ошибка при удалении заказа:', error);
+      toast.error('Ошибка при удалении заказа:');
       const errorMessage = error instanceof Error ? error.message : 'Ошибка при удалении заказа';
+
       toast.error(errorMessage);
       throw error; // Пробрасываем ошибку для обработки в модальном окне
     }

@@ -27,7 +27,7 @@ const DriverItem = React.memo(({ driver, onDriverClick }: {
               .join('')}
           </div>
           <div className='flex-1 min-w-0 group-data-[collapsible=icon]:hidden'>
-            <div className='flex flex-row justify-between items-center gap-1 mb-1'>
+            <div className='flex flex-row justify-between items-center gap-0'>
               <p className='text-xs font-medium text-sidebar-foreground truncate'>
                 {driver.name}
               </p>

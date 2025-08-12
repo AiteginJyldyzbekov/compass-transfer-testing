@@ -19,7 +19,7 @@ interface ColumnVisibility {
   actions: boolean;
 }
 
-export function useUserOrdersTable(userId: string) {
+export function useUserOrdersTable(_initialFilters: unknown, userId: string) {
   const [paginatedOrders, setPaginatedOrders] = useState<GetOrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

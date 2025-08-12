@@ -1,6 +1,7 @@
 'use client';
 
-import { OrdersTableFilters, OrdersTableContent, OrdersTablePagination } from './components';
+import { DataTablePagination, DataTableErrorState } from '@shared/ui/data-table';
+import { OrdersTableFilters, OrdersTableContent } from './components';
 import { useOrdersTable } from './hooks/use-orders-table';
 
 export function OrdersTable({
@@ -61,17 +62,11 @@ export function OrdersTable({
 
   if (error) {
     return (
-      <div className='space-y-4'>
-        <div className='text-center py-8'>
-          <p className='text-red-600 mb-4'>Ошибка загрузки заказов: {error}</p>
-          <button
-            onClick={loadOrders}
-            className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-          >
-            Попробовать снова
-          </button>
-        </div>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={loadOrders} 
+        entityName="заказов" 
+      />
     );
   }
 
@@ -120,8 +115,8 @@ export function OrdersTable({
         </div>
       )}
 
-      <OrdersTablePagination
-        paginatedOrders={paginatedOrders}
+      <DataTablePagination
+        currentItems={paginatedOrders}
         totalCount={totalCount}
         pageSize={pageSize}
         hasNext={hasNext}
@@ -130,6 +125,7 @@ export function OrdersTable({
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         handleFirstPage={handleFirstPage}
+        itemName="заказов"
       />
     </div>
   );

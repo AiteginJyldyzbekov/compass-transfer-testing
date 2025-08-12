@@ -1,13 +1,25 @@
 'use client';
 
-import { UserRidesTableFilters, UserRidesTableContent, UserRidesTablePagination } from './components';
+import { DataTablePagination, DataTableErrorState } from '@shared/ui/data-table';
+import { OrderType } from '@entities/orders/enums/OrderType.enum';
+import { getOrderViewRoute } from '@entities/orders/utils/order-routes';
+import { UserRidesTableFilters, UserRidesTableContent } from './components';
 import { useUserRidesTable } from './hooks/use-user-rides-table';
 
 interface UserRidesTableProps {
   userId: string;
 }
 
-export function UserRidesTable({ userId }: UserRidesTableProps) {
+export function UserRidesTable({
+  initialFilters,
+  userId,
+}: {
+  initialFilters?: {
+    status?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  };
+} & UserRidesTableProps) {
   const {
     paginatedRides,
     loading,
@@ -33,20 +45,15 @@ export function UserRidesTable({ userId }: UserRidesTableProps) {
     handleStatusFilterChange,
     handleSortChange,
     refetch,
-  } = useUserRidesTable(userId);
+  } = useUserRidesTable(initialFilters, userId);
 
   const handleViewDetails = (rideId: string) => {
     // Найдем поездку по ID, чтобы получить orderId
     const ride = paginatedRides.find(r => r.id === rideId);
+    
     if (ride && ride.orderId) {
-      // Импортируем функцию и enum
-      const { getOrderViewRoute } = require('@entities/orders/utils/order-routes');
-      const { OrderType } = require('@entities/orders/enums/OrderType.enum');
-
-      // Пока используем Instant по умолчанию
-      // TODO: Когда API будет возвращать тип заказа, использовать его
-      const orderType = OrderType.Instant;
-      const route = getOrderViewRoute(ride.orderId, orderType);
+      // Используем Instant по умолчанию, так как в GetRideDTO нет orderType
+      const route = getOrderViewRoute(ride.orderId, OrderType.Instant);
 
       window.open(route, '_blank');
     } else {
@@ -57,16 +64,11 @@ export function UserRidesTable({ userId }: UserRidesTableProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
-        <div className="text-red-500 text-lg font-semibold">Ошибка загрузки поездок</div>
-        <div className="text-muted-foreground">{error}</div>
-        <button 
-          onClick={refetch}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Попробовать снова
-        </button>
-      </div>
+      <DataTableErrorState 
+        error={error} 
+        onRetry={refetch} 
+        entityName="поездок" 
+      />
     );
   }
 
@@ -100,8 +102,8 @@ export function UserRidesTable({ userId }: UserRidesTableProps) {
       />
 
       {/* Пагинация */}
-      <UserRidesTablePagination
-        paginatedRides={paginatedRides}
+      <DataTablePagination
+        currentItems={paginatedRides}
         totalCount={totalCount}
         pageSize={pageSize}
         hasNext={hasNext}
@@ -110,6 +112,7 @@ export function UserRidesTable({ userId }: UserRidesTableProps) {
         handleNextPage={handleNextPage}
         handlePrevPage={handlePrevPage}
         handleFirstPage={handleFirstPage}
+        itemName="поездок пользователя"
       />
     </div>
   );
