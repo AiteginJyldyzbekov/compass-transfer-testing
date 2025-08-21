@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import React from 'react';
 import { Button } from '@shared/ui/forms/button';
-import { useDriverQueueContext } from '@features/driver-queue';
+import { useDriverQueue } from '@features/driver-queue';
 
 export function DriverStatusCard() {
   const { 
@@ -13,7 +13,7 @@ export function DriverStatusCard() {
     error,
     joinQueue, 
     leaveQueue 
-  } = useDriverQueueContext();
+  } = useDriverQueue();
 
   const handleToggleQueue = async () => {
     if (isInQueue) {
@@ -71,10 +71,10 @@ export function DriverStatusCard() {
           
           <div className='mt-auto px-1 sm:px-2 pb-1 sm:pb-2'>
             <Button
-              onClick={() => window.location.reload()}
+              onClick={() => window.history.back()}
               className='w-full h-12 sm:h-14 text-sm sm:text-base font-bold rounded-xl bg-gray-600 hover:bg-gray-700 text-white shadow-lg transition-all duration-200 active:scale-95 touch-manipulation'
             >
-              Обновить
+              Назад
             </Button>
           </div>
         </div>

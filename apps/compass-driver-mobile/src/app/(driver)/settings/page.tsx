@@ -29,6 +29,7 @@ export default function SettingsPage() {
       setIsLoggingOut(false);
     }
   };
+  
   return (
     <div className='min-h-full bg-gray-50 p-4'>
       <div className='max-w-md mx-auto'>
@@ -50,19 +51,6 @@ export default function SettingsPage() {
               <div className='flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer'>
                 <User className='w-5 h-5 text-gray-600' />
                 <span className='text-gray-900'>Личные данные</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Уведомления */}
-          <div className='bg-white rounded-2xl shadow-sm'>
-            <div className='p-4 border-b border-gray-100'>
-              <h2 className='text-lg font-semibold text-gray-900'>Уведомления</h2>
-            </div>
-            <div className='p-4 space-y-3'>
-              <div className='flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer'>
-                <Bell className='w-5 h-5 text-gray-600' />
-                <span className='text-gray-900'>Настройки уведомлений</span>
               </div>
             </div>
           </div>

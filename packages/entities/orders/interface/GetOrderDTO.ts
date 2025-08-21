@@ -122,4 +122,9 @@ export interface GetOrderDTO {
    * Комментарии к заказу
    */
   notes?: string | null;
+
+  /**
+   * Доход водителя с поездки
+   */
+  driverProfit?: number | null;
 }

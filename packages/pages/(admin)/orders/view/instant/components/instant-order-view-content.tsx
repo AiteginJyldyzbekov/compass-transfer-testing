@@ -2,16 +2,15 @@
 
 import { MapPin, User, Car, Info, DollarSign, ExternalLink, Settings } from 'lucide-react';
 import { useState } from 'react';
-import { useDriverById } from '@shared/hooks/useDriverById';
 import { useServices } from '@shared/hooks/useServices';
 import { useTariffById } from '@shared/hooks/useTariffById';
-import { useUserById } from '@shared/hooks/useUserById';
 import { Badge } from '@shared/ui/data-display/badge';
 import { Skeleton } from '@shared/ui/data-display/skeleton';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout';
 import type { GetOrderDTO } from '@entities/orders/interface';
 import { useLocation } from '@features/locations/hooks/useLocation';
+import { useUserById } from '@features/users';
 import { DriverSheet } from '@widgets/sidebar/ui/driver-sheet';
 
 interface InstantOrderViewContentProps {
@@ -27,13 +26,11 @@ export function InstantOrderViewContent({ order }: InstantOrderViewContentProps)
   const { services, isLoading: servicesLoading } = useServices();
 
   // Состояние для driver sheet
-  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [isDriverSheetOpen, setIsDriverSheetOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('main');
   const [activeOrderType, setActiveOrderType] = useState('all');
 
-  // Получаем данные выбранного водителя
-  const { driver: selectedDriver } = useDriverById(selectedDriverId);
+  // Данные выбранного водителя получаются в DriverSheet при необходимости
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('ru-RU', {
@@ -301,7 +298,7 @@ export function InstantOrderViewContent({ order }: InstantOrderViewContentProps)
                         size='sm'
                         className='h-5 px-1 text-xs'
                         onClick={() => {
-                          setSelectedDriverId(ride.driverId!);
+                          // TODO: Реализовать загрузку данных водителя по ID
                           setIsDriverSheetOpen(true);
                         }}
                       >
@@ -415,11 +412,10 @@ export function InstantOrderViewContent({ order }: InstantOrderViewContentProps)
 
       {/* Driver Sheet */}
       <DriverSheet
-        driver={selectedDriver}
+        driver={null}
         isOpen={isDriverSheetOpen}
         onClose={() => {
           setIsDriverSheetOpen(false);
-          setSelectedDriverId(null);
         }}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}

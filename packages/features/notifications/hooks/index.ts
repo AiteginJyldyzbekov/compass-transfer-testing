@@ -1,3 +1,4 @@
 export { useDeleteNotification } from './use-delete-notification';
 export { useNotificationActions } from './use-notification-actions';
-export * from './useNotifications'
+export { useNotificationSound } from './useNotificationSound';
+export * from './useNotifications';

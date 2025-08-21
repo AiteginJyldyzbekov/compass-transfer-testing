@@ -86,8 +86,8 @@ export const handleApiError = (error: unknown): ApiError => {
           }
         }
       }
-      // Если есть title в ответе, используем его как основное сообщение
-      if (responseData.title && typeof responseData.title === 'string') {
+      // Если нет конкретных ошибок, но есть title в ответе, используем его
+      else if (responseData.title && typeof responseData.title === 'string') {
         message = responseData.title;
       }
     }

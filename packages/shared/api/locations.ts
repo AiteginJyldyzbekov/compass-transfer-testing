@@ -1,6 +1,6 @@
+import type { LocationType } from '@entities/locations/enums';
 import type { LocationDTO } from '@entities/locations/interface/LocationDTO';
 import type { LocationListResponseDTO } from '@entities/locations/interface/LocationListDTO';
-import type { LocationType } from '@entities/locations/enums';
 import { apiGet, apiPost, apiPut, apiDelete } from './client';
 
 // Операторы поиска
@@ -100,6 +100,12 @@ interface UpdateLocationDTO {
   popular2?: boolean;
 }
 
+// DTO для отправки текущих координат водителя
+interface CurrentLocationDTO {
+  latitude: number;
+  longitude: number;
+}
+
 export const locationsApi = {
   // Получение списка локаций с расширенными фильтрами
   getLocations: async (params?: LocationFilters): Promise<LocationListResponseDTO> => {
@@ -189,6 +195,15 @@ export const locationsApi = {
 
     return result.data!.data;
   },
+
+  // Отправка текущих координат водителя
+  updateCurrentLocation: async (data: CurrentLocationDTO): Promise<void> => {
+    const result = await apiPost<void, CurrentLocationDTO>('/Location/CurrentLocation/self', data);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
 };
 
-export type { LocationFilters, CreateLocationDTO, UpdateLocationDTO, CoordinateBox };
+export type { LocationFilters, CreateLocationDTO, UpdateLocationDTO, CoordinateBox, CurrentLocationDTO };

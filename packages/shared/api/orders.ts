@@ -2,7 +2,7 @@ import type { OrderStatus } from '@entities/orders/enums/OrderStatus.enum';
 import type { OrderSubStatus } from '@entities/orders/enums/OrderSubStatus.enum';
 import type { OrderType } from '@entities/orders/enums/OrderType.enum';
 import type { GetOrderDTO } from '@entities/orders/interface/GetOrderDTO';
-import { apiGet, apiDelete, apiPost } from './client';
+import { apiGet, apiDelete, apiPost, apiPut } from './client';
 
 export interface OrderFilters {
   first?: boolean;
@@ -130,7 +130,7 @@ export const orderService = {
 
   // Создание мгновенного заказа
   createInstantOrder: async (data: unknown): Promise<{ id: string }> => {
-    const result = await apiPost<{ id: string }>('/Order/instant', data);
+    const result = await apiPost<{ id: string }>('/Order/instant', data as Record<string, unknown>);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -141,7 +141,7 @@ export const orderService = {
 
   // Обновление мгновенного заказа
   updateInstantOrder: async (id: string, data: unknown): Promise<{ id: string }> => {
-    const result = await apiPut<{ id: string }>(`/Order/instant/${id}`, data);
+    const result = await apiPut<{ id: string }>(`/Order/instant/${id}`, data as Record<string, unknown>);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -152,7 +152,7 @@ export const orderService = {
 
   // Создание запланированного заказа
   createScheduledOrder: async (data: unknown): Promise<{ id: string }> => {
-    const result = await apiPost<{ id: string }>('/Order/scheduled', data);
+    const result = await apiPost<{ id: string }>('/Order/scheduled', data as Record<string, unknown>);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -163,7 +163,7 @@ export const orderService = {
 
   // Обновление запланированного заказа
   updateScheduledOrder: async (id: string, data: unknown): Promise<{ id: string }> => {
-    const result = await apiPut<{ id: string }>(`/Order/scheduled/${id}`, data);
+    const result = await apiPut<{ id: string }>(`/Order/scheduled/${id}`, data as Record<string, unknown>);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -185,7 +185,7 @@ export const orderService = {
 
   // Создание мгновенного заказа через терминал
   createInstantOrderByTerminal: async (data: unknown): Promise<{ id: string }> => {
-    const result = await apiPost<{ id: string }>('/Order/instant/terminal', data);
+    const result = await apiPost<{ id: string }>('/Order/instant/terminal', data as Record<string, unknown>);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -196,7 +196,18 @@ export const orderService = {
 
   // Создание поездки для запланированного заказа
   createScheduledRide: async (orderId: string, data: unknown): Promise<{ id: string }> => {
-    const result = await apiPost<{ id: string }>(`/Order/scheduled/${orderId}/ride`, data);
+    const result = await apiPost<{ id: string }>(`/Order/scheduled/${orderId}/ride`, data as Record<string, unknown>);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data!;
+  },
+
+  // Получение заказа по ID
+  getOrderById: async (orderId: string): Promise<GetOrderDTO> => {
+    const result = await apiGet<GetOrderDTO>(`/Order/${orderId}`);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -247,6 +258,25 @@ export const driverOrderApi = {
   },
 };
 
+// API методы для водителя - активные заказы
+export const driverActiveOrdersApi = {
+  // Получение активных заказов водителя
+  getMyActiveOrders: async (): Promise<OrderApiResponse> => {
+    const params = new URLSearchParams();
+    params.append('Status', 'InProgress');
+    params.append('Status', 'Scheduled');
+    params.append('SortBy', 'CreatedAt');
+    params.append('SortOrder', 'Desc');
+    params.append('Size', '10');
+
+    const result = await apiGet<OrderApiResponse>(`/Order/my/participant?${params.toString()}`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data || { data: [], totalCount: 0, pageSize: 10, hasPrevious: false, hasNext: false };
+  },
+};
+
 export type { GetOrderDTO };
-
-

@@ -17,6 +17,7 @@ export function useDriverById(driverId: string | null | undefined) {
       setDriver(null);
       setIsLoading(false);
       setError(null);
+
       return;
     }
 
@@ -24,11 +25,12 @@ export function useDriverById(driverId: string | null | undefined) {
       try {
         setIsLoading(true);
         setError(null);
-
         const driverData = await usersApi.getDriver(driverId);
+
         setDriver(driverData);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки водителя';
+
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -46,9 +48,11 @@ export function useDriverById(driverId: string | null | undefined) {
     
     try {
       const driverData = await usersApi.getDriver(driverId);
+
       setDriver(driverData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки водителя';
+      
       setError(errorMessage);
     } finally {
       setIsLoading(false);

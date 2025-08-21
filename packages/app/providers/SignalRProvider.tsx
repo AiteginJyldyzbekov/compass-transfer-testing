@@ -23,7 +23,6 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
 
   const setupNotificationHandlers = useCallback(() => {
     const notificationTypes = [
-      'RideRequestNotification',
       'RideAcceptedNotification',
       'RideAssignedNotification',
       'RideCancelledNotification',

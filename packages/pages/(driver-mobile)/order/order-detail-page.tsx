@@ -211,6 +211,7 @@ export function OrderDetailPage({ order, onBack }: OrderDetailPageProps) {
           </div>
         </div>
 
+
         {/* Дополнительная информация */}
         {(order.distance || order.duration) && (
           <div className='bg-white rounded-xl p-4 shadow-sm'>

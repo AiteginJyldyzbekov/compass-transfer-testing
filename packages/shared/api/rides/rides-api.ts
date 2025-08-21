@@ -4,6 +4,7 @@ import type {
   ScheduledRidesResponse,
   ScheduledRidesParams
 } from '@entities/rides/interface';
+import apiClient from '../client';
 
 // Интерфейс для ответа API с правильной структурой пагинации
 interface RidesApiResponse {
@@ -15,7 +16,6 @@ interface RidesApiResponse {
   startCursor?: string;
   endCursor?: string;
 }
-import apiClient from '../client';
 
 /**
  * Параметры для получения поездок пользователя
@@ -106,24 +106,76 @@ export const ridesApi = {
   },
 
   /**
-   * Получить запланированные поездки для водителя
+   * Получить назначенные поездки водителя (активные и запланированные)
    */
   async getMyAssignedRides(params?: ScheduledRidesParams): Promise<ScheduledRidesResponse> {
-    // Используем mock данные пока нет доступа к API
-    // const response = await apiClient.get<ScheduledRidesResponse>('/Ride/my/assigned', {
-    //   params,
-    // });
-    
-    // Имитируем задержку сети
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock данные будут добавлены позже
-    return {
-      data: [],
-      totalCount: 0,
-      pageSize: params?.size || 10,
-      hasPrevious: false,
-      hasNext: false,
-    };
+    const result = await apiClient.get<ScheduledRidesResponse>('/Ride/my/assigned', {
+      params,
+    });
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    if (!result.data) {
+      throw new Error('Нет данных в ответе API');
+    }
+
+    return result.data;
+  },
+
+  /**
+   * Водитель направляется к клиенту
+   */
+  async driverHeadingToClient(rideId: string): Promise<void> {
+    const result = await apiClient.post(`/Ride/${rideId}/status/driver-heading-to-client`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
+
+  /**
+   * Водитель прибыл на место посадки
+   */
+  async driverArrived(rideId: string): Promise<void> {
+    const result = await apiClient.post(`/Ride/${rideId}/status/driver-arrived`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
+
+  /**
+   * Клиент сел в машину, поездка началась
+   */
+  async rideStarted(rideId: string): Promise<void> {
+    const result = await apiClient.post(`/Ride/${rideId}/status/ride-started`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
+
+  /**
+   * Поездка завершена, клиент доставлен
+   */
+  async rideFinished(rideId: string): Promise<void> {
+    const result = await apiClient.post(`/Ride/${rideId}/status/ride-finished`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
+
+  /**
+   * Поездка отменена
+   */
+  async rideCancelled(rideId: string): Promise<void> {
+    const result = await apiClient.post(`/Ride/${rideId}/status/ride-cancelled`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
   },
 };

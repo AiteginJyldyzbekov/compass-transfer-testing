@@ -9,16 +9,18 @@ import {
   Award,
   FileText,
   AlertCircle,
+  DollarSign,
+  TrendingUp,
 } from 'lucide-react';
 import { Badge } from '@shared/ui/data-display/badge';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout/card';
+import { CarColor, VehicleType, VehicleStatus, CarFeature } from '@entities/cars/enums';
 import { formatDate } from '@entities/my-profile';
 import type { GetDriverDTO } from '@entities/users/interface';
 import type { SectionWithMapProps } from '@entities/users/ui/profile-sections/types';
 import { getServiceClassLabel, getLicenseCategoryLabel, getCitizenshipLabel } from '@entities/users/utils';
 import { getLanguageLabel } from '@entities/users/utils/language-utils';
-import { CarColor, VehicleType, ServiceClass, VehicleStatus, CarFeature } from '@entities/cars/enums';
 
 // Переводы для цветов автомобилей
 const carColorLabels: Record<CarColor, string> = {
@@ -103,6 +105,56 @@ export function DriverSection({
 
   return (
     <div className='flex flex-col gap-6'>
+      {/* Статистика доходов */}
+      <Card>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2'>
+            <DollarSign className='h-5 w-5' />
+            Статистика доходов
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-4'>
+          <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+            <div className='border-l-4 border-green-200 pl-4 flex flex-col gap-2'>
+              <label className='text-sm font-medium text-muted-foreground'>Общий доход</label>
+              <p className='text-lg font-bold text-green-600'>
+                {/* TODO: Интегрировать с API для получения общего дохода */}
+                0 сом
+              </p>
+            </div>
+
+            <div className='border-l-4 border-blue-200 pl-4 flex flex-col gap-2'>
+              <label className='text-sm font-medium text-muted-foreground'>Доход за месяц</label>
+              <p className='text-lg font-bold text-blue-600'>
+                {/* TODO: Интегрировать с API для получения дохода за месяц */}
+                0 сом
+              </p>
+            </div>
+
+            <div className='border-l-4 border-purple-200 pl-4 flex flex-col gap-2'>
+              <label className='text-sm font-medium text-muted-foreground'>Средний доход</label>
+              <p className='text-lg font-bold text-purple-600'>
+                {/* TODO: Интегрировать с API для получения среднего дохода */}
+                0 сом
+              </p>
+            </div>
+
+            <div className='border-l-4 border-orange-200 pl-4 flex flex-col gap-2'>
+              <label className='text-sm font-medium text-muted-foreground'>Ожидает выплат</label>
+              <p className='text-lg font-bold text-orange-600'>
+                {/* TODO: Интегрировать с API для получения ожидающих выплат */}
+                0 сом
+              </p>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+            <TrendingUp className='h-4 w-4' />
+            <span>Данные за последние 30 дней</span>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Основная информация водителя */}
       <Card>
         <CardHeader>

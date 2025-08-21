@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@shared/ui/data-display/avatar';
+import { LocationHeaderIcon } from '@features/location-tracking/ui/location-header-icon';
 import { useProfileData } from '@features/my-profile';
 
 export function DriverMobileHeader() {
@@ -27,7 +28,7 @@ export function DriverMobileHeader() {
 
   return (
     <header className='bg-[#F9F9F9] shadow-sm border-b mx-2 mt-2 relative overflow-hidden safe-area-top rounded-2xl'>
-      <div className='flex items-center justify-between relative z-10'>
+      <div className='flex items-center justify-between relative z-30'>
         {/* Профиль водителя */}
         <div className='flex items-center p-3 gap-2 flex-1 min-w-0'>
           <Avatar className='w-10 h-10 flex-shrink-0'>
@@ -38,12 +39,18 @@ export function DriverMobileHeader() {
           </Avatar>
           
           <div className='flex flex-col min-w-0 flex-1'>
-            <h1 className='font-semibold text-gray-900 text-sm leading-tight max-w-[220px]'>
-              {profile?.fullName}
-            </h1>
+            <div className='flex items-center gap-2'>
+              <h1 className='font-semibold text-gray-900 text-sm leading-tight max-w-[180px] truncate'>
+                {profile?.fullName}
+              </h1>
+              <LocationHeaderIcon />
+            </div>
             <div className='flex items-center gap-1'>
               <span className='text-xs text-gray-500 font-medium truncate'>
-                {profile?.phoneNumber}
+                {profile?.phoneNumber ? 
+                  profile.phoneNumber.replace(/(\+996)(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4') : 
+                  profile?.phoneNumber
+                }
               </span>
             </div>
           </div>

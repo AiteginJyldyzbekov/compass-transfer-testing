@@ -25,13 +25,12 @@ export function useUserById(userId: string | null | undefined) {
       try {
         setIsLoading(true);
         setError(null);
-
         const userData = await usersApi.getUserById(userId);
 
         setUser(userData);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки пользователя';
-        
+
         setError(errorMessage);
       } finally {
         setIsLoading(false);

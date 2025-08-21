@@ -7,9 +7,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { locationsApi } from '@shared/api/locations';
 import { logger } from '@shared/lib';
+import type { LocationType } from '@entities/locations/enums';
 import { parseAddress } from '@entities/locations/lib/address-parser';
-import { LocationType } from '@entities/locations/enums';
-import type { LocationDTO } from '@entities/locations/interface';
 import {
   getBasicLocationDataStatusForUpdate,
   getMapLocationDataStatus,
@@ -83,10 +82,12 @@ export function useLocationEditFormLogic({
         // Парсим адрес для извлечения компонентов
         const addressComponents = parseAddress(data.address);
 
-        // Формируем название из номера дома и улицы
-        const locationName = [addressComponents.houseNumber, addressComponents.street]
-          .filter(Boolean)
-          .join(', ') || data.name;
+        // Используем пользовательское название, если оно задано, иначе формируем из адреса
+        const locationName = data.name.trim() || 
+          [addressComponents.houseNumber, addressComponents.street]
+            .filter(Boolean)
+            .join(', ') || 
+          'Локация без названия';
 
         const apiData = {
           name: locationName,

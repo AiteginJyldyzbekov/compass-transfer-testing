@@ -2,16 +2,15 @@
 
 import { Calendar, MapPin, User, Car, Info, DollarSign, Plane, ExternalLink, Settings } from 'lucide-react';
 import { useState } from 'react';
-import { useDriverById } from '@shared/hooks/useDriverById';
 import { useServices } from '@shared/hooks/useServices';
 import { useTariffById } from '@shared/hooks/useTariffById';
-import { useUserById } from '@shared/hooks/useUserById';
 import { Badge } from '@shared/ui/data-display/badge';
 import { Skeleton } from '@shared/ui/data-display/skeleton';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout';
 import type { GetOrderDTO } from '@entities/orders/interface';
 import { useLocation } from '@features/locations/hooks/useLocation';
+import { useDriverById, useUserById } from '@features/users';
 import { DriverSheet } from '@widgets/sidebar/ui/driver-sheet';
 
 interface ScheduledOrderViewContentProps {

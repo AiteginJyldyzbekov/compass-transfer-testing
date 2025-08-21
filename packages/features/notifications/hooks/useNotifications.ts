@@ -1,8 +1,54 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { notificationsApi, type GetNotificationDTO, type NotificationApiResponse } from '@shared/api/notifications';
 import { logger } from '@shared/lib/logger';
+import { NotificationType } from '@entities/notifications';
+
+// Категории уведомлений для табов
+export enum NotificationCategory {
+  ORDER = 'ORDER',
+  IMPORTANT = 'IMPORTANT', 
+  WARNING = 'WARNING'
+}
+
+// Маппинг типов уведомлений к категориям
+const NOTIFICATION_TYPE_TO_CATEGORY: Record<NotificationType, NotificationCategory> = {
+  // О заказе
+  [NotificationType.OrderCreated]: NotificationCategory.ORDER,
+  [NotificationType.OrderUpdated]: NotificationCategory.ORDER,
+  [NotificationType.OrderConfirmed]: NotificationCategory.ORDER,
+  [NotificationType.OrderCancelled]: NotificationCategory.ORDER,
+  [NotificationType.OrderCompleted]: NotificationCategory.ORDER,
+  [NotificationType.RideRequest]: NotificationCategory.ORDER,
+  [NotificationType.RideAccepted]: NotificationCategory.ORDER,
+  [NotificationType.RideRejected]: NotificationCategory.ORDER,
+  [NotificationType.RideStarted]: NotificationCategory.ORDER,
+  [NotificationType.RideCompleted]: NotificationCategory.ORDER,
+  [NotificationType.RideCancelled]: NotificationCategory.ORDER,
+  [NotificationType.RideUpdate]: NotificationCategory.ORDER,
+  [NotificationType.DriverHeading]: NotificationCategory.ORDER,
+  [NotificationType.DriverArrived]: NotificationCategory.ORDER,
+  [NotificationType.DriverAssigned]: NotificationCategory.ORDER,
+  [NotificationType.DriverCancelled]: NotificationCategory.ORDER,
+  [NotificationType.DriverNearby]: NotificationCategory.ORDER,
+  
+  // Важная информация
+  [NotificationType.System]: NotificationCategory.IMPORTANT,
+  [NotificationType.SystemMessage]: NotificationCategory.IMPORTANT,
+  [NotificationType.Maintenance]: NotificationCategory.IMPORTANT,
+  [NotificationType.Verification]: NotificationCategory.IMPORTANT,
+  [NotificationType.Chat]: NotificationCategory.IMPORTANT,
+  
+  // Предупреждения
+  [NotificationType.Payment]: NotificationCategory.WARNING,
+  [NotificationType.PaymentReceived]: NotificationCategory.WARNING,
+  [NotificationType.PaymentFailed]: NotificationCategory.WARNING,
+  [NotificationType.PaymentRefunded]: NotificationCategory.WARNING,
+  [NotificationType.Promo]: NotificationCategory.WARNING,
+  [NotificationType.PromoOffer]: NotificationCategory.WARNING,
+  [NotificationType.Unknown]: NotificationCategory.WARNING,
+};
 
 export interface UseNotificationsResult {
   notifications: GetNotificationDTO[];
@@ -12,14 +58,29 @@ export interface UseNotificationsResult {
   hasMore: boolean;
   totalCount: number;
   unreadCount: number;
+  // Счетчики по категориям
+  categoryCounts: Record<NotificationCategory, number>;
+  unreadCategoryCounts: Record<NotificationCategory, number>;
   actions: {
-    loadNotifications: (append?: boolean) => Promise<void>;
+    loadNotifications: (append?: boolean, category?: NotificationCategory) => Promise<void>;
     loadMore: () => Promise<void>;
-    refresh: () => Promise<void>;
+    refresh: (category?: NotificationCategory) => Promise<void>;
     markAsRead: (id: string) => Promise<void>;
     deleteNotification: (id: string) => Promise<void>;
   };
 }
+
+// Функция для получения типов уведомлений по категории
+const getNotificationTypesByCategory = (category: NotificationCategory): NotificationType[] => {
+  return Object.entries(NOTIFICATION_TYPE_TO_CATEGORY)
+    .filter(([, cat]) => cat === category)
+    .map(([type]) => type as NotificationType);
+};
+
+// Функция для определения категории уведомления
+export const getNotificationCategory = (type: NotificationType): NotificationCategory => {
+  return NOTIFICATION_TYPE_TO_CATEGORY[type] || NotificationCategory.WARNING;
+};
 
 /**
  * Хук для работы с уведомлениями
@@ -33,27 +94,37 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [_currentCategory, setCurrentCategory] = useState<NotificationCategory | undefined>(undefined);
 
   // Курсор для пагинации
   const lastCursorRef = useRef<string | undefined>(undefined);
 
   // Загрузка уведомлений
   const loadNotifications = useCallback(
-    async (append: boolean = false) => {
+    async (append: boolean = false, category?: NotificationCategory) => {
       try {
         if (append) {
           setIsLoadingMore(true);
         } else {
           setIsLoading(true);
           lastCursorRef.current = undefined; // Сбрасываем курсор для новой загрузки
+          setCurrentCategory(category);
         }
         setError(null);
 
-        // Используем cursor-based пагинацию
-        const result: NotificationApiResponse = await notificationsApi.getMyNotifications({
+        // Подготавливаем параметры для API
+        const apiParams: Record<string, unknown> = {
           size: pageSize,
           after: append ? lastCursorRef.current : undefined,
-        });
+        };
+
+        // Добавляем фильтр по типам если указана категория
+        if (category) {
+          apiParams.type = getNotificationTypesByCategory(category);
+        }
+
+        // Используем cursor-based пагинацию
+        const result: NotificationApiResponse = await notificationsApi.getMyNotifications(apiParams);
 
         const newNotifications = result.data || [];
 
@@ -96,8 +167,8 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
   }, [hasMore, isLoadingMore, isLoading, loadNotifications]);
 
   // Обновление списка
-  const refresh = useCallback(async () => {
-    await loadNotifications(false);
+  const refresh = useCallback(async (category?: NotificationCategory) => {
+    await loadNotifications(false, category);
   }, [loadNotifications]);
 
   // Отметить как прочитанное
@@ -136,6 +207,38 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
   // Подсчет непрочитанных
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  // Подсчет по категориям (для всех уведомлений, не только текущих)
+  const categoryCounts: Record<NotificationCategory, number> = {
+    [NotificationCategory.ORDER]: 0,
+    [NotificationCategory.IMPORTANT]: 0,
+    [NotificationCategory.WARNING]: 0,
+  };
+
+  const unreadCategoryCounts: Record<NotificationCategory, number> = {
+    [NotificationCategory.ORDER]: 0,
+    [NotificationCategory.IMPORTANT]: 0,
+    [NotificationCategory.WARNING]: 0,
+  };
+
+  // Подсчитываем только для текущих загруженных уведомлений
+  notifications.forEach(notification => {
+    const category = getNotificationCategory(notification.type);
+
+    categoryCounts[category]++;
+    if (!notification.isRead) {
+      unreadCategoryCounts[category]++;
+    }
+  });
+
+
+  const actions = useMemo(() => ({
+    loadNotifications,
+    loadMore,
+    refresh,
+    markAsRead,
+    deleteNotification,
+  }), [loadNotifications, loadMore, refresh, markAsRead, deleteNotification]);
+
   return {
     notifications,
     isLoading,
@@ -144,12 +247,8 @@ export function useNotifications(pageSize: number = 20): UseNotificationsResult 
     hasMore,
     totalCount,
     unreadCount,
-    actions: {
-      loadNotifications,
-      loadMore,
-      refresh,
-      markAsRead,
-      deleteNotification,
-    },
+    categoryCounts,
+    unreadCategoryCounts,
+    actions,
   };
 }

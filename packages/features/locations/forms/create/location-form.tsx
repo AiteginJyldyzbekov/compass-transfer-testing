@@ -71,10 +71,12 @@ export function useLocationFormLogic({
         // Парсим адрес для извлечения компонентов
         const addressComponents = parseAddress(data.address);
 
-        // Формируем название из номера дома и улицы
-        const locationName = [addressComponents.houseNumber, addressComponents.street]
-          .filter(Boolean)
-          .join(', ') || data.name;
+        // Используем пользовательское название, если оно задано, иначе формируем из адреса
+        const locationName = data.name.trim() || 
+          [addressComponents.houseNumber, addressComponents.street]
+            .filter(Boolean)
+            .join(', ') || 
+          'Новая локация';
 
         // Подготавливаем данные для API
         const apiData = {

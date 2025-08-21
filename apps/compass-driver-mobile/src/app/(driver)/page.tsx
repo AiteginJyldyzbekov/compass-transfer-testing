@@ -1,4 +1,4 @@
-import { DriverDashboardPage } from '@pages/(driver-mobile)';
+import DriverDashboardPage from '@pages/(driver-mobile)/dashboard/driver-dashboard-page';
 
 /**
  * Главная страница мобильного приложения для водителей

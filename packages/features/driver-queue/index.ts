@@ -1,3 +1,2 @@
-export { useDriverQueue } from './hooks/useDriverQueue';
-export type { UseDriverQueueResult } from './hooks/useDriverQueue';
-export { DriverQueueProvider, useDriverQueue as useDriverQueueContext } from './context/driver-queue-context';
+// Экспортируем хук из локальной папки hooks
+export { useDriverQueue } from './hooks/use-driver-queue';

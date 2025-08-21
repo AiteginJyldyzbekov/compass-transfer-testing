@@ -112,7 +112,7 @@ export function useScheduledOrderSubmit(
     
     onSuccess: (data: GetOrderDTO) => {
       toast.success(
-        `✅ useScheduledOrderSubmit: Заказ ${orderId ? 'обновлен' : 'создан'} успешно`
+        `✅ Заказ ${orderId ? 'обновлен' : 'создан'} успешно`
       );
       
       // Инвалидируем кэш для обновленного заказа
@@ -127,7 +127,7 @@ export function useScheduledOrderSubmit(
 
     onError: (error: Error) => {
       toast.error(
-        `❌ useScheduledOrderSubmit: Ошибка ${orderId ? 'обновления' : 'создания'} заказа: ${error.message}`
+        `❌ Ошибка ${orderId ? 'обновления' : 'создания'} заказа: ${error.message}`
       );
       onError?.(error);
     },

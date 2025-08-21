@@ -1,7 +1,8 @@
-import { NotificationProvider , SignalRProvider } from '@app/providers';
+import { NotificationProvider, SignalRProvider } from '@app/providers';
 import { getRawCookie } from '@shared/lib/parse-cookie';
-import { DriverQueueProvider } from '@features/driver-queue';
-import { IncomingOrderProvider, IncomingOrderWrapper } from '@features/incoming-order';
+import { IncomingOrderModal } from '@features/incoming-order';
+import { LocationProvider } from '@features/location-tracking';
+import { NotificationsProvider } from '@features/notifications';
 import { DriverMobileFooter } from '@widgets/footer';
 import { DriverMobileHeader } from '@widgets/header';
 
@@ -19,21 +20,19 @@ export default async function DriverLayout({ children }: DriverLayoutProps) {
   return (
     <SignalRProvider accessToken={accessToken || undefined}>
       <NotificationProvider>
-    <DriverQueueProvider>
-      <IncomingOrderProvider>
-        <div className='flex flex-col bg-gray-50 h-screen'>
-          <DriverMobileHeader />
-          <main className='flex-1 overflow-y-auto pb-safe'>
-            {children}
-          </main>
-          <DriverMobileFooter />
-          
-          {/* Модальное окно для входящих заказов */}
-          <IncomingOrderWrapper />
-        </div>
-      </IncomingOrderProvider>
-    </DriverQueueProvider>
-    </NotificationProvider>
+        <NotificationsProvider>
+          <LocationProvider intervalMs={30000}>
+            <div className='flex flex-col bg-gray-50 h-screen'>
+              <DriverMobileHeader />
+              <main className='flex-1 overflow-y-auto pb-safe'>{children}</main>
+              <DriverMobileFooter />
+
+              {/* Модальное окно для входящих заказов - теперь самодостаточное */}
+              <IncomingOrderModal />
+            </div>
+          </LocationProvider>
+        </NotificationsProvider>
+      </NotificationProvider>
     </SignalRProvider>
   );
 }
