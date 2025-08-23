@@ -1,14 +1,13 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
-import { useSignalR } from '@shared/hooks/useSignalR';
+import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { setCardPaymentHandler, clearCardPaymentHandler } from '@shared/lib/effector/payment-state';
 import { openModal, ModalTypeEnum } from '@shared/lib/effector/state';
-import { showToast } from '@shared/toast';
+import { toast } from 'sonner';
 import { useFiscalReceipt } from '@entities/fiscal';
 import type { GetLocationDTO } from '@entities/locations/interface';
-import { orderService } from '@entities/order/api/order-service';
-import type { PaymentMethod } from '@entities/order/constants';
+import type { PaymentMethod } from '@entities/orders/constants';
 import { useTerminalReceipt } from '@entities/order/context';
 import type { CreateInstantOrderDTOType } from '@entities/order/schemas/CreateInstantOrderDTO.schema';
 import type { GetTariffDTO } from '@entities/tariff/interface';
@@ -92,13 +91,13 @@ export const useOrderSubmit = ({
     const handleDriverNotFound = () => {
       console.log('❌ Водитель не найден');
       setIsLoading(false);
-      showToast.error(t('errors.driverNotFound'));
+      toast.error(t('errors.driverNotFound'));
     };
 
     const handleDriverCancelled = (data: { orderId: string; reason?: string }) => {
       console.log('❌ Водитель отменил заказ:', data);
       setIsLoading(false);
-      showToast.error(t('errors.driverCancelled'));
+      toast.error(t('errors.driverCancelled'));
     };
 
     signalR.on('RideAcceptedNotification', handleRideAccepted);
@@ -127,19 +126,19 @@ export const useOrderSubmit = ({
   const createOrder = useCallback(
     async (paymentId?: string) => {
       if (!economyTariff?.id) {
-        showToast.error(t('errors.noTariff'));
+        toast.error(t('errors.noTariff'));
 
         return false;
       }
 
       if (!terminal?.locationId) {
-        showToast.error(t('errors.startLocationMissing'));
+        toast.error(t('errors.startLocationMissing'));
 
         return false;
       }
 
       if (selectedLocations.length === 0) {
-        showToast.error(t('errors.noDestination'));
+        toast.error(t('errors.noDestination'));
 
         return false;
       }
@@ -203,7 +202,7 @@ export const useOrderSubmit = ({
           if (!fiscalSuccess) {
             // Если фискальный чек не создался, логируем ошибку но не отменяем заказ
             console.error('⚠️ Заказ создан, но фискальный чек не создался');
-            showToast.warn('⚠️ Заказ создан, но возникла проблема с фискальным чеком');
+            toast.warn('⚠️ Заказ создан, но возникла проблема с фискальным чеком');
           }
         }
 
@@ -226,11 +225,11 @@ export const useOrderSubmit = ({
           errorMessage.includes('StartLocationNotFound') ||
           errorMessage.includes('Начальная точка не найдена')
         ) {
-          showToast.error('Начальная точка терминала не найдена. Обратитесь к администратору.');
+          toast.error('Начальная точка терминала не найдена. Обратитесь к администратору.');
         } else if (errorMessage.includes('DriversNotFound') || errorCode === 'DRIVERS_NOT_FOUND') {
-          showToast.error(t('errors.driverNotFound'));
+          toast.error(t('errors.driverNotFound'));
         } else {
-          showToast.error(t('errors.createOrderFailed'));
+          toast.error(t('errors.createOrderFailed'));
         }
 
         return false;
