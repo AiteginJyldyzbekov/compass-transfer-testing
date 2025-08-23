@@ -155,6 +155,7 @@ export const getCities = (): string[] => {
  */
 export const getRegionsByCity = (city: string): string[] => {
   const cityData = KYRGYZSTAN_CITIES_REGIONS.find(item => item.city === city);
+
   return cityData ? cityData.regions.sort() : [];
 };
 
@@ -170,5 +171,6 @@ export const isCityExists = (city: string): boolean => {
  */
 export const isRegionExistsInCity = (city: string, region: string): boolean => {
   const cityData = KYRGYZSTAN_CITIES_REGIONS.find(item => item.city === city);
+  
   return cityData ? cityData.regions.includes(region) : false;
 };

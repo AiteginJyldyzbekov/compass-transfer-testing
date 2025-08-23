@@ -1,0 +1,56 @@
+// Экспортируем общий интерфейс для иконок
+export interface IconProps {
+  size?: number;
+  className?: string;
+}
+// Экспортируем все иконки как default exports
+export { default as DashboardIcon } from './DashboardIcon';
+export { default as DriversIcon } from './DriversIcon';
+export { default as VehiclesIcon } from './VehiclesIcon';
+export { default as OrdersIcon } from './OrdersIcon';
+export { default as AnalyticsIcon } from './AnalyticsIcon';
+export { default as SettingsIcon } from './SettingsIcon';
+export { default as ArrowIcon } from './ArrowIcon';
+export { default as SunIcon } from './SunIcon';
+export { default as MoonIcon } from './MoonIcon';
+export { default as SearchIcon } from './SearchIcon';
+export { default as NotificationIcon } from './NotificationIcon';
+export { default as ProfileIcon } from './ProfileIcon';
+export { default as UsersIcon } from './UsersIcon';
+export { default as TariffsIcon } from './TariffsIcon';
+export { default as ReferencesIcon } from './ReferencesIcon';
+export { default as ExpandIcon } from './ExpandIcon';
+export { default as CollapseIcon } from './CollapseIcon';
+export { default as EyeIcon } from './EyeIcon';
+export { default as EyeOffIcon } from './EyeOffIcon';
+export { default as ProfileCardIcon } from './ProfileCardIcon';
+export { default as UserSettingsIcon } from './UserSettingsIcon';
+export { default as IdentityCardIcon } from './IdentityCardIcon';
+export { default as EditIcon } from './EditIcon';
+export { default as ChevronLeftIcon } from './ChevronLeftIcon';
+export { default as ChevronRightIcon } from './ChevronRightIcon';
+export { default as ChevronDownIcon } from './ChevronDownIcon';
+export { default as ChevronUpIcon } from './ChevronUpIcon';
+export { default as ChevronsLeftIcon } from './ChevronsLeftIcon';
+export { default as ChevronsRightIcon } from './ChevronsRightIcon';
+export { default as SortIcon } from './SortIcon';
+export { default as DragIcon } from './DragIcon';
+export { default as CloseIcon } from './CloseIcon';
+export { default as AlertCircleIcon } from './AlertCircleIcon';
+export { default as TrashIcon } from './TrashIcon';
+export { default as CloudUploadIcon } from './CloudUploadIcon';
+export { default as InfoIcon } from './InfoIcon';
+export { default as SpinnerIcon } from './SpinnerIcon';
+export { default as LoadingSpinnerIcon } from './LoadingSpinnerIcon';
+export { default as UsersGroupIcon } from './UsersGroupIcon';
+export { default as DocumentIcon } from './DocumentIcon';
+export { default as AddIcon } from './AddIcon';
+export { default as LocationIcon } from './LocationIcon';
+export { default as ClearIcon } from './ClearIcon';
+export { default as QuestionCircleIcon } from './QuestionCircleIcon';
+export { default as MagnifyingGlassIcon } from './MagnifyingGlassIcon';
+export { default as KgFlagIcon } from './KgFlagIcon';
+export { default as QRCodeIcon } from './QRCodeIcon';
+export { default as CreditCardIcon } from './CreditCardIcon';
+export { default as SuccessIcon } from './SuccessIcon';
+export { default as FilterIcon } from './FilterIcon';

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { SignalREventHandler, SignalREventData, SignalRCallback } from '@shared/hooks/signal/types';
 import { SignalRContext, type SignalRContextType } from '@shared/hooks/signal/useSignalR';
-import WelcomeIcon from '@shared/icon/WelcomeIcon';
+import WelcomeIcon from '@shared/icons/WelcomeIcon';
 import { logger } from '@shared/lib/logger';
 import { notificationManager } from '@entities/notifications/services/NotificationManager';
 

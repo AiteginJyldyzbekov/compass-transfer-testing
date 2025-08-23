@@ -5,10 +5,9 @@ import {
   TerminalLocationsProvider,
 } from '@app/providers';
 import { getRawCookie } from '@shared/lib/parse-cookie';
-import { TerminalReceiptProvider } from '@entities/order/context';
-import { TerminalFooter } from '@widgets/footer';
+import { TerminalReceiptProvider } from '@entities/orders/context';
+import { TerminalFooter } from '@widgets/footer/ui/TerminalFooter';
 import { HeroBanner } from '@widgets/hero-banner';
-import { ModalManagerComponent } from '@widgets/modals';
 import { initializeTerminalComponents } from '@compass-terminal/config/register-terminal-components';
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -30,9 +29,6 @@ export default async function ClientLayout({ children }: { children: React.React
 
                 {/* Footer - всегда внизу */}
                 <TerminalFooter />
-
-                {/* Модалы - вне основного flow */}
-                <ModalManagerComponent />
               </div>
             </TerminalReceiptProvider>
           </TerminalLocationsProvider>

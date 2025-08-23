@@ -42,10 +42,22 @@ export interface PartnerRegisterResponse {
  */
 export class AuthService {
   /**
-   * Вход в систему
+   * Вход в систему (админ)
    */
   static async login(credentials: LoginRequest): Promise<ApiResult<LoginResponse>> {
     return apiPost<LoginResponse, LoginRequest>('/Auth/login', {
+      email: credentials.email,
+      password: credentials.password,
+      twoFactorCode: credentials.twoFactorCode || null,
+      twoFactorRecoveryCode: credentials.twoFactorRecoveryCode || null,
+    });
+  }
+
+  /**
+   * Вход в терминал
+   */
+  static async loginTerminal(credentials: LoginRequest): Promise<ApiResult<LoginResponse>> {
+    return apiPost<LoginResponse, LoginRequest>('/Auth/login/terminal', {
       email: credentials.email,
       password: credentials.password,
       twoFactorCode: credentials.twoFactorCode || null,

@@ -1,8 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import Link from 'next/link';
 import { AuthService } from '@shared/api/auth-service';
 import { cn } from '@shared/lib/utils';
 import { Button } from '@shared/ui/forms/button';
@@ -52,7 +52,6 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
           default:
             toast.error(result.error.message || 'Произошла ошибка');
         }
-        // Убираем setError, так как теперь используем только toast уведомления
       }
     } catch {
       toast.error('Ошибка соединения с сервером');
