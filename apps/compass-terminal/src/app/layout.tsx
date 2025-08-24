@@ -1,6 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { Toaster } from 'sonner';
+import { PaymentProvider } from '@app/providers/PaymentProvider';
 import '@shared/styles/globals.css';
 import '@shared/styles/welcomePage.css';
 import 'sonner/dist/styles.css';
@@ -17,7 +18,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className='h-full'>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
+          <PaymentProvider>
+            {children}
+          </PaymentProvider>
         </NextIntlClientProvider>
         {/* Toaster от sonner */}
         <Toaster

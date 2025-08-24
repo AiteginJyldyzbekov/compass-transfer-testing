@@ -6,7 +6,7 @@ import type { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import rideAnimation from '@shared/animated/lottie/Ride.json';
 import { calculateDistance } from '@shared/components/map';
 import { ChevronLeftIcon } from '@shared/icons';
@@ -16,6 +16,8 @@ import { usePaymentMethods, type PaymentMethod } from '@entities/orders/constant
 import { useTerminalTariff } from '@entities/tariffs/context/TerminalTariffContext';
 import { useTerminalData } from '@entities/users/context/TerminalDataContext';
 import { useOrderSubmit } from '@features/orders/hooks/terminal-pay/useOrderSubmit';
+import { CardPaymentModal } from '@features/orders/modals/CardPaymentModal';
+import { QRPaymentModal } from '@features/orders/modals/QRPaymentModal';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
 
@@ -37,28 +39,86 @@ export const Payment: NextPage = () => {
     router.push('/locations');
   };
 
-  // Рассчитываем общее расстояние поездки
-  const totalDistance = selectedLocations.reduce((total, location, index) => {
-    const prevLocation = index === 0 ? terminalLocation : selectedLocations[index - 1];
-    
-    if (prevLocation && location.latitude && location.longitude && prevLocation.latitude && prevLocation.longitude) {
-      return total + calculateDistance(prevLocation.latitude, prevLocation.longitude, location.latitude, location.longitude);
+  // Рассчитываем общее расстояние поездки через OSRM API
+  const [totalDistance, setTotalDistance] = useState(0);
+  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
+  
+  useEffect(() => {
+    if (!selectedLocations.length || !terminalLocation) {
+      setTotalDistance(0);
+      setIsCalculatingDistance(false);
+
+      return;
     }
-    
-    return total;
-  }, 0);
+
+    const calculateRouteDistance = async () => {
+      setIsCalculatingDistance(true);
+
+      try {
+        const routePoints = [
+          { latitude: terminalLocation.latitude, longitude: terminalLocation.longitude },
+          ...selectedLocations.map(loc => ({ latitude: loc.latitude, longitude: loc.longitude }))
+        ];
+
+        const { routingService } = await import('@shared/components/map/services/routingService');
+        const { RouteType } = await import('@shared/components/map/types');
+        
+        const route = await routingService.buildRoute(routePoints, RouteType.FASTEST);
+
+        setTotalDistance(route.distance);
+      } catch (_error) {
+        // Fallback к прямому расстоянию при ошибке OSRM
+        const fallbackDistance = selectedLocations.reduce((total, location, index) => {
+          const prevLocation = index === 0 ? terminalLocation : selectedLocations[index - 1];
+          
+          if (prevLocation && location.latitude && location.longitude && prevLocation.latitude && prevLocation.longitude) {
+            return total + calculateDistance(prevLocation.latitude, prevLocation.longitude, location.latitude, location.longitude);
+          }
+          
+          return total;
+        }, 0);
+
+        setTotalDistance(fallbackDistance);
+      } finally {
+        setIsCalculatingDistance(false);
+      }
+    };
+
+    calculateRouteDistance();
+  }, [selectedLocations, terminalLocation]);
   
   // Рассчитываем стоимость поездки
   const calculatedPrice = economyTariff ? 
     economyTariff.basePrice + (totalDistance / 1000) * (economyTariff.perKmPrice || 0) : 0;
 
+  // eslint-disable-next-line no-console
+  console.log('ТЕРМИНАЛ расчет цены:', {
+    basePrice: economyTariff?.basePrice,
+    perKmPrice: economyTariff?.perKmPrice,
+    totalDistanceKm: (totalDistance / 1000).toFixed(2),
+    calculatedPrice: calculatedPrice.toFixed(2),
+    tariff: economyTariff?.name
+  });
+
   // Используем хук для создания заказа
-  const { isLoading, handleMethodSelect, createOrderWithPayment } = useOrderSubmit({
+  const { 
+    isLoading, 
+    handleMethodSelect, 
+    createOrderWithPayment,
+    showCardModal,
+    showQRModal,
+    closeCardModal,
+    closeQRModal,
+    handleCardPaymentSuccess,
+    handleQRPaymentSuccess,
+    calculatedPrice: _hookCalculatedPrice
+  } = useOrderSubmit({
     economyTariff,
     terminal,
     selectedLocations,
     calculatedPrice,
   });
+
 
   // Обработчик успешной оплаты (пока не используется, но может понадобиться)
   const _handlePaymentSuccess = async (paymentId: string) => {
@@ -92,12 +152,27 @@ export const Payment: NextPage = () => {
 
   // Проверяем наличие необходимых данных после загрузки
   if (!terminal || !terminal.locationId || !terminalLocation || selectedLocations.length === 0) {
+    
     return (
       <div className="max-w-[865px] mx-auto flex flex-col gap-[50px]">
         <h3 className="text-[50px] text-[#0866FF] text-center leading-[120%] font-semibold">
           {t('errors.noData')}
         </h3>
-        {/* Кнопка назад уже добавлена выше */}
+        <div className="text-center">
+          <p className="text-[24px] text-[#666666] mb-4">Отсутствуют данные:</p>
+          <ul className="text-[20px] text-[#999999] text-left max-w-md mx-auto">
+            {!terminal && <li>• Данные терминала</li>}
+            {!terminal?.locationId && <li>• ID локации терминала</li>}
+            {!terminalLocation && <li>• Локация терминала</li>}
+            {selectedLocations.length === 0 && <li>• Выбранные локации</li>}
+          </ul>
+        </div>
+        <button
+          onClick={handleBack}
+          className="mx-auto px-8 py-4 bg-blue-500 text-white rounded-lg text-[24px]"
+        >
+          Вернуться к выбору локаций
+        </button>
       </div>
     );
   }
@@ -134,7 +209,7 @@ export const Payment: NextPage = () => {
           </h3>
         </div>
 
-        {/* Локации */}
+        {/* Локации с расстоянием */}
         <LocationContainer>
           <LocationItem locationName={terminalLocation.address} />
           {selectedLocations.map((location: GetLocationDTO, i: number) => (
@@ -146,13 +221,30 @@ export const Payment: NextPage = () => {
               />
             </React.Fragment>
           ))}
+          
+          {/* Блок с общим расстоянием маршрута */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <div className="text-[27px] text-[#A3A5AE] leading-[150%]">
+              Общее расстояние:
+            </div>
+            <div className="text-[27px] text-[#A3A5AE] leading-[150%]">
+              {isCalculatingDistance ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#A3A5AE] border-t-transparent" />
+                  <span>рассчитывается...</span>
+                </div>
+              ) : (
+                `${Math.round(totalDistance / 1000)} км`
+              )}
+            </div>
+          </div>
         </LocationContainer>
 
         {/* Блок с информацией о тарифе */}
         <div className="w-full h-36 bg-white/70 rounded-[36px] flex items-center pl-[50px]">
           <div className="flex items-center gap-[30px] w-full">
             <div className="text-black text-3xl font-semibold font-['Gilroy'] leading-[49.97px]">
-              {/* {economyTariff?.name || "Эконом"} - {economyTariff?.serviceClass || "Economy"} */}
+              {economyTariff?.name || "Эконом-тест"}
             </div>
             <div className="flex-1 flex justify-end">
               <div className="relative w-[302px] h-36">
@@ -173,7 +265,14 @@ export const Payment: NextPage = () => {
             {t('paymentAmount')}
           </h4>
           <span className="text-[74px] text-[#0866FF] leading-[90px] font-bold">
-            {Math.round(calculatedPrice)}KGS
+            {isCalculatingDistance ? (
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#0866FF] border-t-transparent" />
+                <span className="text-[32px]">рассчитывается...</span>
+              </div>
+            ) : (
+              `${Math.round(calculatedPrice)}KGS`
+            )}
           </span>
         </div>
 
@@ -242,6 +341,21 @@ export const Payment: NextPage = () => {
           </button>
         </div>
       </div>
+
+      {/* Модалки оплаты */}
+      <CardPaymentModal
+        isOpen={showCardModal}
+        amount={calculatedPrice}
+        onClose={closeCardModal}
+        onSuccess={handleCardPaymentSuccess}
+      />
+
+      <QRPaymentModal
+        isOpen={showQRModal}
+        amount={calculatedPrice}
+        onClose={closeQRModal}
+        onSuccess={handleQRPaymentSuccess}
+      />
     </div>
   );
 };

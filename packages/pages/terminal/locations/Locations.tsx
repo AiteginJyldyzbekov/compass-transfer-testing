@@ -88,8 +88,8 @@ export const Locations: NextPage = () => {
     setShowVirtualKeyboard(false);
   };
 
-  // Показываем клавиатуру при фокусе на поле поиска
-  const handleSearchFocus = () => {
+  // Показываем клавиатуру при клике на поле поиска
+  const handleSearchClick = () => {
     setShowVirtualKeyboard(true);
   };
 
@@ -200,10 +200,10 @@ export const Locations: NextPage = () => {
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
-              onFocus={handleSearchFocus}
+              onClick={handleSearchClick}
               placeholder={t('Locations.searchPlaceholder')}
-              className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold w-full outline-none"
-              readOnly={showVirtualKeyboard}
+              className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold w-full outline-none cursor-pointer"
+              readOnly
             />
           </LocationContainer>
         )}

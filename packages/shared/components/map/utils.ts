@@ -69,6 +69,7 @@ export const calculateDistanceToLineSegment = (
  */
 export const getUIScale = (): number => {
   const scale = getComputedStyle(document.documentElement).getPropertyValue('--ui-scale');
+  
   return scale ? parseFloat(scale) : 1;
 };
 

@@ -4,9 +4,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-import { APP_ROUTES } from '@shared/api/constants';
-import { REGIONS } from '@entities/locations';
-import { useTerminalLocations } from '@entities/locations/context';
+import { useTerminalLocations } from '@entities/locations/context/TerminalLocationsContext';
+import { REGIONS } from '@entities/locations/helpers/regions';
 
 const Regions = () => {
   const t = useTranslations();
@@ -17,7 +16,7 @@ const Regions = () => {
     // Загружаем локации для региона через контекст
     loadLocations({ regionSlug: slug });
     // Переходим на страницу выбора локаций
-    router.push(APP_ROUTES.LOCATIONS.TERMINAL_LOCATION);
+    router.push('/locations');
   };
 
   return (

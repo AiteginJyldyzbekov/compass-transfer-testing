@@ -4,6 +4,7 @@ import {
   TerminalTariffProvider,
   TerminalLocationsProvider,
 } from '@app/providers';
+import { AnimatedBackground } from '@shared/animated/AnimatedBackgroundTerminal';
 import { getRawCookie } from '@shared/lib/parse-cookie';
 import { TerminalReceiptProvider } from '@entities/orders/context';
 import { TerminalFooter } from '@widgets/footer/ui/TerminalFooter';
@@ -20,6 +21,7 @@ export default async function ClientLayout({ children }: { children: React.React
           <TerminalLocationsProvider>
             <TerminalReceiptProvider>
               <div className='h-full flex flex-col'>
+                <AnimatedBackground />
                 <HeroBanner />
 
                 {/* Основной контент - занимает оставшееся пространство */}

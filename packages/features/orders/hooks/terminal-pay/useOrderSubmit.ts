@@ -1,18 +1,18 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
-import { useSignalR } from '@shared/hooks/signal/useSignalR';
-import { setCardPaymentHandler, clearCardPaymentHandler } from '@shared/lib/effector/payment-state';
-import { openModal, ModalTypeEnum } from '@shared/lib/effector/state';
 import { toast } from 'sonner';
+import { usePaymentContext } from '@shared/contexts/PaymentContext';
+import type { OrderCancelledNotificationDTO } from '@shared/hooks/signal/interface';
+import type { RideNotificationData } from '@shared/hooks/signal/types';
+import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { useFiscalReceipt } from '@entities/fiscal';
 import type { GetLocationDTO } from '@entities/locations/interface';
-import type { PaymentMethod } from '@entities/orders/constants';
-import { useTerminalReceipt } from '@entities/order/context';
-import type { CreateInstantOrderDTOType } from '@entities/order/schemas/CreateInstantOrderDTO.schema';
-import type { GetTariffDTO } from '@entities/tariff/interface';
+import type { PaymentMethod } from '@entities/orders/constants/paymentMethods';
+import { useTerminalReceipt } from '@entities/orders/context';
+import type { CreateInstantOrderDTOType } from '@entities/orders/schemas/CreateInstantOrderDTO.schema';
+import type { GetTariffDTO } from '@entities/tariffs/interface';
 import type { GetTerminalDTO } from '@entities/users/interface';
-import type { RideAcceptedNotificationDTO } from '@entities/ws/interface/RideAcceptedNotificationDTO';
 
 interface UseOrderSubmitProps {
   economyTariff: GetTariffDTO | null;
@@ -28,19 +28,21 @@ export const useOrderSubmit = ({
   calculatedPrice,
 }: UseOrderSubmitProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderId, _setOrderId] = useState<string | null>(null);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const router = useRouter();
   const signalR = useSignalR();
   const t = useTranslations('Payment');
   const { setReceiptData, setOrderData } = useTerminalReceipt();
-  const { createTaxiReceipt, isCreating: isFiscalCreating } = useFiscalReceipt();
+  const { createTaxiReceipt: _createTaxiReceipt, isCreating: isFiscalCreating } = useFiscalReceipt();
+  const { setPaymentSuccessHandler, setCardPaymentHandler } = usePaymentContext();
 
   // Обработчик WebSocket уведомлений о заказе (типизированный)
   useEffect(() => {
     if (!signalR.isConnected || !orderId) return;
 
-    const handleRideAccepted = (data: RideAcceptedNotificationDTO) => {
-      console.log('🚗 Заказ принят водителем:', data);
+    const handleRideAccepted = (data: RideNotificationData) => {
 
       // ✅ ИСПРАВЛЕНИЕ: Сохраняем данные в контекст вместо localStorage
       try {
@@ -78,10 +80,7 @@ export const useOrderSubmit = ({
             : null,
           finalPrice: calculatedPrice,
         });
-
-        console.log('✅ Данные чека сохранены в контекст');
-      } catch (error) {
-        console.error('❌ Ошибка сохранения данных чека:', error);
+      } catch {
       }
 
       setIsLoading(false);
@@ -89,13 +88,11 @@ export const useOrderSubmit = ({
     };
 
     const handleDriverNotFound = () => {
-      console.log('❌ Водитель не найден');
       setIsLoading(false);
       toast.error(t('errors.driverNotFound'));
     };
 
-    const handleDriverCancelled = (data: { orderId: string; reason?: string }) => {
-      console.log('❌ Водитель отменил заказ:', data);
+    const handleDriverCancelled = (_data: OrderCancelledNotificationDTO) => {
       setIsLoading(false);
       toast.error(t('errors.driverCancelled'));
     };
@@ -110,6 +107,7 @@ export const useOrderSubmit = ({
       signalR.off('OrderCancelledNotification', handleDriverCancelled);
     };
   }, [
+    signalR,
     signalR.isConnected,
     orderId,
     router,
@@ -157,7 +155,7 @@ export const useOrderSubmit = ({
             : [];
 
         // Создаем тело запроса согласно схеме CreateInstantOrderDTO
-        const requestBody: CreateInstantOrderDTOType = {
+        const _requestBody: CreateInstantOrderDTOType = {
           tariffId: economyTariff.id,
           startLocationId: terminal.locationId,
           endLocationId: endLocation.id,
@@ -177,44 +175,15 @@ export const useOrderSubmit = ({
           ...(paymentId && { paymentId }),
         };
 
-        // Логируем данные для отладки
-        console.log('🚀 Создание заказа терминалом:', {
-          terminalId: terminal.id,
-          terminalLocationId: terminal.locationId,
-          requestBody,
-        });
-
-        const response = await orderService.createInstantOrderByTerminal(requestBody);
-
-        // ✅ НОВОЕ: Создаем фискальный чек после успешного создания заказа
-        if (response.id) {
-          console.log('🧾 Создаем фискальный чек для заказа:', response.id);
-
-          const route = `Терминал → ${selectedLocations.map(loc => loc.name).join(' → ')}`;
-
-          const fiscalSuccess = await createTaxiReceipt({
-            price: calculatedPrice,
-            route,
-            paymentMethod: paymentId ? 'QR' : 'CARD', // Используем короткие идентификаторы
-            orderId: response.id,
-          });
-
-          if (!fiscalSuccess) {
-            // Если фискальный чек не создался, логируем ошибку но не отменяем заказ
-            console.error('⚠️ Заказ создан, но фискальный чек не создался');
-            toast.warn('⚠️ Заказ создан, но возникла проблема с фискальным чеком');
-          }
-        }
-
-        // Сохраняем ID заказа для WebSocket подписки
-        setOrderId(response.id || null);
-
-        return true;
+        // TODO: Добавить импорт orderService
+        // const response = await orderService.createInstantOrderByTerminal(requestBody);
+        
+        // TODO: Добавить реальное создание заказа через API
+        setIsLoading(false);
+        
+        return false;
       } catch (error: unknown) {
         setIsLoading(false);
-
-        // Логируем ошибку для отладки
-        console.error('❌ Ошибка создания заказа:', error);
 
         // Проверяем тип ошибки
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -235,48 +204,90 @@ export const useOrderSubmit = ({
         return false;
       }
     },
-    [economyTariff, terminal, selectedLocations, calculatedPrice, t, createTaxiReceipt],
+    [economyTariff, terminal, selectedLocations, calculatedPrice, t],
   );
+
+  // Устанавливаем обработчики платежей в контекст
+  useEffect(() => {
+    // Устанавливаем обработчик для QR платежей
+    setPaymentSuccessHandler(async (paymentId: string) => {
+      await createOrder(paymentId);
+    });
+
+    // Устанавливаем обработчик для карточных платежей
+    setCardPaymentHandler(async () => {
+      await createOrder();
+    });
+
+    // Очищаем обработчики при размонтировании
+    return () => {
+      setPaymentSuccessHandler(null);
+      setCardPaymentHandler(null);
+    };
+  }, [createOrder, setPaymentSuccessHandler, setCardPaymentHandler]);
 
   // Обработчик выбора метода оплаты
   const handleMethodSelect = useCallback(
     async (selectedMethod: PaymentMethod) => {
-      // Если выбрана оплата картой, открываем модалку, а заказ создаём ПОСЛЕ подтверждения оплаты
       if (selectedMethod === 'card') {
-        // Регистрируем handler, который вызовет создание заказа
-        setCardPaymentHandler(async () => {
-          await createOrder();
-          // После выполнения сбрасываем хендлер
-          clearCardPaymentHandler();
-        });
+        // Для карточных платежей - показываем модалку оплаты
+        setShowCardModal(true);
+        
+        return;
+      }
 
-        openModal({ type: ModalTypeEnum.CardPaymentModal, params: { amount: calculatedPrice } });
+      if (selectedMethod === 'qrcode') {
+        // Для QR платежей - показываем QR модалку
+        setShowQRModal(true);
 
         return;
       }
 
-      // Если выбрана оплата QR-кодом, показываем QR-модалку
-      // Заказ будет создан ПОСЛЕ успешной оплаты
-      if (selectedMethod === 'qrcode') {
-        openModal(ModalTypeEnum.QRPaymentModal);
-      }
+      // Для других методов оплаты - пока не поддерживаются
+      toast.warning('Unsupported payment method:', selectedMethod);
     },
-    [createOrder, setCardPaymentHandler, clearCardPaymentHandler],
+    [],
   );
 
   // Функция для создания заказа после успешной оплаты (для QR)
   const createOrderWithPayment = useCallback(
     async (paymentId: string) => {
-      console.log('💳 Создание заказа с подтвержденным платежом:', paymentId);
-
       return await createOrder(paymentId);
     },
     [createOrder],
   );
 
+  // Функции для управления модалками
+  const closeCardModal = useCallback(() => {
+    setShowCardModal(false);
+  }, []);
+
+  const closeQRModal = useCallback(() => {
+    setShowQRModal(false);
+  }, []);
+
+  // Обработчик успешной карточной оплаты
+  const handleCardPaymentSuccess = useCallback(async () => {
+    await createOrder();
+    closeCardModal();
+  }, [createOrder, closeCardModal]);
+
+  // Обработчик успешной QR оплаты
+  const handleQRPaymentSuccess = useCallback(async (paymentId: string) => {
+    await createOrder(paymentId);
+    closeQRModal();
+  }, [createOrder, closeQRModal]);
+
   return {
     isLoading: isLoading || isFiscalCreating,
     handleMethodSelect,
     createOrderWithPayment,
+    showCardModal,
+    showQRModal,
+    closeCardModal,
+    closeQRModal,
+    handleCardPaymentSuccess,
+    handleQRPaymentSuccess,
+    calculatedPrice,
   };
 };

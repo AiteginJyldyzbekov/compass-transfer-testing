@@ -7,3 +7,4 @@ export * from './constants/order-status-labels';
 export * from './api';
 export * from './hooks';
 export * from './context';
+export * from './receipt';

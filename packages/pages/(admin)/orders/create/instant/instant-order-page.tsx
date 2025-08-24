@@ -15,7 +15,6 @@ import { useInstantOrderSubmit, useInstantOrderById } from '@entities/orders/hoo
 import type { GetOrderServiceDTO } from '@entities/orders/interface';
 import type { GetTariffDTO } from '@entities/tariffs/interface';
 import type { GetDriverDTO } from '@entities/users/interface';
-// Импорт интерфейсов компонентов
 import {
   TariffPricingTab,
   MapTab,

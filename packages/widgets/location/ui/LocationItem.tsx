@@ -1,8 +1,7 @@
 import { useTranslations } from 'next-intl';
 import React, { lazy, Suspense } from 'react';
-import { calculateDistance } from '@shared/lib/distance';
 import type { GetLocationDTO } from '@entities/locations';
-import { useTerminalData } from '@entities/users/context';
+import { useTerminalData } from '@entities/users/context/TerminalDataContext';
 
 // Lazy импорты иконок
 const LocationIcon = lazy(() => import('@shared/icons/LocationIcon'));
@@ -17,31 +16,13 @@ type LocationItemProps = {
   onDelete?: () => void;
 };
 
+
 const LocationItem = ({ location, locationName, handleClick, disabled, showDeleteButton, onDelete }: LocationItemProps) => {
   const t = useTranslations();
   const { terminalLocation: terminal } = useTerminalData();
 
-  // Расчет расстояния от аэропорта до локации
-  const getDistanceToLocation = (): number | null => {
-    if (!location || !terminal) return null;
-    
-    // Координаты аэропорта (терминала)
-    const airportLat = terminal.latitude;
-    const airportLon = terminal.longitude;
-    
-    // Координаты локации
-    const locationLat = location.latitude;
-    const locationLon = location.longitude;
-    
-    if (!locationLat || !locationLon) return null;
-    
-    return calculateDistance(
-      { latitude: airportLat, longitude: airportLon },
-      { latitude: locationLat, longitude: locationLon }
-    );
-  };
-
-  const distance = getDistanceToLocation();
+  // Не показываем расстояние на главной и странице локаций
+  const distance = null;
 
   return (
     <div
@@ -60,14 +41,14 @@ const LocationItem = ({ location, locationName, handleClick, disabled, showDelet
         {location ? (
           <div className="flex flex-col gap-[2px]">
             <h4 className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold">
-              {location.address}
+              {location.name}
             </h4>
             <p className="text-[27px] text-[#A3A5AE] leading-[150%]">{location.city}</p>
           </div>
         ) : locationName ? (
           <div className="flex flex-col gap-[2px]">
             <h4 className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold">
-              {terminal?.address}
+              {terminal?.name}
             </h4>
             <p className="text-[27px] text-[#A3A5AE] leading-[150%]">{terminal?.city || 'Терминал'}</p>
           </div>
@@ -92,7 +73,7 @@ const LocationItem = ({ location, locationName, handleClick, disabled, showDelet
           </button>
         ) : distance !== null ? (
           <p className="text-[27px] text-[#A3A5AE] leading-[150%]">
-            {Math.round(distance)} {t('MainTerminal.distanceKm')}
+            {Math.round(distance / 1000)} {t('MainTerminal.distanceKm')}
           </p>
         ) : null}
       </div>

@@ -35,7 +35,7 @@ export const CompanyDetailsModal: React.FC<CompanyDetailsModalProps> = ({ isOpen
         <div className="p-6 space-y-4">
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold  mb-2">ОсОО "Компас Трансфер"</h3>
+              <h3 className="font-semibold  mb-2">ОсОО &quot;Компас Трансфер&quot;</h3>
               <div className="space-y-1">
                 <p><span className="font-medium">ИНН:</span> [ИНН будет указан позже]</p>
                 <p><span className="font-medium">ОКПО:</span> [ОКПО будет указан позже]</p>

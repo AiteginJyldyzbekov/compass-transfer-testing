@@ -45,26 +45,32 @@ export const TerminalLocationsProvider: React.FC<TerminalLocationsProviderProps>
       return;
     }
 
-    // Ждем загрузки данных
+    // Ждем загрузки данных - НЕ делаем редирект пока идет загрузка
     if (isLoadingTerminal || isLoadingTariff) {
       return;
     }
-    // Проверяем критически важные данные
-    if (!terminal) {
-      router.push('/');
-
-      return;
+    
+    // Проверяем критически важные данные ТОЛЬКО после завершения загрузки
+    // И ТОЛЬКО для страницы payment, где данные критичны
+    if (pathname === '/payment') {
+      if (!terminal || !economyTariff) {
+        router.push('/');
+      }
     }
-    if (!economyTariff) {
-      router.push('/');
-      
-    }
+    
+    // Для других страниц (locations) не делаем принудительный редирект
+    // Позволяем пользователю находиться на странице даже без полных данных
   }, [terminal, economyTariff, isLoadingTerminal, isLoadingTariff, pathname, router]);
 
   // Универсальная загрузка локаций с гибкими параметрами
   const loadLocations = useCallback(async (params?: LoadLocationsParams) => {
     // ЗАЩИТА ОТ ДУБЛИРОВАНИЯ: если уже идет загрузка, не запускаем новую
     if (isLoadingLocations) {
+      return;
+    }
+
+    // ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЗАПРОСОВ: проверяем что параметры изменились
+    if (lastLoadParams && JSON.stringify(lastLoadParams) === JSON.stringify(params)) {
       return;
     }
     
@@ -177,7 +183,7 @@ export const TerminalLocationsProvider: React.FC<TerminalLocationsProviderProps>
     } finally {
       setIsLoadingLocations(false);
     }
-  }, [isLoadingLocations]);
+  }, [isLoadingLocations, lastLoadParams]);
 
   // Поиск локаций (клиентская фильтрация)
   const searchLocations = useCallback(async (query: string): Promise<GetLocationDTO[]> => {

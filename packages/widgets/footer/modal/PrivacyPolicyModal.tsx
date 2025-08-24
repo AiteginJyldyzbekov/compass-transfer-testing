@@ -36,7 +36,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
           <div>
             <p className="mb-3">
               Настоящая Политика конфиденциальности описывает порядок обработки персональных 
-              данных пользователей сервиса ОсОО "Компас Трансфер", именуемого в дальнейшем «Оператор», 
+              данных пользователей сервиса ОсОО &quot;Компас Трансфер&quot;, именуемого в дальнейшем «Оператор», 
               предоставляющего услуги по организации пассажирских перевозок.
             </p>
           </div>
@@ -223,7 +223,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
               обратиться к Оператору:
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="font-semibold mb-2">ОсОО "Компас Трансфер"</p>
+              <p className="font-semibold mb-2">ОсОО &quot;Компас Трансфер&quot;</p>
               <p className="mb-1">Адрес: [адрес будет указан позже]</p>
               <p className="mb-1">Email по вопросам персональных данных: privacy@compass.kg</p>
               <p className="mb-1">Общий email: [email будет указан позже]</p>

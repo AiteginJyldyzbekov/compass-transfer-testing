@@ -3,12 +3,12 @@
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { useTerminalLocations } from '@entities/locations/context/TerminalLocationsContext';
 import { 
   REGION_IMAGES, 
   REGION_TITLE_KEYS, 
   isValidRegionSlug 
-} from '@entities/locations';
-import { useTerminalLocations } from '@entities/locations/context';
+} from '@entities/locations/helpers/regions';
 
 // Константы по умолчанию
 const DEFAULT_IMAGE = '/background/welcomeTerminal.png';

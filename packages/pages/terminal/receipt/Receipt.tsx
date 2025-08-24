@@ -1,14 +1,13 @@
 'use client';
 
 import type { NextPage } from 'next';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
-import { showToast } from '@shared/toast';
+import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { captureReceiptImage } from '@shared/utils/receiptCapture';
 import { useFiscalReceipt } from '@entities/fiscal';
-import { useTerminalReceipt } from '@entities/order/context';
-import { InfoRow } from '@pages/terminal/receipt/ui';
-import CountdownButton from '@pages/terminal/receipt/ui/CountdownButton';
+import { useTerminalReceipt } from '@entities/orders/context';
 
 // 🔄 ПЕРЕКЛЮЧАТЕЛЬ СПОСОБА ПЕЧАТИ
 // true - растровая печать (html2canvas -> printRaster)
@@ -17,10 +16,75 @@ const USE_RASTER_PRINT = true;
 
 export const Receipt: NextPage = () => {
   const t = useTranslations('Receipt');
+  const router = useRouter();
   const { receiptData, orderData, clearReceiptData } = useTerminalReceipt();
   const { printReceiptLines, printReceiptImage } = useFiscalReceipt();
 
   const hasAutoSavedRef = useRef(false);
+
+  // InfoRow компонент
+  const InfoRow: React.FC<{ label: string; value: string | React.ReactNode; className?: string }> = ({ 
+    label, 
+    value, 
+    className = '' 
+  }) => (
+    <div className={`flex items-center justify-between ${className}`}>
+      <span className="text-[24px] text-[#A3A5AE] leading-[34px] font-medium">{label}</span>
+      {typeof value === 'string' ? (
+        <span className="text-[24px] text-[#0047FF] leading-[33px] font-medium">{value}</span>
+      ) : (
+        value
+      )}
+    </div>
+  );
+
+  // CountdownButton компонент
+  const CountdownButton: React.FC<{
+    initialSeconds: number;
+    targetPath: string;
+    buttonText: string;
+    className?: string;
+    handleClick?: () => void;
+  }> = ({
+    initialSeconds = 60,
+    targetPath = '/',
+    buttonText = 'На главную',
+    className = '',
+    handleClick,
+  }) => {
+    const [buttonSeconds, setButtonSeconds] = useState(initialSeconds);
+
+    useEffect(() => {
+      if (buttonSeconds <= 0) {
+        handleClick?.();
+        router.push(targetPath);
+
+        return;
+      }
+
+      const timer = setInterval(() => {
+        setButtonSeconds(prevSeconds => prevSeconds - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }, [buttonSeconds, targetPath, handleClick]);
+
+    const returnToMainPage = () => {
+      handleClick?.();
+      router.push(targetPath);
+    };
+
+    return (
+      <button
+        className={`w-[610px] m-auto mb-[120px] h-[124px] flex items-center justify-center flex-1 rounded-[100px] bg-gradient-to-r from-[#0053BF] to-[#2F79D8] ${className}`}
+        onClick={returnToMainPage}
+      >
+        <span className="text-[46px] text-[#F5F6F7] font-bold leading-[100%]">
+          {buttonText} {buttonSeconds < 10 ? `0:0${buttonSeconds}` : `0:${buttonSeconds}`}
+        </span>
+      </button>
+    );
+  };
   
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString('ru-RU', {
@@ -48,7 +112,7 @@ export const Receipt: NextPage = () => {
           const receiptElement = document.getElementById('receipt-container');
 
           if (!receiptElement) {
-            showToast.error('Элемент чека не найден');
+            toast.error('Элемент чека не найден');
 
             return;
           }
@@ -57,7 +121,7 @@ export const Receipt: NextPage = () => {
           
           if (USE_RASTER_PRINT) {
             // 🖼️ РАСТРОВАЯ ПЕЧАТЬ - через html2canvas
-            console.log('📸 Используется растровая печать чека');
+            // 📸 Используется растровая печать чека
             
             // Создаем скриншот чека
             const receiptBase64 = await captureReceiptImage('receipt-container', 384);
@@ -66,33 +130,34 @@ export const Receipt: NextPage = () => {
             success = await printReceiptImage(receiptBase64);
           } else {
             // 📄 ПОСТРОЧНАЯ ПЕЧАТЬ - через API строки
-            console.log('📝 Используется построчная печать чека');
+            // 📝 Используется построчная печать чека
             
             // Печатаем чек одним запросом
             success = await printReceiptLines({
               price: orderData.tariff?.basePrice || orderData.finalPrice || 0,
-              route: orderData.locations?.map(loc => loc.name).join(' → ') || 'Неизвестный маршрут',
+              route: orderData.locations?.map((loc: { name: string }) => loc.name).join(' → ') || 'Неизвестный маршрут',
               paymentMethod: 'CARD',
-              orderId: receiptData.data?.orderNumber || '000000',
+              orderNumber: receiptData.data?.orderNumber || '000000',
               driver: {
-                fullName: receiptData.data?.driver?.fullName || 'Неизвестный водитель'
+                fullName: receiptData.data?.driver?.fullName || 'Неизвестный водитель',
+                phoneNumber: receiptData.data?.driver?.phoneNumber
               },
               car: {
+                make: receiptData.data?.car?.make || 'Неизвестная марка',
                 model: receiptData.data?.car?.model || 'Неизвестная модель',
-                licensePlate: receiptData.data?.car?.licensePlate || 'Неизвестный номер'
-              }
+                licensePlate: receiptData.data?.car?.licensePlate || 'Неизвестный номер',
+                color: receiptData.data?.car?.color || 'Неизвестный цвет'
+              },
+              queueNumber: receiptData.data?.queueNumber
             });
           }
           
           if (success) {
-            // Изображение чека отправлено на печать
-            showToast.success('🖨️ Чек напечатан успешно');
           } else {
-            showToast.warn('⚠️ Проблема с печатью чека');
+            toast.warning('⚠️ Проблема с печатью чека');
           }
-        } catch (_error) {
-          // Ошибка печати изображения чека
-          showToast.error('❌ Ошибка печати чека');
+        } catch {
+          toast.error('❌ Ошибка печати чека');
         } finally {
           hasAutoSavedRef.current = true;
         }
@@ -100,7 +165,7 @@ export const Receipt: NextPage = () => {
 
       return () => clearTimeout(timeoutId);
     }
-  }, [receiptData, orderData, printReceiptLines]);
+  }, [receiptData, orderData, printReceiptLines, printReceiptImage]);
 
   // Если нет данных чека или заказа, показываем сообщение об ошибке
   if (!receiptData || !orderData) {

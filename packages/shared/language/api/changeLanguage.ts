@@ -1,4 +1,3 @@
-import { INTERNAL_API_ROUTES } from '@shared/api/constants';
 import type { Locale, LanguageChangeResponse, LanguageChangeRequest } from '../types';
 
 /**
@@ -9,7 +8,7 @@ import type { Locale, LanguageChangeResponse, LanguageChangeRequest } from '../t
  */
 export const changeLanguage = async (language: Locale): Promise<LanguageChangeResponse> => {
   try {
-    const response = await fetch(INTERNAL_API_ROUTES.LANGUAGE, {
+    const response = await fetch('/api/language', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
