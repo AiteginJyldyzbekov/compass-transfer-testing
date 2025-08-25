@@ -61,7 +61,7 @@ export default function NotificationDetailPage() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Получаем уведомление
         const notificationData = await notificationsApi.getNotificationById(notificationId);
         setNotification(notificationData);
@@ -169,7 +169,7 @@ export default function NotificationDetailPage() {
             </button>
             <h1 className='text-xl font-bold text-gray-900'>Назад</h1>
           </div>
-          
+
           {/* Индикатор сервиса */}
           <div className='bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm font-medium'>
             Сервис
@@ -243,12 +243,11 @@ export default function NotificationDetailPage() {
                 {/* Статус заказа */}
                 <div>
                   <h3 className='text-sm font-semibold text-gray-700 mb-2'>Статус</h3>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                    orderData.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${orderData.status === 'Completed' ? 'bg-green-100 text-green-800' :
                     orderData.status === 'InProgress' ? 'bg-blue-100 text-blue-800' :
-                    orderData.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                      orderData.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                    }`}>
                     {orderData.status}
                   </span>
                 </div>
