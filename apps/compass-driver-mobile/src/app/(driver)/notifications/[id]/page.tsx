@@ -97,6 +97,7 @@ export default function NotificationDetailPage() {
     return (
       <div className='min-h-full bg-gray-50 p-4'>
         <div className='max-w-md mx-auto'>
+          
           {/* Заголовок с кнопкой назад */}
           <div className='mb-6 flex items-center'>
             <button
