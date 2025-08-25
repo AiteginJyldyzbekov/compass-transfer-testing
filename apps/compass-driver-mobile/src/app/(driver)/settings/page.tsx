@@ -3,9 +3,11 @@
 import { User, Bell, Shield, HelpCircle, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { logger } from '@shared/lib';
+import { ChangePasswordModal } from "@features/auth/ui/modal/change-password-modal"
 
 export default function SettingsPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -29,7 +31,7 @@ export default function SettingsPage() {
       setIsLoggingOut(false);
     }
   };
-  
+
   return (
     <div className='min-h-full bg-gray-50 p-4'>
       <div className='max-w-md mx-auto'>
@@ -61,10 +63,14 @@ export default function SettingsPage() {
               <h2 className='text-lg font-semibold text-gray-900'>Безопасность</h2>
             </div>
             <div className='p-4 space-y-3'>
-              <div className='flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer'>
+              <div
+                onClick={() => setIsPasswordModalOpen(true)}
+                className='flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer'
+              >
                 <Shield className='w-5 h-5 text-gray-600' />
                 <span className='text-gray-900'>Изменить пароль</span>
               </div>
+              {isPasswordModalOpen && (<ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />)}
             </div>
           </div>
 
