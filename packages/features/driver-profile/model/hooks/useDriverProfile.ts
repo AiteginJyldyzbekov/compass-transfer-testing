@@ -2,16 +2,7 @@
 import { driverProfileApi } from "@shared/api/driver-profile";
 import { logger } from "@shared/lib";
 import { useState } from "react";
-
-export interface User {
-    id: string;
-    email: string;
-    role: string;
-    phoneNumber: string | null;
-    fullName: string;
-    avatarUrl: string | null;
-    online: boolean | null;
-}
+import type { User } from "@shared/api/driver-profile";
 
 export function useDriverProfile() {
     const [isLoading, setIsLoading] = useState(false)
@@ -31,10 +22,22 @@ export function useDriverProfile() {
         }
     }
 
+    const updateDriverSelf = async (data: Partial<User>) => {
+        try {
+            const response = await driverProfileApi.updateUserSelf(data)
+            return response
+
+        } catch (error) {
+            logger.error('❌ useDriverProfile.getDriverSelf ошибка:', error);
+            return undefined
+        }
+    }
+
     return {
         isLoading,
         actions: {
-            getDriverSelf
+            getDriverSelf,
+            updateDriverSelf
         }
     }
 }

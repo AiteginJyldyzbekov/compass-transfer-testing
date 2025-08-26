@@ -1,4 +1,4 @@
-import { apiGet } from "./client"
+import { apiGet, apiPut } from "./client"
 
 export interface User {
     id: string;
@@ -17,5 +17,13 @@ export const driverProfileApi = {
             throw new Error(result.error.message);
         }
         return result.data as User;
+    },
+
+    updateUserSelf: async (data: Partial<User>) => {
+        const result = await apiPut("User/self/basic", data)
+        if (result.error) {
+            throw new Error(result.error.message);
+        }
+        return result.data as Partial<User>;
     }
 }

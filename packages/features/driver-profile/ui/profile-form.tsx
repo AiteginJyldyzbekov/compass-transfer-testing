@@ -1,12 +1,11 @@
 "use client"
 import { useEffect, useState } from "react";
 import { useDriverProfile } from "../model/hooks/useDriverProfile";
-import { User } from "../model/hooks/useDriverProfile";
+import { useRouter } from "next/navigation";
 
 interface FormData {
     fullName: string;
     phoneNumber: string;
-    password: string;
 }
 
 interface ProfileFormProps {
@@ -15,13 +14,12 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ onSave, onCancel }: ProfileFormProps) {
-    const [user, setUser] = useState<User>()
     const [formData, setFormData] = useState<FormData>({
-        fullName: user?.fullName || "",
-        phoneNumber: user?.phoneNumber || "",
-        password: ""
+        fullName: "",
+        phoneNumber: "",
     });
-    const { actions, isLoading } = useDriverProfile();
+    const router = useRouter();
+    const { actions } = useDriverProfile();
 
     const handleInputChange = (field: keyof FormData, value: string): void => {
         setFormData(prev => ({
@@ -31,24 +29,24 @@ export function ProfileForm({ onSave, onCancel }: ProfileFormProps) {
     };
 
     const handleSave = (): void => {
-        console.log("Сохранение данных:", formData);
-        onSave?.(formData);
+        actions.updateDriverSelf({
+            phoneNumber: formData.phoneNumber,
+            fullName: formData.fullName
+        }).then(() => {
+            router.push("/settings")
+        })
     };
 
     const handleCancel = (): void => {
-        console.log("Отмена изменений");
-        onCancel?.();
+        router.push("/settings")
     };
 
     useEffect(() => {
         actions.getDriverSelf().then((data) => {
-            setUser(data as User)
             setFormData({
                 fullName: data?.fullName || "",
                 phoneNumber: data?.phoneNumber || "",
-                password: ""
             });
-            console.log(data)
         })
     }, [])
 
@@ -97,28 +95,36 @@ export function ProfileForm({ onSave, onCancel }: ProfileFormProps) {
                             Пароль
                         </label>
                         <div className="relative">
-                            <input
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => handleInputChange('password', e.target.value)}
-                                className="w-full px-3 py-3 bg-gray-50 border-0 rounded-lg text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none pr-10"
-                            />
-                            <button
-                                type="button"
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                            >
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <div className="w-full px-3 py-3 bg-gray-50 border-0 rounded-lg text-gray-900 flex items-center justify-between">
+                                <span className="tracking-widest text-lg">********</span>
+                                <svg
+                                    className="w-5 h-5 text-gray-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 11c.828 0 1.5.672 1.5 1.5V15h-3v-2.5c0-.828.672-1.5 1.5-1.5z"
+                                    />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M17 8V7a5 5 0 00-10 0v1H5v14h14V8h-2z"
+                                    />
                                 </svg>
-                            </button>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
             {/* Кнопки */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white p-4 space-y-3">
+            <div className="bg-white p-4 space-y-3">
                 <button
                     onClick={handleSave}
                     className="w-full bg-blue-500 text-white py-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
@@ -132,8 +138,6 @@ export function ProfileForm({ onSave, onCancel }: ProfileFormProps) {
                     Отменить
                 </button>
             </div>
-
-            {/* Отступ снизу для фиксированных кнопок */}
             <div className="h-32"></div>
         </div>
     );
