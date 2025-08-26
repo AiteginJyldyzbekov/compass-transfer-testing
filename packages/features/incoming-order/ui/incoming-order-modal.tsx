@@ -22,7 +22,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
   const [isAccepting, setIsAccepting] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<GetOrderDTO | null>(null);
   const [timeLeft, setTimeLeft] = useState(30); // Таймер на 30 секунд
-  
+
   // Хуки
   const { on, off } = useSignalR();
   const { playSound, stopSound } = useNotificationSound();
@@ -32,29 +32,29 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
   useEffect(() => {
     const handleRideRequest = (notification: SignalREventData) => {
       console.log('🚨 ПОЛУЧЕН ЗАКАЗ:', notification);
-      
+
       if (notification && typeof notification === 'object' && 'data' in notification && notification.data && 'orderId' in notification && notification.orderId) {
         // ID заказа находится в notification.orderId, а данные в notification.data!
         const signalRData = notification.data as { waypoints: any[] };
         const orderId = notification.orderId as string;
         const orderType = (notification as any).orderType as string;
         const title = (notification as any).title as string;
-        
+
         console.log('🚨 ДАННЫЕ ЗАКАЗА ИЗ SIGNALR:', signalRData);
         console.log('🚨 ORDER ID ИЗ NOTIFICATION:', orderId);
         console.log('🚨 ORDER TYPE:', orderType);
         console.log('🚨 TITLE:', title);
-        
+
         // Создаем правильную структуру данных для модального окна
         const waypoints = signalRData.waypoints || [];
         const startLocation = waypoints[0]?.location;
         const endLocation = waypoints[1]?.location;
-        
+
         const mappedOrderData = {
           id: orderId,
           orderNumber: orderId.slice(-8), // Последние 8 символов ID как номер
           startLocationId: startLocation?.address || startLocation?.name || 'Не указано',
-          endLocationId: endLocation?.address || endLocation?.name || 'Не указано', 
+          endLocationId: endLocation?.address || endLocation?.name || 'Не указано',
           startLocationAddress: startLocation?.address || '',
           endLocationAddress: endLocation?.address || '',
           type: orderType === 'Instant' ? 'Instant' : 'Scheduled',
@@ -77,21 +77,21 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
           services: [],
           passengers: []
         } as unknown as GetOrderDTO;
-        
+
         console.log('🚨 МАППИРОВАННЫЕ ДАННЫЕ:', mappedOrderData);
-        
+
         setCurrentOrder(mappedOrderData);
         setCurrentOrderId(orderId);
         setIsModalOpen(true);
         setTimeLeft(30); // Сбрасываем таймер на 30 секунд
         playSound();
-        
+
         console.log('🚨 currentOrder установлен:', mappedOrderData);
         console.log('🚨 currentOrderId установлен:', orderId);
         console.log('🚨 isModalOpen установлен:', true);
-        
+
         // Проверим состояние через небольшую задержку
-        setTimeout(() => {}, 100);
+        setTimeout(() => { }, 100);
       } else {
         console.log('🚨 НЕПРАВИЛЬНАЯ СТРУКТУРА УВЕДОМЛЕНИЯ:', notification);
       }
@@ -113,27 +113,28 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
     try {
       setIsAccepting(true);
       console.log('🚨 ПРИНИМАЮ ЗАКАЗ:', currentOrderId);
-      
+
       stopSound();
-      await driverOrderApi.acceptInstantOrder(currentOrderId);
-      
+      await driverOrderApi.acceptInstantOrder(currentOrderId)
+        .then(() => leaveQueue())
+
       toast.success('✅ Заказ принят!');
-      
+
       // Закрываем модальное окно
       setIsModalOpen(false);
       setCurrentOrderId(null);
       setCurrentOrder(null);
-      
+
       // Отправляем событие для обновления dashboard
       window.dispatchEvent(new CustomEvent('orderAccepted'));
-      
+
       // Также вызываем callback если он передан
       if (onOrderAccepted) {
         setTimeout(() => {
           onOrderAccepted();
         }, 500);
       }
-      
+
     } catch (error) {
       console.error('Ошибка принятия заказа:', error);
       toast.error('Ошибка принятия заказа');
@@ -141,7 +142,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
       setIsAccepting(false);
     }
   };
-  
+
   // Закрытие модального окна
   const handleClose = useCallback(async () => {
     console.log('🚨 ЗАКРЫВАЮ МОДАЛЬНОЕ ОКНО');
@@ -149,7 +150,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
     setCurrentOrderId(null);
     setCurrentOrder(null);
     stopSound();
-    
+
     // Автоматически выходим из очереди при закрытии модального окна
     try {
       await leaveQueue();
@@ -162,17 +163,17 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
   // Таймер автоматического закрытия через 30 секунд
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (isModalOpen && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             // Время вышло - автоматически закрываем модальное окно
             handleClose();
-            
+
             return 0;
           }
-          
+
           return prev - 1;
         });
       }, 1000);
@@ -272,22 +273,22 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
         {/* Кнопки */}
         <div className='p-4 bg-gray-50'>
-            <div className='flex gap-3'>
-              <Button
-                onClick={handleClose}
-                variant='outline'
-                className='flex-1 py-3 rounded-xl'
-              >
-                Отклонить
-              </Button>
-              <Button
-                onClick={handleAccept}
-                disabled={isAccepting}
-                className='flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors'
-              >
-                {isAccepting ? 'Принимаю...' : 'Принять'}
-              </Button>
-            </div>
+          <div className='flex gap-3'>
+            <Button
+              onClick={handleClose}
+              variant='outline'
+              className='flex-1 py-3 rounded-xl'
+            >
+              Отклонить
+            </Button>
+            <Button
+              onClick={handleAccept}
+              disabled={isAccepting}
+              className='flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors'
+            >
+              {isAccepting ? 'Принимаю...' : 'Принять'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
