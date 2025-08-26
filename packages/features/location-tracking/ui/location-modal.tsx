@@ -118,7 +118,7 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
                 }
               </p>
               
-              {(permissionStatus === 'prompt' || permissionStatus === 'unknown') && (
+              {(permissionStatus === 'prompt' || permissionStatus === 'unknown' || !isTracking) && (
                 <button
                   onClick={requestLocationPermission}
                   className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
