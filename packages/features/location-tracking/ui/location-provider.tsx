@@ -113,45 +113,84 @@ export function LocationProvider({
 
   // Инициализация отслеживания
   useEffect(() => {
-    const initializeLocation = async () => {
-      await checkPermissions();
-      
-      // Проверяем разрешения перед запросом геолокации
-      if (permissionStatus === 'granted') {
+    checkPermissions();
+  }, [checkPermissions]);
+
+  // Отдельный эффект для реакции на изменение permissionStatus
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    if (permissionStatus === 'granted') {
+      getCurrentLocation();
+      setIsTracking(true);
+
+      // Устанавливаем интервал только если разрешение есть
+      intervalId = setInterval(() => {
         getCurrentLocation();
-        setIsTracking(true);
+      }, intervalMs);
+    } else if (permissionStatus === 'denied') {
+      setIsTracking(false);
+      setError('Доступ к геолокации запрещен');
+    } else if (permissionStatus === 'prompt' || permissionStatus === 'unknown') {
+      setIsTracking(false);
+      // Не показываем toast при первой загрузке, только если пользователь взаимодействовал
+    }
 
-        // Устанавливаем интервал только если разрешение уже есть
-        const intervalId = setInterval(() => {
-          getCurrentLocation();
-        }, intervalMs);
-
-        return () => {
-          clearInterval(intervalId);
-          setIsTracking(false);
-        };
-      } else {
-        // Если разрешения нет, не запрашиваем геолокацию автоматически
-        setIsTracking(false);
-        toast.info('Геолокация не активирована - нет разрешений');
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
       }
     };
-
-    initializeLocation();
-  }, [getCurrentLocation, checkPermissions, intervalMs, permissionStatus]);
+  }, [permissionStatus, getCurrentLocation, intervalMs]);
 
   // Функция для ручного запроса разрешения на геолокацию
   const requestLocationPermission = useCallback(async () => {
     try {
       setError(null);
-      getCurrentLocation();
-      setIsTracking(true);
       
-      toast.info('Геолокация активирована пользователем');
-    } catch {
-      toast.error('Ошибка запроса разрешения геолокации:');
+      // Сначала пробуем получить геолокацию (это автоматически запросит разрешение)
+      await new Promise<void>((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error('Геолокация не поддерживается браузером'));
+
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+
+            setLastLocation({ latitude, longitude });
+            setPermissionStatus('granted');
+            sendLocationToServer(latitude, longitude);
+            resolve();
+          },
+          (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+              setPermissionStatus('denied');
+            }
+            reject(error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000,
+          }
+        );
+      });
+      
+      toast.success('Геолокация активирована');
+    } catch (error: unknown) {
+      let errorMessage = 'Ошибка запроса разрешения геолокации';
+      
+      if (error && typeof error === 'object' && 'code' in error && error.code === 1) { // PERMISSION_DENIED
+        errorMessage = 'Доступ к геолокации запрещен. Разрешите доступ в настройках браузера.';
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
-  }, [getCurrentLocation]);
+  }, [sendLocationToServer]);
 
   const contextValue: LocationContextType = {
     isTracking,
