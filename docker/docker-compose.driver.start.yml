@@ -12,7 +12,7 @@ services:
     env_file:
       - ../apps/compass-driver/.env.production
     command: > 
-      sh -c "yarn start:driver"
+      sh -c "yarn start:driver-mobile"
     networks:
       - compass-network
 
