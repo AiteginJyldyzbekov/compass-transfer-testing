@@ -86,10 +86,25 @@ export const useOptimaPayment = (): UseOptimaPaymentResult => {
   }, [state]);
 
   const generateQR = useCallback(async (sum: number, note: string) => {
-    setState({ status: 'generating', sum });
-    
-    await paymentService.generateOptimaQR(sum, note);
-
+    try {
+      setState({ status: 'generating', sum });
+      
+      const response = await paymentService.generateOptimaQR(sum, note);
+      
+      // Переходим в состояние ожидания с полученными данными
+      setState({
+        status: 'waiting',
+        transactionId: response.transactionId,
+        qrBase64: response.qrBase64,
+        sum
+      });
+    } catch (error) {
+      console.error('Ошибка генерации QR:', error);
+      setState({
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Неизвестная ошибка'
+      });
+    }
   }, []);
 
   // Отмена платежа (локально, без API запроса)
