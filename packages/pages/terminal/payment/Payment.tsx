@@ -66,7 +66,7 @@ export const Payment: NextPage = () => {
         const route = await routingService.buildRoute(routePoints, RouteType.FASTEST);
 
         setTotalDistance(route.distance);
-      } catch (_error) {
+      } catch {
         // Fallback к прямому расстоянию при ошибке OSRM
         const fallbackDistance = selectedLocations.reduce((total, location, index) => {
           const prevLocation = index === 0 ? terminalLocation : selectedLocations[index - 1];

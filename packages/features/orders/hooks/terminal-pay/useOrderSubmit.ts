@@ -2,6 +2,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { orderService } from '@shared/api/orders';
 import { usePaymentContext } from '@shared/contexts/PaymentContext';
 import type { OrderCancelledNotificationDTO } from '@shared/hooks/signal/interface';
 import type { RideNotificationData } from '@shared/hooks/signal/types';
@@ -175,13 +176,39 @@ export const useOrderSubmit = ({
           ...(paymentId && { paymentId }),
         };
 
-        // TODO: Добавить импорт orderService
-        // const response = await orderService.createInstantOrderByTerminal(requestBody);
-        
-        // TODO: Добавить реальное создание заказа через API
-        setIsLoading(false);
-        
-        return false;
+        // Логируем данные для отладки
+        console.log('🚀 Создание заказа терминалом:', {
+          terminalId: terminal.id,
+          terminalLocationId: terminal.locationId,
+          requestBody: _requestBody,
+        });
+
+        const response = await orderService.createInstantOrderByTerminal(_requestBody);
+
+        // ✅ НОВОЕ: Создаем фискальный чек после успешного создания заказа
+        if (response.id) {
+          console.log('🧾 Создаем фискальный чек для заказа:', response.id);
+
+          const route = `Терминал → ${selectedLocations.map(loc => loc.name).join(' → ')}`;
+
+          const fiscalSuccess = await _createTaxiReceipt({
+            price: calculatedPrice,
+            route,
+            paymentMethod: paymentId ? 'QR' : 'CARD', // Используем короткие идентификаторы
+            orderId: response.id,
+          });
+
+          if (!fiscalSuccess) {
+            // Если фискальный чек не создался, логируем ошибку но не отменяем заказ
+            console.error('⚠️ Заказ создан, но фискальный чек не создался');
+            toast.error('⚠️ Заказ создан, но возникла проблема с фискальным чеком');
+          }
+        }
+
+        // Сохраняем ID заказа для WebSocket подписки
+        _setOrderId(response.id || null);
+
+        return true;
       } catch (error: unknown) {
         setIsLoading(false);
 
@@ -204,7 +231,7 @@ export const useOrderSubmit = ({
         return false;
       }
     },
-    [economyTariff, terminal, selectedLocations, calculatedPrice, t],
+    [economyTariff, terminal, selectedLocations, calculatedPrice, t, _createTaxiReceipt],
   );
 
   // Устанавливаем обработчики платежей в контекст

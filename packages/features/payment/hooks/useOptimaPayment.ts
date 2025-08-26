@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { paymentService } from '@entities/payments/api/payment-service';
 import type { PaymentReceivedNotificationDTO } from '@entities/payments/interface/PaymentReceivedNotificationDTO';
-import { formatSum, validateAndCleanNote } from '@shared/lib/generate-qr';
 
 export type PaymentState =
   | { status: 'idle' }
@@ -61,12 +60,12 @@ export const useOptimaPayment = (): UseOptimaPaymentResult => {
         signalR.off('PaymentReceivedNotification', handlePaymentReceived);
       };
     }
-  }, [signalR.isConnected, state.status, handlePaymentReceived]);
+  }, [signalR, signalR.isConnected, state.status, handlePaymentReceived]);
 
   // Таймаут для истечения QR-кода
   useEffect(() => {
     if (state.status === 'waiting') {
-      // Устанавливаем таймаут на 5 минут
+      // Устанавливаем таймаут на 2 минут
       timeoutRef.current = setTimeout(
         () => {
           setState({
@@ -75,7 +74,7 @@ export const useOptimaPayment = (): UseOptimaPaymentResult => {
           });
           toast.error('Время ожидания платежа истекло');
         },
-        5 * 60 * 1000,
+        2 * 60 * 1000,
       );
 
       return () => {
@@ -88,43 +87,9 @@ export const useOptimaPayment = (): UseOptimaPaymentResult => {
 
   const generateQR = useCallback(async (sum: number, note: string) => {
     setState({ status: 'generating', sum });
+    
+    await paymentService.generateOptimaQR(sum, note);
 
-    try {
-      // Валидируем и форматируем данные перед отправкой
-      const formattedSum = formatSum(sum);
-      const cleanedNote = validateAndCleanNote(note);
-
-      // Дополнительная валидация
-      if (formattedSum <= 0) {
-        throw new Error('Сумма должна быть больше 0');
-      }
-
-      if (!cleanedNote.trim()) {
-        throw new Error('Примечание не может быть пустым');
-      }
-
-      const response = await paymentService.generateOptimaQR(formattedSum, cleanedNote);
-
-      setState({
-        status: 'waiting',
-        transactionId: response.transactionId,
-        qrBase64: response.qrBase64,
-        sum: formattedSum, // используем отформатированную сумму
-      });
-
-    } catch (error) {
-      toast.error('❌ Ошибка генерации QR:');
-
-      const errorMessage =
-        error instanceof Error ? error.message : 'Не удалось сгенерировать QR-код';
-
-      setState({
-        status: 'failed',
-        error: errorMessage,
-      });
-
-      toast.error(errorMessage);
-    }
   }, []);
 
   // Отмена платежа (локально, без API запроса)
