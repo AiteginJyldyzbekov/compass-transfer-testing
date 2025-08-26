@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { paymentService } from '@entities/payments/api/payment-service';
 import type { PaymentReceivedNotificationDTO } from '@entities/payments/interface/PaymentReceivedNotificationDTO';
+import { formatSum, validateAndCleanNote } from '@shared/lib/generate-qr';
 
 export type PaymentState =
   | { status: 'idle' }
@@ -85,18 +86,30 @@ export const useOptimaPayment = (): UseOptimaPaymentResult => {
     }
   }, [state]);
 
-  // Генерация QR-кода
   const generateQR = useCallback(async (sum: number, note: string) => {
     setState({ status: 'generating', sum });
 
     try {
-      const response = await paymentService.generateOptimaQR(sum, note);
+      // Валидируем и форматируем данные перед отправкой
+      const formattedSum = formatSum(sum);
+      const cleanedNote = validateAndCleanNote(note);
+
+      // Дополнительная валидация
+      if (formattedSum <= 0) {
+        throw new Error('Сумма должна быть больше 0');
+      }
+
+      if (!cleanedNote.trim()) {
+        throw new Error('Примечание не может быть пустым');
+      }
+
+      const response = await paymentService.generateOptimaQR(formattedSum, cleanedNote);
 
       setState({
         status: 'waiting',
         transactionId: response.transactionId,
         qrBase64: response.qrBase64,
-        sum: sum, // используем переданную сумму
+        sum: formattedSum, // используем отформатированную сумму
       });
 
     } catch (error) {
