@@ -15,17 +15,17 @@ export interface GetMyOrdersParams {
   After?: string;
   Last?: number;
   Size?: number;
-  
+
   // Фильтры
   Status?: string;
   Type?: string;
   CreatedAt?: string;
   CompletedAt?: string;
-  
+
   // Поиск
   'FTS.Plain'?: string;
   'FTS.Query'?: string;
-  
+
   // Сортировка
   SortBy?: string;
   SortOrder?: 'asc' | 'desc';
@@ -75,7 +75,7 @@ export const ordersApi = {
    * Получить конкретный заказ по ID
    */
   async getOrder(orderId: string): Promise<GetOrderDTO> {
-    const result = await apiClient.get<GetOrderDTO>(`/Order/${orderId}`);
+    const result = await apiClient.get<GetOrderDTO>(`/Order/my/participant/${orderId}`);
 
     if (result.error) {
       throw new Error(result.error.message);
