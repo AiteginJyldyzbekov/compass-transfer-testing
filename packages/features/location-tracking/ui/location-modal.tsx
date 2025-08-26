@@ -129,6 +129,22 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
             </div>
           )}
 
+          {/* Activation button for disabled geolocation */}
+          {!error && permissionStatus !== 'denied' && !isTracking && (
+            <div className="p-3 bg-yellow-50 rounded-lg">
+              <p className="text-sm text-yellow-700 mb-3">
+                Геолокация отключена. Включите её для корректной работы приложения.
+              </p>
+              
+              <button
+                onClick={requestLocationPermission}
+                className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Включить геолокацию
+              </button>
+            </div>
+          )}
+
           {/* Success message */}
           {isTracking && !error && permissionStatus !== 'denied' && (
             <div className="p-3 bg-green-50 rounded-lg">

@@ -111,38 +111,6 @@ export function LocationProvider({
     }
   }, []);
 
-  // Инициализация отслеживания
-  useEffect(() => {
-    checkPermissions();
-  }, [checkPermissions]);
-
-  // Отдельный эффект для реакции на изменение permissionStatus
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    if (permissionStatus === 'granted') {
-      getCurrentLocation();
-      setIsTracking(true);
-
-      // Устанавливаем интервал только если разрешение есть
-      intervalId = setInterval(() => {
-        getCurrentLocation();
-      }, intervalMs);
-    } else if (permissionStatus === 'denied') {
-      setIsTracking(false);
-      setError('Доступ к геолокации запрещен');
-    } else if (permissionStatus === 'prompt' || permissionStatus === 'unknown') {
-      setIsTracking(false);
-      // Не показываем toast при первой загрузке, только если пользователь взаимодействовал
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [permissionStatus, getCurrentLocation, intervalMs]);
-
   // Функция для ручного запроса разрешения на геолокацию
   const requestLocationPermission = useCallback(async () => {
     try {
@@ -191,6 +159,39 @@ export function LocationProvider({
       toast.error(errorMessage);
     }
   }, [sendLocationToServer]);
+
+  // Инициализация отслеживания
+  useEffect(() => {
+    checkPermissions();
+  }, [checkPermissions]);
+
+  // Отдельный эффект для реакции на изменение permissionStatus
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    if (permissionStatus === 'granted') {
+      getCurrentLocation();
+      setIsTracking(true);
+
+      // Устанавливаем интервал только если разрешение есть
+      intervalId = setInterval(() => {
+        getCurrentLocation();
+      }, intervalMs);
+    } else if (permissionStatus === 'denied') {
+      setIsTracking(false);
+      setError('Доступ к геолокации запрещен');
+    } else if (permissionStatus === 'prompt' || permissionStatus === 'unknown') {
+      setIsTracking(false);
+      // Автоматически запрашиваем разрешение при первой загрузке
+      requestLocationPermission();
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [permissionStatus, getCurrentLocation, intervalMs, requestLocationPermission]);
 
   const contextValue: LocationContextType = {
     isTracking,
