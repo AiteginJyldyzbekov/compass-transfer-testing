@@ -279,14 +279,14 @@ export const useOrderSubmit = ({
 
   // Обработчик успешной карточной оплаты
   const handleCardPaymentSuccess = useCallback(async () => {
-    await createOrder();
-    closeCardModal();
+    closeCardModal(); // Закрываем модалку сразу
+    await createOrder(); // Создаем заказ и показываем анимацию поиска водителя
   }, [createOrder, closeCardModal]);
 
   // Обработчик успешной QR оплаты
   const handleQRPaymentSuccess = useCallback(async (paymentId: string) => {
-    await createOrder(paymentId);
-    closeQRModal();
+    closeQRModal(); // Закрываем модалку сразу
+    await createOrder(paymentId); // Создаем заказ и показываем анимацию поиска водителя
   }, [createOrder, closeQRModal]);
 
   return {

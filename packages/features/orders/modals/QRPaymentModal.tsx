@@ -44,11 +44,6 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
     if (paymentState.status === 'completed' && paymentState.paymentId) {
       // Вызываем колбэк успешной оплаты
       onSuccess(paymentState.paymentId);
-      
-      // Закрываем модалку через небольшую задержку
-      setTimeout(() => {
-        onClose();
-      }, 2000);
     }
   }, [paymentState, onSuccess, onClose]);
 

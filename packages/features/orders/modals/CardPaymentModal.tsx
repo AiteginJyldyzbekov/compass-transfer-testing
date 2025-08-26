@@ -39,11 +39,6 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         
         // Вызываем обработчик успешной оплаты
         await onSuccess();
-        
-        // Небольшая задержка перед закрытием для визуального подтверждения
-        setTimeout(() => {
-          handleClose();
-        }, 1000);
       } catch {
         setStatus('error');
       }
