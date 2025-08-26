@@ -1,4 +1,5 @@
 import { BaseApiService } from '@shared/api';
+import { formatSum, validateAndCleanNote } from '@shared/lib/generate-qr';
 
 export interface GenerateQRRequest {
   sum: number;
@@ -33,10 +34,25 @@ export class PaymentService extends BaseApiService {
    * API ожидает только sum и note
    */
   async generateOptimaQR(sum: number, note: string): Promise<GenerateQRResponse> {
+    // Дополнительная валидация на уровне сервиса
+    const formattedSum = formatSum(sum);
+    const cleanedNote = validateAndCleanNote(note);
+
+    // Проверяем валидность данных
+    if (formattedSum <= 0) {
+      throw new Error('Некорректная сумма транзакции');
+    }
+
+    if (!cleanedNote.trim()) {
+      throw new Error('Примечание не может быть пустым после очистки');
+    }
+
     const requestBody: GenerateQRRequest = {
-      sum,
-      note,
+      sum: formattedSum,
+      note: cleanedNote,
     };
+
+    console.log('Отправляем на сервер:', requestBody); // для отладки
 
     const result = await this.post<GenerateQRResponse, GenerateQRRequest>(
       '/Optima/generate-qr',
