@@ -185,7 +185,7 @@ export const orderService = {
 
   // Создание мгновенного заказа через терминал
   createInstantOrderByTerminal: async (data: unknown): Promise<{ id: string }> => {
-    const result = await apiPost<{ id: string }>('/Order/instant/terminal', data as Record<string, unknown>);
+    const result = await apiPost<{ id: string }>('/Order/instant/by-terminal', data as Record<string, unknown>);
 
     if (result.error) {
       throw new Error(result.error.message);
