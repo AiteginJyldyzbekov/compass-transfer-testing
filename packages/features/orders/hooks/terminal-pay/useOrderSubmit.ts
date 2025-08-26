@@ -37,7 +37,7 @@ export const useOrderSubmit = ({
   const t = useTranslations('Payment');
   const { setReceiptData, setOrderData } = useTerminalReceipt();
   const { createTaxiReceipt: _createTaxiReceipt, isCreating: isFiscalCreating } = useFiscalReceipt();
-  const { setPaymentSuccessHandler, setCardPaymentHandler } = usePaymentContext();
+  const { setPaymentSuccessHandler: _setPaymentSuccessHandler, setCardPaymentHandler: _setCardPaymentHandler } = usePaymentContext();
 
   // Обработчик WebSocket уведомлений о заказе (типизированный)
   useEffect(() => {
@@ -161,7 +161,7 @@ export const useOrderSubmit = ({
           startLocationId: terminal.locationId,
           endLocationId: endLocation.id,
           additionalStops: additionalStops,
-          initialPrice: calculatedPrice,
+          initialPrice: Math.round(calculatedPrice),
           routeId: null,
           services: [],
           passengers: [
@@ -234,24 +234,8 @@ export const useOrderSubmit = ({
     [economyTariff, terminal, selectedLocations, calculatedPrice, t, _createTaxiReceipt],
   );
 
-  // Устанавливаем обработчики платежей в контекст
-  useEffect(() => {
-    // Устанавливаем обработчик для QR платежей (функция, которая будет вызвана при успешной оплате)
-    setPaymentSuccessHandler(async (paymentId: string) => {
-      await createOrder(paymentId);
-    });
-
-    // Устанавливаем обработчик для карточных платежей (функция, которая будет вызвана при успешной оплате)
-    setCardPaymentHandler(async () => {
-      await createOrder();
-    });
-
-    // Очищаем обработчики при размонтировании
-    return () => {
-      setPaymentSuccessHandler(null);
-      setCardPaymentHandler(null);
-    };
-  }, [createOrder, setPaymentSuccessHandler, setCardPaymentHandler]);
+  // УДАЛЕНО: Автоматическая установка обработчиков платежей
+  // Это вызывало автоматическое создание заказа при загрузке страницы
 
   // Обработчик выбора метода оплаты
   const handleMethodSelect = useCallback(
