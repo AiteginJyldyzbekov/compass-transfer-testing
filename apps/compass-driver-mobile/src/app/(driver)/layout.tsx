@@ -22,7 +22,7 @@ export default async function DriverLayout({ children }: DriverLayoutProps) {
       <NotificationProvider>
         <NotificationsProvider>
           <LocationProvider intervalMs={30000}>
-            <div className='flex flex-col bg-gray-50 h-screen'>
+            <div className='flex flex-col h-screen'>
               <DriverMobileHeader />
               <main className='flex-1 overflow-y-auto pb-safe'>{children}</main>
               <DriverMobileFooter />
