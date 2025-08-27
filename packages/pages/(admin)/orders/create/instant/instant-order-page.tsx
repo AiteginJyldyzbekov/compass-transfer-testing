@@ -15,6 +15,7 @@ import { useInstantOrderSubmit, useInstantOrderById } from '@entities/orders/hoo
 import type { GetOrderServiceDTO } from '@entities/orders/interface';
 import type { GetTariffDTO } from '@entities/tariffs/interface';
 import type { GetDriverDTO } from '@entities/users/interface';
+import { PotentialDriversModal } from '@features/orders/ui/potential-drivers-modal';
 import {
   TariffPricingTab,
   MapTab,
@@ -95,6 +96,10 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
   const [routeDistance, setRouteDistance] = useState<number>(0);
   const [routeLoading, setRouteLoading] = useState<boolean>(false);
 
+  // Состояние для модального окна с потенциальными водителями
+  const [showDriversModal, setShowDriversModal] = useState<boolean>(false);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+
   // Формируем пассажиров для режима редактирования
   const passengersForUpdate = mode === 'edit' && userRole !== 'partner' ? [
     {
@@ -111,9 +116,15 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
     orderId: mode === 'edit' ? id : undefined, // Передаем ID для режима редактирования
     passengers: passengersForUpdate, // Передаем пассажиров для обновления
     shouldUpdatePassengers: mode === 'edit' && userRole !== 'partner', // Обновляем пассажиров только в режиме редактирования
-    onSuccess: () => {
-      // Переходим к списку заказов (не админ-панель!)
-      router.push('/orders');
+    onSuccess: (order) => {
+      if (mode === 'create') {
+        // Для создания заказа показываем модальное окно с потенциальными водителями
+        setCreatedOrderId(order.id);
+        setShowDriversModal(true);
+      } else {
+        // Для редактирования переходим к списку заказов
+        router.push('/orders');
+      }
     },
     onError: (error) => {
       toast.error(`Ошибка ${mode === 'edit' ? 'обновления' : 'создания'} заказа: ${error.message}`);
@@ -687,6 +698,20 @@ export function InstantOrderPage({ mode, id, userRole = 'operator', initialTarif
           </div>
         </div>
       </div>
+
+      {/* Модальное окно с потенциальными водителями */}
+      {createdOrderId && (
+        <PotentialDriversModal
+          isOpen={showDriversModal}
+          onClose={() => {
+            setShowDriversModal(false);
+            setCreatedOrderId(null);
+            router.push('/orders');
+          }}
+          orderId={createdOrderId}
+          orderNumber={createdOrderId.slice(-8)}
+        />
+      )}
     </div>
   );
 }

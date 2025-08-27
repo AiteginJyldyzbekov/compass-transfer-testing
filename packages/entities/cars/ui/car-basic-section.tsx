@@ -4,7 +4,6 @@ import { useFormContext } from 'react-hook-form';
 import { Input } from '@shared/ui/forms/input';
 import { Label } from '@shared/ui/forms/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/forms/select';
-import { cn } from '@shared/lib/utils';
 import { CarColor, VehicleType, ServiceClass, VehicleStatus, VEHICLE_TYPE_CAPACITY } from '../enums';
 import type { CarCreateFormData } from '../schemas/carCreateSchema';
 
@@ -78,7 +77,6 @@ interface CarBasicSectionProps {
 }
 
 export function CarBasicSection({
-  showOptionalWarning = false,
   labels = {},
   placeholders = {},
 }: CarBasicSectionProps) {
@@ -200,9 +198,11 @@ export function CarBasicSection({
             value={formData.type || VehicleType.Sedan}
             onValueChange={(value) => {
               const vehicleType = value as VehicleType;
+
               setValue('type', vehicleType, { shouldValidate: true, shouldDirty: true });
               // Автоматически устанавливаем пассажировместимость в зависимости от типа
               const capacity = VEHICLE_TYPE_CAPACITY[vehicleType];
+              
               setValue('passengerCapacity', capacity, { shouldValidate: true, shouldDirty: true });
             }}
           >
@@ -254,8 +254,8 @@ export function CarBasicSection({
             {labels.status || 'Статус автомобиля *'}
           </Label>
           <Select
-            {...register('status')}
             value={formData.status || VehicleStatus.Available}
+            onValueChange={(value) => setValue('status', value as VehicleStatus, { shouldValidate: true, shouldDirty: true })}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Выберите статус" />

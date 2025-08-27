@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { driverQueueApi } from '@shared/api/driver-queue';
 import { orderService, type GetOrderDTO } from '@shared/api/orders';
-import { ActiveOrderCard } from '@features/active-ride';
+import { ActiveOrderCard } from '@features/active-ride';  
+import { useDriverQueue } from '@features/driver-queue';
 import { DriverStatusCard } from './components/driver-status-card';
 import DriverStatusBlock from './components/driver-status-block';
 
@@ -11,23 +11,24 @@ export default function DriverDashboardPage() {
   const [currentOrder, setCurrentOrder] = useState<GetOrderDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [_error, setError] = useState<string | null>(null);
+  
+  // Используем данные из useDriverQueue вместо дублирования запросов
+  const { queueData, isInQueue, isLoading: queueLoading, error: queueError, joinQueue, leaveQueue } = useDriverQueue();
 
-  // Функция для получения активного заказа
-  const fetchActiveOrder = useCallback(async () => {
+
+  // Функция для получения активного заказа на основе данных из очереди
+  const fetchActiveOrder = useCallback(async () => {  
     try {
       setIsLoading(true);
       setError(null);
-
-      // Сначала пробуем получить orderId из очереди
-      const queueStatus = await driverQueueApi.getQueueStatus();
-
+      
       let orderData: GetOrderDTO | null = null;
 
-      if (queueStatus?.orderId) {
-        orderData = await orderService.getOrderById(queueStatus.orderId);
-      } else if (queueStatus && 'id' in queueStatus) {
+      if (queueData?.orderId) {
+        orderData = await orderService.getOrderById(queueData.orderId);
+      } else if (queueData && 'id' in queueData) {
         // Если в 404 ответе есть данные заказа напрямую, используем их
-        orderData = queueStatus as unknown as GetOrderDTO;
+        orderData = queueData as unknown as GetOrderDTO; 
       }
 
       setCurrentOrder(orderData);
@@ -39,7 +40,7 @@ export default function DriverDashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [queueData]);
 
   useEffect(() => {
     fetchActiveOrder();
@@ -87,7 +88,14 @@ export default function DriverDashboardPage() {
             onStatusUpdate={fetchActiveOrder}
           />
         ) : (
-          <DriverStatusCard />
+          <DriverStatusCard 
+            queueData={queueData}
+            isInQueue={isInQueue}
+            isLoading={queueLoading}
+            error={queueError}
+            joinQueue={joinQueue}
+            leaveQueue={leaveQueue}
+          />
         )}
         <DriverStatusBlock />
       </div>

@@ -49,6 +49,22 @@ export interface OrderStatsResponse {
   expired: number;
 }
 
+export interface PotentialDriverResponse {
+  id: string;
+  fullName: string;
+  rank: number;
+  allTrue: boolean;
+  isOnline: boolean;
+  activeCarStatus: boolean;
+  activeCarPassengerCapacity: boolean;
+  activeCarServiceClass: boolean;
+  distancePredicate: boolean;
+  driverMinRating: boolean;
+  driverHasNoActiveRides: boolean;
+  driverHasNotBeenRequested: boolean;
+  driverQueuePresent: boolean;
+}
+
 export const ordersApi = {
   // Получение списка заказов
   getOrders: async (filters: OrderFilters = {}): Promise<OrderApiResponse> => {
@@ -173,8 +189,8 @@ export const orderService = {
   },
 
   // Получение потенциальных водителей для заказа
-  getPotentialDrivers: async (orderId: string): Promise<unknown[]> => {
-    const result = await apiGet<unknown[]>(`/Order/${orderId}/potential-drivers`);
+  getPotentialDrivers: async (orderId: string): Promise<PotentialDriverResponse[]> => {
+    const result = await apiGet<PotentialDriverResponse[]>(`/Order/${orderId}/PotentialDrivers`);
 
     if (result.error) {
       throw new Error(result.error.message);
@@ -263,6 +279,7 @@ export const driverActiveOrdersApi = {
   // Получение активных заказов водителя
   getMyActiveOrders: async (): Promise<OrderApiResponse> => {
     const params = new URLSearchParams();
+    
     params.append('Status', 'InProgress');
     params.append('Status', 'Scheduled');
     params.append('SortBy', 'CreatedAt');

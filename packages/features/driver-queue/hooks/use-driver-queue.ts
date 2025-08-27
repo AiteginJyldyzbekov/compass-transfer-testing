@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { driverQueueApi, type QueueStatusResponse } from '@shared/api/driver-queue';
 
 interface UseDriverQueueReturn {
@@ -15,6 +15,7 @@ export function useDriverQueue(): UseDriverQueueReturn {
   const [queueData, setQueueData] = useState<QueueStatusResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Водитель в очереди, если есть position или joinedAt (статус 200)
   // Если есть orderId или id заказа - это активный заказ (статус 404 с данными)
@@ -78,6 +79,32 @@ export function useDriverQueue(): UseDriverQueueReturn {
   const refetch = useCallback(async () => {
     await checkQueueStatus();
   }, [checkQueueStatus]);
+
+  // Автоматическое обновление статуса очереди каждые 5 секунд
+  useEffect(() => {
+    if (!isInQueue) {
+      // Очищаем интервал если не в очереди
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      
+      return;
+    }
+
+    // Запускаем периодическое обновление
+    intervalRef.current = setInterval(() => {
+      checkQueueStatus();
+    }, 5000);
+
+    // Cleanup при размонтировании или изменении isInQueue
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isInQueue, checkQueueStatus]);
 
   useEffect(() => {
     checkQueueStatus();
