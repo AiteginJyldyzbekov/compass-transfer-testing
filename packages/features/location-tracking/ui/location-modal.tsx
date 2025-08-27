@@ -1,30 +1,101 @@
 'use client';
 
-import { MapPin, X, ExternalLink } from 'lucide-react';
-import React from 'react';
+import { MapPin, X, ExternalLink, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from './location-provider';
 
 interface LocationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLocationNameChange?: (locationName: string) => void;
 }
 
-export function LocationModal({ isOpen, onClose }: LocationModalProps) {
+export function LocationModal({ isOpen, onClose, onLocationNameChange }: LocationModalProps) {
   const { isTracking, lastLocation, error, permissionStatus, requestLocationPermission } = useLocation();
+  const [locationName, setLocationName] = useState<string>('');
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+
+  // Функция для получения названия места по координатам
+  const getLocationName = async (lat: number, lng: number) => {
+    setIsLoadingLocation(true);
+
+    try {
+      // Используем Nominatim API (OpenStreetMap) для обратного геокодирования
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ru,en&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'LocationApp/1.0'
+          }
+        }
+      );
+
+      if (!response.ok) throw new Error('Ошибка получения данных');
+
+      const data = await response.json();
+
+      // Формируем название места
+      let name = '';
+
+      if (data.address) {
+        const addr = data.address;
+
+        // Приоритет: аэропорт, торговый центр, здание, дом с улицей
+        if (addr.aeroway === 'aerodrome' || addr.amenity === 'airport') {
+          name = `Аэропорт ${addr.name || 'Неизвестный'}`;
+        } else if (addr.shop === 'mall' || addr.amenity === 'marketplace') {
+          name = addr.name || 'Торговый центр';
+        } else if (addr.building && addr.name) {
+          name = addr.name;
+        } else if (addr.house_number && addr.road) {
+          name = `${addr.road}, ${addr.house_number}`;
+        } else if (addr.road) {
+          name = addr.road;
+        } else if (addr.neighbourhood || addr.suburb) {
+          name = addr.neighbourhood || addr.suburb;
+        } else if (addr.city || addr.town || addr.village) {
+          name = addr.city || addr.town || addr.village;
+        } else {
+          name = data.display_name?.split(',')[0] || 'Неизвестное место';
+        }
+
+        // Добавляем город если это не город
+        if (name && !name.includes(addr.city || addr.town || '') && (addr.city || addr.town)) {
+          name += `, ${addr.city || addr.town}`;
+        }
+      } else {
+        name = 'Неизвестное место';
+      }
+
+      setLocationName(name);
+      onLocationNameChange?.(name);
+
+    } catch (error) {
+      console.error('Ошибка геокодирования:', error);
+      setLocationName('Не удалось определить место');
+      onLocationNameChange?.('Не удалось определить место');
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  // Получаем название места при изменении координат
+  useEffect(() => {
+    if (lastLocation && isOpen) {
+      getLocationName(lastLocation.latitude, lastLocation.longitude);
+    }
+  }, [lastLocation, isOpen]);
 
   if (!isOpen) return null;
 
   const formatCoordinate = (coord: number, type: 'lat' | 'lng') => {
     const direction = type === 'lat' ? (coord >= 0 ? 'N' : 'S') : (coord >= 0 ? 'E' : 'W');
-
     return `${Math.abs(coord).toFixed(6)}° ${direction}`;
-
   };
 
   const getStatusColor = () => {
     if (error || permissionStatus === 'denied') return 'text-red-600';
     if (isTracking && lastLocation) return 'text-green-600';
-
     return 'text-yellow-600';
   };
 
@@ -32,7 +103,6 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
     if (error) return 'Ошибка геолокации';
     if (permissionStatus === 'denied') return 'Геолокация запрещена';
     if (isTracking && lastLocation) return 'Местоположение отслеживается';
-
     return 'Геолокация отключена';
   };
 
@@ -40,21 +110,18 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
   const open2GIS = () => {
     if (!lastLocation) return;
     const url = `https://2gis.ru/geo/${lastLocation.longitude},${lastLocation.latitude}`;
-    
     window.open(url, '_blank');
   };
 
   const openYandexMaps = () => {
     if (!lastLocation) return;
     const url = `https://yandex.ru/maps/?ll=${lastLocation.longitude},${lastLocation.latitude}&z=16&pt=${lastLocation.longitude},${lastLocation.latitude}`;
-    
     window.open(url, '_blank');
   };
 
   const openGoogleMaps = () => {
     if (!lastLocation) return;
     const url = `https://www.google.com/maps?q=${lastLocation.latitude},${lastLocation.longitude}`;
-
     window.open(url, '_blank');
   };
 
@@ -85,6 +152,23 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
             </span>
           </div>
 
+          {/* Location Name */}
+          {lastLocation && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700">Местоположение:</h3>
+              <div className="bg-blue-50 rounded-lg p-3 flex items-center gap-2">
+                {isLoadingLocation ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                ) : (
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                )}
+                <span className="text-sm text-gray-900 font-medium">
+                  {isLoadingLocation ? 'Определяем местоположение...' : locationName || 'Неизвестное место'}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Coordinates */}
           {lastLocation && (
             <div className="space-y-2">
@@ -112,12 +196,12 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
               <p className="text-sm text-red-700 mb-3">
                 {error?.includes('HTTPS') || error?.includes('secure origins')
                   ? 'Для геолокации нужен HTTPS. В Edge: edge://flags → "Insecure origins treated as secure" → добавьте http://compass.local:3010'
-                  : permissionStatus === 'denied' 
+                  : permissionStatus === 'denied'
                     ? 'Разрешите доступ к геолокации в настройках браузера для корректной работы приложения.'
                     : error
                 }
               </p>
-              
+
               {(permissionStatus === 'prompt' || permissionStatus === 'unknown' || !isTracking) && (
                 <button
                   onClick={requestLocationPermission}
@@ -135,7 +219,7 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
               <p className="text-sm text-yellow-700 mb-3">
                 Геолокация отключена. Включите её для корректной работы приложения.
               </p>
-              
+
               <button
                 onClick={requestLocationPermission}
                 className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -158,7 +242,7 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
           {lastLocation && (
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-gray-700">Открыть в картах:</h3>
-              
+
               <div className="grid grid-cols-1 gap-2">
                 {/* 2ГИС */}
                 <button

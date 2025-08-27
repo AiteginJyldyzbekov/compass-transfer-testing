@@ -4,15 +4,16 @@ import Image from 'next/image';
 import React from 'react';
 import { Button } from '@shared/ui/forms/button';
 import { useDriverQueue } from '@features/driver-queue';
+import { LocationHeaderIcon } from '@features/location-tracking/ui/location-header-icon';
 
 export function DriverStatusCard() {
-  const { 
-    queueData, 
-    isInQueue, 
-    isLoading, 
+  const {
+    queueData,
+    isInQueue,
+    isLoading,
     error,
-    joinQueue, 
-    leaveQueue 
+    joinQueue,
+    leaveQueue
   } = useDriverQueue();
 
   const handleToggleQueue = async () => {
@@ -25,7 +26,7 @@ export function DriverStatusCard() {
 
   const _formatJoinedTime = (dateString: string) => {
     const date = new Date(dateString);
-    
+
     return date.toLocaleTimeString('ru-RU', {
       hour: '2-digit',
       minute: '2-digit'
@@ -43,7 +44,7 @@ export function DriverStatusCard() {
             <div className='w-32 h-4 bg-gray-200 rounded animate-pulse mb-2' />
             <div className='w-24 h-3 bg-gray-200 rounded animate-pulse' />
           </div>
-          
+
           {/* Нижняя секция - skeleton кнопки */}
           <div className='mt-auto px-1 sm:px-2 pb-1 sm:pb-2'>
             <div className='w-full h-12 sm:h-14 bg-gray-200 rounded-xl animate-pulse' />
@@ -68,7 +69,7 @@ export function DriverStatusCard() {
               </p>
             </div>
           </div>
-          
+
           <div className='mt-auto px-1 sm:px-2 pb-1 sm:pb-2'>
             <Button
               onClick={() => window.history.back()}
@@ -83,7 +84,7 @@ export function DriverStatusCard() {
   }
 
   return (
-    <div className='bg-[#F9F9F9] h-full flex flex-col relative overflow-hidden rounded-2xl border'>
+    <div className='bg-[#F9F9F9] h-full flex flex-col relative overflow-hidden rounded-2xl'>
       {/* Фоновое изображение - показываем только когда НЕ в очереди */}
       {!isInQueue && (
         <div className='absolute inset-0'>
@@ -96,7 +97,7 @@ export function DriverStatusCard() {
           />
         </div>
       )}
-      
+
       {/* Контент поверх фона */}
       <div className='relative z-10 flex flex-col h-full p-3 sm:p-4'>
 
@@ -108,8 +109,8 @@ export function DriverStatusCard() {
               <div className='relative mb-4 sm:mb-6 mx-auto w-fit'>
                 {/* SVG спиннер с градиентом */}
                 <div className='relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40'>
-                  <svg 
-                    className='w-full h-full' 
+                  <svg
+                    className='w-full h-full'
                     viewBox='0 0 100 100'
                     style={{
                       animation: 'spin 2s linear infinite'
@@ -122,7 +123,7 @@ export function DriverStatusCard() {
                         <stop offset='100%' stopColor='#0047FF' />
                       </linearGradient>
                     </defs>
-                    
+
                     {/* Фоновый круг */}
                     <circle
                       cx='50'
@@ -132,7 +133,7 @@ export function DriverStatusCard() {
                       stroke='#e5e7eb'
                       strokeWidth='10'
                     />
-                    
+
                     {/* Анимированная дуга */}
                     <circle
                       cx='50'
@@ -146,7 +147,7 @@ export function DriverStatusCard() {
                       transform='rotate(-90 50 50)'
                     />
                   </svg>
-                  
+
                   {/* Номер позиции в центре */}
                   <div className='absolute inset-0 flex items-center justify-center'>
                     <span className='text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600'>
@@ -155,16 +156,26 @@ export function DriverStatusCard() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Текст "Ожидайте вы на очереди" */}
               <div className='text-center mb-4'>
                 <p className='text-gray-700 text-sm sm:text-base font-medium'>Ожидайте вы на очереди</p>
-                
+
               </div>
             </div>
           ) : (
             /* Пустое место для машины из фонового изображения */
-            <div className='w-full h-24 sm:h-32' />
+            <div className='w-full h-full' >
+              <div className="h-8 flex justify-between">
+                <p className='text-[14px] text-[#92929D]'>Активные заявки</p>
+                <div>
+                  <p className='text=[#000000] text-[10px]'>Местонахождение</p>
+                  <div className='bg-[#FFFFFF] rounded-[7px] py-[2px] px-[3px] flex gap-[3px] items-center mt-[10px]'>
+                    <LocationHeaderIcon />
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
@@ -173,11 +184,10 @@ export function DriverStatusCard() {
           <Button
             onClick={handleToggleQueue}
             disabled={isLoading}
-            className={`w-full h-12 sm:h-14 text-sm sm:text-base font-bold rounded-xl text-white shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
-              isInQueue 
-                ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-400' 
-                : 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400'
-            }`}
+            className={`w-full text-[16px] text-[#FFFFFF] py-[20px] px-[40px] sm:text-base font-medium rounded-[10px] text-white shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${isInQueue
+              ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-400'
+              : 'bg-[#0047FF] hover:bg-blue-700 disabled:bg-blue-400'
+              }`}
           >
             {isLoading ? (
               <div className='flex items-center justify-center gap-2'>
