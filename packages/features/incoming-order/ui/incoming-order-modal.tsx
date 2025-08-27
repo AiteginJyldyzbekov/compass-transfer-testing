@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { driverOrderApi } from '@shared/api/orders';
 import { driverQueueApi } from '@shared/api/driver-queue';
+import { driverOrderApi } from '@shared/api/orders';
+import { ridesApi } from '@shared/api/rides/rides-api';
 import type { SignalREventData } from '@shared/hooks/signal/types';
 import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { Button } from '@shared/ui/forms/button';
@@ -18,6 +19,8 @@ interface IncomingOrderModalProps {
 export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps = {}) {
   // Простое состояние модального окна
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
+  const [currentRideId, setCurrentRideId] = useState<string | null>(null);
+  const [orderType, setOrderType] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<GetOrderDTO | null>(null);
@@ -36,13 +39,11 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
         // ID заказа находится в notification.orderId, а данные в notification.data!
         const signalRData = notification.data as { waypoints: any[] };
         const orderId = notification.orderId as string;
-        const orderType = (notification as any).orderType as string;
-        const title = (notification as any).title as string;
+        const rideId = (notification as any).rideId as string;
+        const orderTypeValue = (notification as any).orderType as string;
 
-        console.log('🚨 ДАННЫЕ ЗАКАЗА ИЗ SIGNALR:', signalRData);
-        console.log('🚨 ORDER ID ИЗ NOTIFICATION:', orderId);
-        console.log('🚨 ORDER TYPE:', orderType);
-        console.log('🚨 TITLE:', title);
+        console.log('🚨 ORDER TYPE:', orderTypeValue);
+        console.log('🚨 RIDE ID:', rideId);
 
         // Создаем правильную структуру данных для модального окна
         const waypoints = signalRData.waypoints || [];
@@ -56,7 +57,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
           endLocationId: endLocation?.address || endLocation?.name || 'Не указано',
           startLocationAddress: startLocation?.address || '',
           endLocationAddress: endLocation?.address || '',
-          type: orderType === 'Instant' ? 'Instant' : 'Scheduled',
+          type: orderTypeValue === 'Instant' ? 'Instant' : 'Scheduled',
           status: OrderStatus.Pending,
           additionalStops: waypoints.slice(2)?.map((wp: { location: any }) => wp.location) || [],
           // Добавляем другие поля с дефолтными значениями
@@ -77,17 +78,15 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
           passengers: []
         } as unknown as GetOrderDTO;
 
-        console.log('🚨 МАППИРОВАННЫЕ ДАННЫЕ:', mappedOrderData);
-
         setCurrentOrder(mappedOrderData);
         setCurrentOrderId(orderId);
+        setCurrentRideId(rideId);
+        setOrderType(orderTypeValue);
         setIsModalOpen(true);
         setTimeLeft(30); // Сбрасываем таймер на 30 секунд
         playSound();
 
         console.log('🚨 currentOrder установлен:', mappedOrderData);
-        console.log('🚨 currentOrderId установлен:', orderId);
-        console.log('🚨 isModalOpen установлен:', true);
 
         // Проверим состояние через небольшую задержку
         setTimeout(() => { }, 100);
@@ -111,17 +110,28 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
     try {
       setIsAccepting(true);
-      console.log('🚨 ПРИНИМАЮ ЗАКАЗ:', currentOrderId);
+      console.log('🚨 ПРИНИМАЮ ЗАКАЗ:', currentOrderId, 'TYPE:', orderType);
 
       stopSound();
-      await driverOrderApi.acceptInstantOrder(currentOrderId)
-        .then(() => driverQueueApi.leaveQueue())
+      
+      // Выбираем правильный API в зависимости от типа заказа
+      if (orderType === 'Scheduled' && currentRideId) {
+        // Для запланированных поездок используем Ride API
+        await ridesApi.acceptScheduledRide(currentRideId);
+      } else {
+        // Для мгновенных заказов используем Order API
+        await driverOrderApi.acceptInstantOrder(currentOrderId);
+      }
+      
+      await driverQueueApi.leaveQueue();
 
       toast.success('✅ Заказ принят!');
 
       // Закрываем модальное окно
       setIsModalOpen(false);
       setCurrentOrderId(null);
+      setCurrentRideId(null);
+      setOrderType(null);
       setCurrentOrder(null);
 
       // Отправляем событие для обновления dashboard
@@ -147,6 +157,8 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
     console.log('🚨 ЗАКРЫВАЮ МОДАЛЬНОЕ ОКНО');
     setIsModalOpen(false);
     setCurrentOrderId(null);
+    setCurrentRideId(null);
+    setOrderType(null);
     setCurrentOrder(null);
     stopSound();
 
