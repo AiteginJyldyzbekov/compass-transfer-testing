@@ -2,18 +2,26 @@
 
 import Image from 'next/image';
 import React from 'react';
+import type { QueueStatusResponse } from '@shared/api/driver-queue';
 import { Button } from '@shared/ui/forms/button';
-import { useDriverQueue } from '@features/driver-queue';
 
-export function DriverStatusCard() {
-  const { 
-    queueData, 
-    isInQueue, 
-    isLoading, 
-    error,
-    joinQueue, 
-    leaveQueue 
-  } = useDriverQueue();
+interface DriverStatusCardProps {
+  queueData: QueueStatusResponse | null;
+  isInQueue: boolean;
+  isLoading: boolean;
+  error: string | null;
+  joinQueue: () => Promise<void>;
+  leaveQueue: () => Promise<void>;
+}
+
+export function DriverStatusCard({ 
+  queueData, 
+  isInQueue, 
+  isLoading, 
+  error, 
+  joinQueue, 
+  leaveQueue 
+}: DriverStatusCardProps) {
 
   const handleToggleQueue = async () => {
     if (isInQueue) {
@@ -21,15 +29,6 @@ export function DriverStatusCard() {
     } else {
       await joinQueue();
     }
-  };
-
-  const _formatJoinedTime = (dateString: string) => {
-    const date = new Date(dateString);
-    
-    return date.toLocaleTimeString('ru-RU', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   // Показываем loading состояние пока не получили ответ от API

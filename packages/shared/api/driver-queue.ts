@@ -36,6 +36,7 @@ export const driverQueueApi = {
       const response = await axios.get<QueueStatusResponse>(`${API_URL}/DriverQueue/self`, {
         withCredentials: true,
       });
+
       return response.data || null;
     } catch (error: any) {
       // При 404 бэкенд может возвращать данные заказа в теле ответа
@@ -46,6 +47,7 @@ export const driverQueueApi = {
           // Если в 404 ответе есть данные заказа, возвращаем их как QueueStatusResponse
           return responseData as QueueStatusResponse;
         }
+        
         return null;
       }
       

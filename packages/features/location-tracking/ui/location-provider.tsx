@@ -170,7 +170,7 @@ export function LocationProvider({
     let intervalId: NodeJS.Timeout;
 
     if (permissionStatus === 'granted') {
-      getCurrentLocation();
+      // Не вызываем getCurrentLocation() сразу, так как координаты уже получены в requestLocationPermission
       setIsTracking(true);
 
       // Устанавливаем интервал только если разрешение есть

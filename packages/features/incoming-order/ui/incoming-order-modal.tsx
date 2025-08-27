@@ -3,12 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { driverOrderApi } from '@shared/api/orders';
+import { driverQueueApi } from '@shared/api/driver-queue';
 import type { SignalREventData } from '@shared/hooks/signal/types';
 import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { Button } from '@shared/ui/forms/button';
 import { OrderStatus } from '@entities/orders/enums';
 import type { GetOrderDTO } from '@entities/orders/interface/GetOrderDTO';
-import { useDriverQueue } from '@features/driver-queue';
 import { useNotificationSound } from '@features/notifications';
 
 interface IncomingOrderModalProps {
@@ -26,7 +26,6 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
   // Хуки
   const { on, off } = useSignalR();
   const { playSound, stopSound } = useNotificationSound();
-  const { leaveQueue } = useDriverQueue();
 
   // SignalR слушатель входящих заказов
   useEffect(() => {
@@ -116,7 +115,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
       stopSound();
       await driverOrderApi.acceptInstantOrder(currentOrderId)
-        .then(() => leaveQueue())
+        .then(() => driverQueueApi.leaveQueue())
 
       toast.success('✅ Заказ принят!');
 
@@ -153,12 +152,12 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
     // Автоматически выходим из очереди при закрытии модального окна
     try {
-      await leaveQueue();
+      await driverQueueApi.leaveQueue();
       console.log('🚨 АВТОМАТИЧЕСКИ ВЫШЛИ ИЗ ОЧЕРЕДИ');
     } catch (error) {
       console.error('Ошибка выхода из очереди:', error);
     }
-  }, [stopSound, leaveQueue]);
+  }, [stopSound]);
 
   // Таймер автоматического закрытия через 30 секунд
   useEffect(() => {
