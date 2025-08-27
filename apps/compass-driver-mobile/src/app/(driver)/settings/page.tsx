@@ -4,6 +4,7 @@ import { User, Bell, Shield, HelpCircle, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { logger } from '@shared/lib';
 import Link from 'next/link';
+import {ChangePasswordModal} from "@features/auth/ui/modal/change-password-modal"
 
 export default function SettingsPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
