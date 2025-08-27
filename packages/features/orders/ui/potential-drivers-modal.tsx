@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { X, User, CheckCircle, XCircle, Clock, MapPin, Star, Car, Users } from 'lucide-react';
-import { Button } from '@shared/ui/forms/button';
-import { orderService, type PotentialDriverResponse } from '@shared/api/orders';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { orderService, type PotentialDriverResponse } from '@shared/api/orders';
+import { Button } from '@shared/ui/forms/button';
 
 interface PotentialDriversModalProps {
   isOpen: boolean;
@@ -35,9 +35,11 @@ export function PotentialDriversModal({
       setIsLoading(true);
       setError(null);
       const data = await orderService.getPotentialDrivers(orderId);
+
       setDrivers(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки водителей';
+
       setError(errorMessage);
       toast.error('Ошибка загрузки потенциальных водителей');
     } finally {
@@ -67,6 +69,7 @@ export function PotentialDriversModal({
       driverHasNotBeenRequested: 'Не получал запрос',
       driverQueuePresent: 'В очереди водителей'
     };
+    
     return labels[key] || key;
   };
 
@@ -83,6 +86,7 @@ export function PotentialDriversModal({
       driverHasNotBeenRequested: <Clock className="h-4 w-4" />,
       driverQueuePresent: <Users className="h-4 w-4" />
     };
+
     return icons[key] || <User className="h-4 w-4" />;
   };
 

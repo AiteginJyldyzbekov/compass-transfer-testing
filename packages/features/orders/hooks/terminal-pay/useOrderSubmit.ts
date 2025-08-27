@@ -176,13 +176,6 @@ export const useOrderSubmit = ({
           ...(paymentId && { paymentId }),
         };
 
-        // Логируем данные для отладки
-        console.log('🚀 Создание заказа терминалом:', {
-          terminalId: terminal.id,
-          terminalLocationId: terminal.locationId,
-          requestBody: _requestBody,
-        });
-
         const response = await orderService.createInstantOrderByTerminal(_requestBody);
 
         // ✅ НОВОЕ: Создаем фискальный чек после успешного создания заказа

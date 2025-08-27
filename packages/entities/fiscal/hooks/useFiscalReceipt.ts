@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { fiscalService } from '../api/fiscal-service';
 import { FiscalError } from '../interface/fiscal-error';
 import type { TaxiReceiptData } from '../interface/fiscal-types';
@@ -42,7 +43,7 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
   const [isCreating, setIsCreating] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
 
-  /* ===== ОСТАЛЬНАЯ РЕАЛЬНАЯ ЛОГИКА ЕСЛИ ФИСКАЛИЗАЦИЯ ВКЛЮЧЕНА ===== */
+  /* ===== ЛОГИКА СОЗДАНИЯ ФИСКАЛЬНЫХ ЧЕКОВ ===== */
 
   /**
    * Создать чек для поездки на такси
@@ -52,14 +53,14 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
 
 
       if (!FISCAL_ENABLED) {
-        console.warn(
+        toast.warning(
           '⚠️ Фискализация отключена! Установите NEXT_PUBLIC_USE_FISCAL=true для включения',
         );
 
         return true;
       }
       if (isCreating) {
-        console.warn('⚠️ Чек уже создается, игнорируем повторный запрос');
+        toast.warning('⚠️ Чек уже создается, игнорируем повторный запрос');
 
         return false;
       }
