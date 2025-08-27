@@ -88,13 +88,13 @@ export function ScheduledRidesList() {
       case 'Accepted':
         return 'Принята';
       case 'Requested':
-        return 'Запрошена';
+        return 'Запланирован';
       case 'Searching':
         return 'Поиск водителя';
       case 'InProgress':
-        return 'Активный';
+        return 'В процессе выполнения';
       case 'Arrived':
-        return 'Активный';
+        return 'Завершенный';
       default:
         return status;
     }
@@ -144,12 +144,6 @@ export function ScheduledRidesList() {
                   {ride.scheduledTime ? formatTime(ride.scheduledTime) : '13:55'}
                 </div>
                 <div className="text-sm text-gray-500">Время</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-semibold text-gray-900">
-                  {ride.orderId?.slice(-6).toUpperCase() || 'PZ0890'}
-                </div>
-                <div className="text-sm text-gray-500">Рейс</div>
               </div>
             </div>
             <div className="flex items-center bg-green-100 px-3 py-1 rounded-full">

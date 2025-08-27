@@ -189,4 +189,15 @@ export const ridesApi = {
       throw new Error(result.error.message);
     }
   },
+
+  /**
+   * Водитель готов к поездке (вызывается через 90 минут после RideRequestNotification)
+   */
+  async driverReady(rideId: string): Promise<void> {
+    const result = await apiClient.post(`/Ride/${rideId}/status/driver-ready`);
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+  },
 };
