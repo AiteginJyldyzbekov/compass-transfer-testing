@@ -38,8 +38,8 @@ export function DriverStatusCard({
     return (
       <div className='h-full flex flex-col relative overflow-hidden rounded-2xl bg-white'>
         <div className='relative z-10 flex flex-col h-full p-3 sm:p-4'>
-          {/* Центральная часть - skeleton */}
-          <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4'>
+          {/* Центральная часть - skeleton с возможностью скролла */}
+          <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4 overflow-y-auto'>
             <div className='w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-gray-200 animate-pulse mb-4' />
             <div className='w-32 h-4 bg-gray-200 rounded animate-pulse mb-2' />
             <div className='w-24 h-3 bg-gray-200 rounded animate-pulse' />
@@ -59,7 +59,7 @@ export function DriverStatusCard({
     return (
       <div className='h-full flex flex-col relative overflow-hidden rounded-2xl bg-white'>
         <div className='relative z-10 flex flex-col h-full p-3 sm:p-4'>
-          <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4'>
+          <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4 overflow-y-auto'>
             <div className='text-center'>
               <p className='text-red-600 text-sm sm:text-base font-medium mb-4'>
                 Ошибка загрузки данных
@@ -101,8 +101,8 @@ export function DriverStatusCard({
       {/* Контент поверх фона */}
       <div className='relative z-10 flex flex-col h-full p-3 sm:p-4'>
 
-        {/* Центральная часть - растягивается */}
-        <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4'>
+        {/* Центральная часть - растягивается с возможностью скролла */}
+        <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4 overflow-y-auto'>
           {isInQueue ? (
             <div className='text-center w-full'>
               {/* Анимированный спиннер с позицией в очереди */}
