@@ -5,6 +5,7 @@ import React from 'react';
 import type { QueueStatusResponse } from '@shared/api/driver-queue';
 import { Button } from '@shared/ui/forms/button';
 import { LocationHeaderIcon } from '@features/location-tracking/ui/location-header-icon';
+import DriverLocation from './driver-location-block';
 
 interface DriverStatusCardProps {
   queueData: QueueStatusResponse | null;
@@ -15,13 +16,13 @@ interface DriverStatusCardProps {
   leaveQueue: () => Promise<void>;
 }
 
-export function DriverStatusCard({ 
-  queueData, 
-  isInQueue, 
-  isLoading, 
-  error, 
-  joinQueue, 
-  leaveQueue 
+export function DriverStatusCard({
+  queueData,
+  isInQueue,
+  isLoading,
+  error,
+  joinQueue,
+  leaveQueue
 }: DriverStatusCardProps) {
 
   const handleToggleQueue = async () => {
@@ -169,9 +170,7 @@ export function DriverStatusCard({
                 <p className='text-[14px] text-[#92929D]'>Активные заявки</p>
                 <div>
                   <p className='text=[#000000] text-[10px]'>Местонахождение</p>
-                  <div className='bg-[#FFFFFF] rounded-[7px] py-[2px] px-[3px] flex gap-[3px] items-center mt-[10px]'>
-                    <LocationHeaderIcon />
-                  </div>
+                  <DriverLocation />
                 </div>
               </div>
             </div>
