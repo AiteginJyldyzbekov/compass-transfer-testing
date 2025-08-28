@@ -64,7 +64,7 @@ export default function DriverDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className='h-full flex flex-col p-3 space-y-3'>
+      <div className='h-full flex flex-col p-4 space-y-4'>
         <div>
           <h1 className='text-2xl font-bold text-gray-900'>Главная</h1>
         </div>
@@ -79,7 +79,7 @@ export default function DriverDashboardPage() {
   }
 
   return (
-    <div className='h-full flex flex-col p-3 space-y-3'>
+    <div className='h-full flex flex-col p-4 space-y-4'>
       {/* Контент: либо активный заказ, либо статус водителя */}
       <div className='flex-1 min-h-0'>
         {currentOrder ? (

@@ -91,6 +91,20 @@ body {
     bottom: env(safe-area-inset-bottom) !important;
     bottom: max(0.5rem, env(safe-area-inset-bottom)) !important;
   }
+  
+  /* Специфичные стили для header на iOS */
+  .ios-header {
+    margin-top: 0.5rem !important;
+    padding-top: 0.75rem !important;
+  }
+  
+  /* Убираем лишние отступы на iOS */
+  @media screen and (max-width: 428px) {
+    .ios-header {
+      margin-top: 0.25rem !important;
+      padding-top: 0.5rem !important;
+    }
+  }
 }
 
 /* Фиксы для Android Chrome */
@@ -191,4 +205,9 @@ main {
 /* Fallback для iOS классов */
 .ios-footer {
   bottom: 0.5rem !important;
+}
+
+.ios-header {
+  margin-top: 0.5rem !important;
+  padding-top: 0.75rem !important;
 }
