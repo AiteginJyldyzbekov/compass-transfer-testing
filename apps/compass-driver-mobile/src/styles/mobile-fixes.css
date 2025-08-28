@@ -22,90 +22,7 @@ body {
   -webkit-touch-callout: none;
 }
 
-/* Фиксы для iOS Safari */
-@supports (-webkit-touch-callout: none) {
-  .h-screen {
-    height: -webkit-fill-available;
-  }
-  
-  .min-h-screen {
-    min-height: -webkit-fill-available;
-  }
-  
-  /* Специфичные фиксы для iPhone */
-  body {
-    height: -webkit-fill-available;
-    min-height: -webkit-fill-available;
-  }
-  
-  /* Правильная работа flex layout на iOS */
-  .flex-col {
-    height: -webkit-fill-available;
-    min-height: -webkit-fill-available;
-  }
-  
-  /* Обеспечиваем правильную высоту для main */
-  main {
-    height: -webkit-fill-available;
-    min-height: 0;
-    flex: 1;
-  }
-  
-  /* Фиксы для fixed элементов на iOS */
-  .fixed {
-    position: fixed !important;
-    z-index: 50;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-  }
-  
-  /* Специфичные классы для iOS */
-  .ios-fix {
-    height: -webkit-fill-available !important;
-    min-height: -webkit-fill-available !important;
-  }
-  
-  .ios-main {
-    height: -webkit-fill-available !important;
-    min-height: 0 !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  
-  /* Дополнительные фиксы для iPhone */
-  @media screen and (max-width: 428px) {
-    .ios-fix {
-      height: 100vh !important;
-      height: -webkit-fill-available !important;
-    }
-    
-    .ios-main {
-      height: 100vh !important;
-      height: -webkit-fill-available !important;
-    }
-  }
-  
-  /* Специфичные стили для footer на iOS */
-  .ios-footer {
-    bottom: env(safe-area-inset-bottom) !important;
-    bottom: max(0.5rem, env(safe-area-inset-bottom)) !important;
-  }
-  
-  /* Специфичные стили для header на iOS */
-  .ios-header {
-    margin-top: 0.5rem !important;
-    padding-top: 0.75rem !important;
-  }
-  
-  /* Убираем лишние отступы на iOS */
-  @media screen and (max-width: 428px) {
-    .ios-header {
-      margin-top: 0.25rem !important;
-      padding-top: 0.5rem !important;
-    }
-  }
-}
+
 
 /* Фиксы для Android Chrome */
 @media screen and (max-width: 768px) {
@@ -146,22 +63,7 @@ html, body {
   min-width: 0;
 }
 
-/* Фиксы для safe-area */
-.safe-area-top {
-  padding-top: env(safe-area-inset-top);
-}
 
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.safe-area-left {
-  padding-left: env(safe-area-inset-left);
-}
-
-.safe-area-right {
-  padding-right: env(safe-area-inset-right);
-}
 
 /* Улучшенная производительность для анимаций */
 .animate-spin,
@@ -202,12 +104,4 @@ main {
   height: 100%;
 }
 
-/* Fallback для iOS классов */
-.ios-footer {
-  bottom: 0.5rem !important;
-}
 
-.ios-header {
-  margin-top: 0.5rem !important;
-  padding-top: 0.75rem !important;
-}
