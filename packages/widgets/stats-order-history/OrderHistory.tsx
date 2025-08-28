@@ -7,48 +7,48 @@ export default function OrderHistoryComponent() {
     const orders = [
         {
             id: 1,
-            client: 'Рудометов Илья Сергеевич',
+            client: 'Рудаметов Илим Саиитбекович',
             date: '12.01.25',
             time: '13:45',
-            amount: '750 ₽',
+            reference: 'PZ0890',
             status: 'completed'
         },
         {
             id: 2,
-            client: 'Рудометов Илья Сергеевич',
+            client: 'Рудаметов Илим Саиитбекович',
             date: '12.01.25',
             time: '13:45',
-            amount: '750 ₽',
+            reference: 'PZ0890',
             status: 'completed'
         },
         {
             id: 3,
-            client: 'Рудометов Илья Сергеевич',
+            client: 'Рудаметов Илим Саиитбекович',
             date: '12.01.25',
             time: '13:45',
-            amount: '750 ₽',
+            reference: 'PZ0890',
             status: 'completed'
         }
     ];
 
     return (
-        <div className="p-6 bg-white">
+        <div className="bg-white min-h-screen mt-[10px]">
             {/* Табы */}
-            <div className="flex mb-6">
+            <div className="flex bg-gray-100 rounded-3xl p-1 mx-4 mb-6">
                 <button
                     onClick={() => setActiveTab('completed')}
-                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-lg mr-2 ${activeTab === 'completed'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-600'
+                    className={`flex-1 py-3 px-6 text-base font-medium rounded-3xl transition-all ${activeTab === 'completed'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
                         }`}
                 >
                     Выполненные
                 </button>
                 <button
                     onClick={() => setActiveTab('pending')}
-                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-lg ${activeTab === 'pending'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-600'
+                    className={`flex-1 py-3 px-6 text-base font-medium rounded-3xl transition-all ${activeTab === 'pending'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
                         }`}
                 >
                     Не выполненные
@@ -56,23 +56,48 @@ export default function OrderHistoryComponent() {
             </div>
 
             {/* Список заказов */}
-            <div className="space-y-4">
+            <div className="px-4 space-y-3">
                 {orders.map((order) => (
-                    <div key={order.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+                    <div key={order.id} className="py-4 px-4 rounded-xl" style={{ backgroundColor: '#0047FF08' }}>
                         <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                                <h3 className="font-medium text-gray-900 mb-1">{order.client}</h3>
-                                <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                    <span>{order.date}</span>
-                                    <span>{order.time}</span>
-                                    <span>{order.amount}</span>
-                                </div>
-                                <div className="text-xs text-gray-400 mt-1">Статус</div>
+                            {/* Левая часть - имя */}
+                            <div className="w-32">
+                                <h3 className="text-sm font-medium leading-tight" style={{ color: '#212227' }}>
+                                    {order.client}
+                                </h3>
                             </div>
-                            <div className="flex items-center space-x-2 ml-4">
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                    ● Завершен
-                                </span>
+
+                            {/* Правая часть - все остальные данные */}
+                            <div className="flex flex-col items-end space-y-2">
+                                <div className="flex items-center space-x-8">
+                                    <div className="flex flex-col items-center w-16">
+                                        <span className="text-xs font-medium" style={{ color: '#212227' }}>{order.date}</span>
+                                        <span className="text-xs" style={{ color: '#92929D' }}>Дата</span>
+                                    </div>
+                                    <div className="flex flex-col items-center w-16">
+                                        <span className="text-xs font-medium" style={{ color: '#212227' }}>{order.time}</span>
+                                        <span className="text-xs" style={{ color: '#92929D' }}>Время</span>
+                                    </div>
+                                    <div className="flex flex-col items-center w-16">
+                                        <span className="text-xs font-medium" style={{ color: '#212227' }}>{order.reference}</span>
+                                        <span className="text-xs" style={{ color: '#92929D' }}>Рейс</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center space-x-8">
+                                    <div className="flex flex-col items-center w-16">
+                                        <span className="text-sm text-gray-900">Статус</span>
+                                    </div>
+                                    <div className="flex flex-col items-center w-16">
+                                        {/* Пустое место под временем */}
+                                    </div>
+                                    <div className="flex flex-col items-center w-16">
+                                        <div className="flex items-center">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                            <span className="text-green-600 text-sm font-medium">Завершен</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
