@@ -65,3 +65,8 @@ export { default as StatsNavIcon } from './StatsNavIcon';
 export { default as StatsNavActiveIcon } from './StatsNavActiveIcon';
 export { default as SettingsNavIcon } from './SettingsNavIcon';
 export { default as SettingsNavActiveIcon } from './SettingsNavActiveIcon';
+
+// Notification icons
+export { OrderIcon } from './OrderIcon';
+export { InfoIcon as NotificationInfoIcon } from './InfoIcon';
+export { WarningIcon } from './WarningIcon';
