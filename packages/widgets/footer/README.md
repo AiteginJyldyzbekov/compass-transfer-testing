@@ -21,6 +21,25 @@
 
 ## Использование
 
+### Рекомендуемый способ (с отступом в main):
+
+```tsx
+import { DriverMobileFooter } from '@widgets/footer';
+
+export default function Layout({ children }) {
+  return (
+    <div className="flex flex-col h-screen">
+      <main className="flex-1 overflow-y-auto pb-20 safe-area-bottom">
+        {children}
+      </main>
+      <DriverMobileFooter />
+    </div>
+  );
+}
+```
+
+### Альтернативный способ (с FooterSpacer):
+
 ```tsx
 import { DriverMobileFooter, FooterSpacer } from '@widgets/footer';
 

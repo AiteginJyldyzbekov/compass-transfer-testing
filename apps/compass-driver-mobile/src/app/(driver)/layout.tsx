@@ -3,7 +3,7 @@ import { getRawCookie } from '@shared/lib/parse-cookie';
 import { IncomingOrderModal } from '@features/incoming-order';
 import { LocationProvider } from '@features/location-tracking';
 import { NotificationsProvider } from '@features/notifications';
-import { DriverMobileFooter, FooterSpacer } from '@widgets/footer';
+import { DriverMobileFooter } from '@widgets/footer';
 import { DriverMobileHeader } from '@widgets/header';
 
 interface DriverLayoutProps {
@@ -24,8 +24,7 @@ export default async function DriverLayout({ children }: DriverLayoutProps) {
           <LocationProvider intervalMs={30000}>
             <div className='flex flex-col h-screen'>
               <DriverMobileHeader />
-              <main className='flex-1 overflow-y-auto'>{children}</main>
-              <FooterSpacer />
+              <main className='flex-1 overflow-y-auto pb-20 safe-area-bottom'>{children}</main>
               <DriverMobileFooter />
 
               {/* Модальное окно для входящих заказов - теперь самодостаточное */}

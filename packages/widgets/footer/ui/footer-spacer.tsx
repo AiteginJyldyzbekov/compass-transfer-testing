@@ -7,7 +7,7 @@ interface FooterSpacerProps {
 export function FooterSpacer({ className = '' }: FooterSpacerProps) {
   return (
     <div 
-      className={`h-20 safe-area-bottom ${className}`}
+      className={`h-20 pb-safe-area-inset-bottom ${className}`}
       aria-hidden="true"
     />
   );
