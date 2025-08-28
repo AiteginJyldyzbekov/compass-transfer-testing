@@ -15,8 +15,8 @@ export function DriverMobileFooter() {
   };
 
   return (
-    <footer className='bg-[#F9F9F9] safe-area-bottom mx-2 mb-2 rounded-2xl shadow-md'>
-      <div className='flex justify-around items-center py-3 px-1'>
+    <footer className='fixed bottom-0 left-0 right-0 bg-[#F9F9F9] mx-2 mb-2 rounded-2xl shadow-md z-50 safe-area-bottom'>
+      <div className='flex justify-around items-center py-3 px-1 max-w-screen-sm mx-auto'>
         {driverMobileNavItems.map((item) => {
           const isActive = pathname === item.href;
           
