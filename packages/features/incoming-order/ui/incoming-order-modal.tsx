@@ -103,7 +103,6 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
     };
   }, [on, off, playSound, stopSound]);
 
-  // Данные уже есть в SignalR
   // Принятие заказа
   const handleAccept = async () => {
     if (!currentOrderId) return;
@@ -113,7 +112,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
       console.log('🚨 ПРИНИМАЮ ЗАКАЗ:', currentOrderId, 'TYPE:', orderType);
 
       stopSound();
-      
+
       // Выбираем правильный API в зависимости от типа заказа
       if (orderType === 'Scheduled' && currentRideId) {
         // Для запланированных поездок используем Ride API
@@ -122,7 +121,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
         // Для мгновенных заказов используем Order API
         await driverOrderApi.acceptInstantOrder(currentOrderId);
       }
-      
+
       await driverQueueApi.leaveQueue();
 
       toast.success('✅ Заказ принят!');
@@ -139,9 +138,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
       // Также вызываем callback если он передан
       if (onOrderAccepted) {
-        setTimeout(() => {
-          onOrderAccepted();
-        }, 500);
+        onOrderAccepted();
       }
 
     } catch (error) {
@@ -162,13 +159,13 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
     setCurrentOrder(null);
     stopSound();
 
-    // Автоматически выходим из очереди при закрытии модального окна
-    try {
-      await driverQueueApi.leaveQueue();
-      console.log('🚨 АВТОМАТИЧЕСКИ ВЫШЛИ ИЗ ОЧЕРЕДИ');
-    } catch (error) {
-      console.error('Ошибка выхода из очереди:', error);
-    }
+    // // Автоматически выходим из очереди при закрытии модального окна
+    // try {
+    //   await driverQueueApi.leaveQueue();
+    //   console.log('🚨 АВТОМАТИЧЕСКИ ВЫШЛИ ИЗ ОЧЕРЕДИ');
+    // } catch (error) {
+    //   console.error('Ошибка выхода из очереди:', error);
+    // }
   }, [stopSound]);
 
   // Таймер автоматического закрытия через 30 секунд
@@ -181,10 +178,8 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
           if (prev <= 1) {
             // Время вышло - автоматически закрываем модальное окно
             handleClose();
-
             return 0;
           }
-
           return prev - 1;
         });
       }, 1000);
@@ -210,95 +205,100 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
   console.log('🚨 ВСЕ УСЛОВИЯ ВЫПОЛНЕНЫ, ПОКАЗЫВАЮ МОДАЛЬНОЕ ОКНО!');
 
+  // Вычисляем процент для анимации кнопки - теперь считаем оставшееся время
+  const progressPercent = (timeLeft / 30) * 100;
+
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'>
-      <div className='w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200'>
-        {/* Заголовок */}
-        <div className='bg-blue-600 text-white p-4 text-center'>
-          <h2 className='text-lg font-bold'>Новый заказ</h2>
-          <p className='text-blue-100 text-sm'>Заказ #{currentOrder.orderNumber}</p>
-          <div className='mt-2 flex items-center justify-center gap-2'>
-            <div className='w-2 h-2 bg-red-500 rounded-full animate-pulse' />
-            <p className='text-blue-100 text-sm font-medium'>
-              Автозакрытие через {timeLeft} сек
-            </p>
-          </div>
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+      <div className='w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300'>
+        {/*  информация о пользователе */}
+        <div className='px-6 pt-8 pb-4 text-left'>
+          <h3 className='text-lg font-semibold text-gray-900 mb-1'>
+            Рустемов Илим Сейтбекович
+          </h3>
+          <p className='text-sm text-gray-500 mb-4'>
+            +996 700 700 700
+          </p>
+        </div>
+        <div className='mb-[30px] flex justify-center px-[10px]'>
+          <hr className='border-gray-200 border-gray-200 w-full' />
         </div>
 
-        {/* Содержимое */}
-        <div className='p-4 space-y-4'>
-          {/* Маршрут */}
-          <div className='space-y-3'>
-            <div className='flex items-start space-x-3'>
-              <div className='w-3 h-3 rounded-full bg-green-500 mt-1 flex-shrink-0' />
-              <div className='flex-1'>
-                <p className='text-sm text-gray-500'>Откуда</p>
-                <p className='font-medium text-gray-900'>
-                  {currentOrder.startLocationId || 'Не указано'}
-                </p>
-              </div>
+        {/* Маршруты */}
+        <div className='px-6 pb-6 space-y-3'>
+          {/* Откуда */}
+          <div className='flex items-center space-x-3'>
+            <div className='flex items-center justify-center w-6 h-6'>
+              <svg className='w-4 h-4 text-blue-600' fill='currentColor' viewBox='0 0 20 20'>
+                <path fillRule='evenodd' d='M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z' clipRule='evenodd' />
+              </svg>
             </div>
-
-            <div className='flex items-start space-x-3'>
-              <div className='w-3 h-3 rounded-full bg-red-500 mt-1 flex-shrink-0' />
-              <div className='flex-1'>
-                <p className='text-sm text-gray-500'>Куда</p>
-                <p className='font-medium text-gray-900'>
-                  {currentOrder.endLocationId || 'Не указано'}
-                </p>
+            <div className='flex-1'>
+              <div className='flex items-center space-x-2'>
+                <span className='text-blue-600 text-sm font-medium'> {currentOrder.startLocationId || 'Не указано'}</span>
               </div>
             </div>
           </div>
 
-          {/* Дополнительная информация */}
-          <div className='grid grid-cols-2 gap-4 pt-2 border-t'>
-            <div>
-              <p className='text-sm text-gray-500'>Тип заказа</p>
-              <p className='font-medium'>{currentOrder.type === 'Instant' ? 'Мгновенный' : 'Запланированный'}</p>
-            </div>
-            <div>
-              <p className='text-sm text-gray-500'>Статус</p>
-              <p className='font-medium'>
-                {currentOrder.status === OrderStatus.Pending ? 'Поиск водителя' : currentOrder.status}
-              </p>
+          {/* Разделитель */}
+          <div className='flex items-center space-x-3'>
+            <div className='w-6 flex justify-center'>
+              <div className='w-px h-4 bg-gray-300'></div>
             </div>
           </div>
 
-          {/* Промежуточные точки */}
-          {currentOrder.additionalStops && currentOrder.additionalStops.length > 0 && (
-            <div className='pt-2 border-t'>
-              <p className='text-sm text-gray-500 mb-2'>Промежуточные остановки:</p>
-              <div className='space-y-1'>
-                {currentOrder.additionalStops.map((stopId: string, _index: number) => (
-                  <div key={stopId} className='flex items-center space-x-2'>
-                    <div className='w-2 h-2 rounded-full bg-yellow-500' />
-                    <p className='text-sm text-gray-700'>
-                      Остановка {stopId}
-                    </p>
+          {/* Куда */}
+          <div className='flex items-center space-x-3'>
+            <div className='flex items-center justify-center w-6 h-6'>
+              <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
+                <path fillRule='evenodd' d='M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z' clipRule='evenodd' />
+              </svg>
+            </div>
+            <div className='flex-1'>
+              <div className='flex items-center space-x-2'>
+                <span className='text-sm font-medium'> {currentOrder.endLocationId || 'Не указано'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Дополнительная остановка */}
+          {
+            currentOrder.additionalStops.length > 1 && (
+              <div className='flex items-center space-x-3'>
+                <div className='flex items-center justify-center w-6 h-6'>
+                  <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
+                    <path fillRule='evenodd' d='M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z' clipRule='evenodd' />
+                  </svg>
+                </div>
+                <div className='flex-1'>
+                  <div className='flex items-center space-x-2'>
+                    <span className='text-sm font-medium'> {currentOrder.additionalStops || ''}</span>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
         </div>
 
-        {/* Кнопки */}
-        <div className='p-4 bg-gray-50'>
-          <div className='flex gap-3'>
-            <Button
-              onClick={handleClose}
-              variant='outline'
-              className='flex-1 py-3 rounded-xl'
-            >
-              Отклонить
-            </Button>
-            <Button
+        {/* Кнопка принять с анимацией */}
+        <div className='px-6 pb-6'>
+          <div className='relative'>
+            <button
               onClick={handleAccept}
-              disabled={isAccepting}
-              className='flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors'
+              disabled={isAccepting || timeLeft <= 0}
+              className='relative w-full bg-gray-400 hover:bg-gray-500 disabled:bg-gray-400 text-white font-medium py-4 rounded-2xl transition-all duration-200 overflow-hidden'
             >
-              {isAccepting ? 'Принимаю...' : 'Принять'}
-            </Button>
+              {/* Синяя полоска, которая уменьшается справа налево */}
+              <div
+                className='absolute left-0 top-0 h-full bg-blue-600 hover:bg-blue-700 transition-all duration-1000 ease-linear'
+                style={{ width: `${progressPercent}%` }}
+              />
+
+              {/* Текст кнопки */}
+              <span className='relative z-10'>
+                {isAccepting ? 'Принимаю...' : `Принять заказ`}
+              </span>
+            </button>
           </div>
         </div>
       </div>
