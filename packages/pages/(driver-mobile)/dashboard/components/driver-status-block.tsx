@@ -68,7 +68,7 @@ const DriverStatusBlock = () => {
     return (
         <>
             {/* Основной блок статуса */}
-            <div className="bg-gray-50 rounded-lg p-4 w-full">
+            <div className="bg-gray-50 rounded-lg p-4 w-full mb-20">
                 <div className="flex items-center justify-between gap-8">
                     <div className="text-sm text-gray-600 font-medium">
                         Статус работы
