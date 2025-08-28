@@ -31,6 +31,66 @@ body {
   .min-h-screen {
     min-height: -webkit-fill-available;
   }
+  
+  /* Специфичные фиксы для iPhone */
+  body {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Правильная работа flex layout на iOS */
+  .flex-col {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Обеспечиваем правильную высоту для main */
+  main {
+    height: -webkit-fill-available;
+    min-height: 0;
+    flex: 1;
+  }
+  
+  /* Фиксы для fixed элементов на iOS */
+  .fixed {
+    position: fixed !important;
+    z-index: 50;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Специфичные классы для iOS */
+  .ios-fix {
+    height: -webkit-fill-available !important;
+    min-height: -webkit-fill-available !important;
+  }
+  
+  .ios-main {
+    height: -webkit-fill-available !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Дополнительные фиксы для iPhone */
+  @media screen and (max-width: 428px) {
+    .ios-fix {
+      height: 100vh !important;
+      height: -webkit-fill-available !important;
+    }
+    
+    .ios-main {
+      height: 100vh !important;
+      height: -webkit-fill-available !important;
+    }
+  }
+  
+  /* Специфичные стили для footer на iOS */
+  .ios-footer {
+    bottom: env(safe-area-inset-bottom) !important;
+    bottom: max(0.5rem, env(safe-area-inset-bottom)) !important;
+  }
 }
 
 /* Фиксы для Android Chrome */
@@ -126,4 +186,9 @@ main {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   height: 100%;
+}
+
+/* Fallback для iOS классов */
+.ios-footer {
+  bottom: 0.5rem !important;
 }

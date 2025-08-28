@@ -301,6 +301,23 @@ td[data-selected] button:active {
   .mt-safe-area-inset-top {
     margin-top: max(0.5rem, env(safe-area-inset-top));
   }
+  
+  /* Дополнительные safe area классы для iOS */
+  .safe-area-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-top {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-left {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+  }
+  
+  .safe-area-right {
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+  }
 }
 
 /* Fallback for browsers that don't support safe-area-inset */
@@ -327,6 +344,23 @@ td[data-selected] button:active {
   
   .mt-safe-area-inset-top {
     margin-top: 0.5rem;
+  }
+  
+  /* Fallback для safe area классов */
+  .safe-area-bottom {
+    padding-bottom: 0.5rem;
+  }
+  
+  .safe-area-top {
+    padding-top: 0.5rem;
+  }
+  
+  .safe-area-left {
+    padding-left: 0.5rem;
+  }
+  
+  .safe-area-right {
+    padding-right: 0.5rem;
   }
 }
 
@@ -359,5 +393,37 @@ td[data-selected] button:active {
   main {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Специфичные фиксы для iPhone */
+  body {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Правильная работа flex layout на iOS */
+  .flex-col {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Обеспечиваем правильную высоту для main */
+  main {
+    height: -webkit-fill-available;
+    min-height: 0;
+    flex: 1;
+  }
+  
+  /* Дополнительные фиксы для iPhone */
+  @media screen and (max-width: 428px) {
+    .h-screen {
+      height: 100vh !important;
+      height: -webkit-fill-available !important;
+    }
+    
+    main {
+      height: 100vh !important;
+      height: -webkit-fill-available !important;
+    }
   }
 }

@@ -22,9 +22,9 @@ export default async function DriverLayout({ children }: DriverLayoutProps) {
       <NotificationProvider>
         <NotificationsProvider>
           <LocationProvider intervalMs={30000}>
-            <div className='flex flex-col h-screen'>
+            <div className='flex flex-col h-screen ios-fix'>
               <DriverMobileHeader />
-              <main className='flex-1 overflow-y-auto pb-20 safe-area-bottom'>{children}</main>
+              <main className='flex-1 overflow-y-auto pb-20 safe-area-bottom ios-main'>{children}</main>
               <DriverMobileFooter />
 
               {/* Модальное окно для входящих заказов - теперь самодостаточное */}

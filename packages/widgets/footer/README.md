@@ -72,6 +72,12 @@ export default function Layout({ children }) {
 - `.safe-area-left` - отступ слева с учетом safe area
 - `.safe-area-right` - отступ справа с учетом safe area
 
+### iOS-специфичные классы
+
+- `.ios-fix` - исправляет высоту контейнера на iOS Safari
+- `.ios-main` - обеспечивает правильную работу main элемента на iOS
+- `.ios-footer` - правильное позиционирование footer на iOS
+
 ### Fallback классы
 
 Для браузеров без поддержки safe area insets:
