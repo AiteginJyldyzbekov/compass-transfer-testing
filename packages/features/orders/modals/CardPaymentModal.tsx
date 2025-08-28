@@ -24,13 +24,15 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     onClose();
   }, [onClose]);
 
-  // Первая попытка оплаты
+  // Реальная оплата через POS-терминал
   useEffect(() => {
     if (!isOpen) return;
 
     (async () => {
       try {
         setStatus('processing');
+        
+        // Реальная оплата через POS-терминал
         const res = await fiscalService.executePayment(amount, '');
 
         if (res.status !== 'Success') throw new Error(res.reason || 'Payment failed');

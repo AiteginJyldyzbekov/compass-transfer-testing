@@ -52,8 +52,6 @@ export class PaymentService extends BaseApiService {
       note: cleanedNote,
     };
 
-    console.log('Отправляем на сервер:', requestBody); // для отладки
-
     const result = await this.post<GenerateQRResponse, GenerateQRRequest>(
       '/Optima/generate-qr',
       requestBody,
