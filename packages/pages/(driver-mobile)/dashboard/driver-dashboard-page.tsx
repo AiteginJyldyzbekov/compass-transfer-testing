@@ -87,7 +87,7 @@ export default function DriverDashboardPage() {
       </div>
 
       {/* Контент: либо активный заказ, либо статус водителя */}
-      <div className='flex-1 min-h-0 pb-[120px]'>
+      <div className='flex-1 min-h-0 pb-[100px]'>
         {currentOrder ? (
           <ActiveOrderCard
             order={currentOrder}

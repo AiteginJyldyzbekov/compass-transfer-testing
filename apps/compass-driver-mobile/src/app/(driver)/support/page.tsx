@@ -80,7 +80,7 @@ export default function SupportBlocks() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 flex flex-col justify-between gap-[10px]">
+          <div className="flex-1 flex flex-col justify-between gap-[5px]">
             <div>
               <h3 className="text-gray-900 text-sm font-medium mb-2 text-center">Свяжитесь с нами через онлайн-чат</h3>
               <p className="text-gray-600 text-xs leading-relaxed text-center">

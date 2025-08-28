@@ -84,7 +84,7 @@ const DriverLocation = () => {
 
             {/* Модальное окно */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10000">
                     <div
                         className="bg-white rounded-2xl p-6 w-64 shadow-xl"
                         onClick={(e) => e.stopPropagation()}
