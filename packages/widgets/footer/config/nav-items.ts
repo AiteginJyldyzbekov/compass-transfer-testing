@@ -51,7 +51,7 @@ export const driverMobileNavItems: FooterNavItem[] = [
   {
     id: 'chat',
     icon: ChatIcon,
-    href: '/chat',
+    href: '/support',
   },
   {
     id: 'stats',

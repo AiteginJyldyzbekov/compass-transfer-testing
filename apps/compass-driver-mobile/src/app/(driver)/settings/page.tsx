@@ -31,7 +31,6 @@ export default function SettingsPage() {
   const languages = [
     { code: 'ru', name: 'Русский', flag: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3 2'%3E%3Cpath fill='%23fff' d='M0 0h3v2H0z'/%3E%3Cpath fill='%23d52b1e' d='M0 0h3v.67H0z'/%3E%3Cpath fill='%230039a6' d='M0 .67h3v.67H0z'/%3E%3Cpath fill='%23d52b1e' d='M0 1.33h3V2H0z'/%3E%3C/svg%3E" },
     { code: 'en', name: 'English', flag: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'%3E%3Cpath fill='%23012169' d='M0 0h60v30H0z'/%3E%3Cpath fill='%23fff' d='m0 0 60 30m0-30L0 30'/%3E%3Cpath stroke='%23C8102E' stroke-width='6' d='m0 0 60 30m0-30L0 30'/%3E%3Cpath stroke='%23fff' stroke-width='10' d='M30 0v30M0 15h60'/%3E%3Cpath stroke='%23C8102E' stroke-width='6' d='M30 0v30M0 15h60'/%3E%3C/svg%3E" },
-    { code: 'de', name: 'Deutsch', flag: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 3'%3E%3Cpath fill='%23000' d='M0 0h5v1H0z'/%3E%3Cpath fill='%23D00' d='M0 1h5v1H0z'/%3E%3Cpath fill='%23FFCE00' d='M0 2h5v1H0z'/%3E%3C/svg%3E" }
   ];
 
   const selectedLanguage = languages.find(lang => lang.name === language);
