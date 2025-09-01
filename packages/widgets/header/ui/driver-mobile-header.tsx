@@ -27,7 +27,7 @@ export function DriverMobileHeader() {
 
   return (
     <header className='bg-[#F9F9F9] mx-2 mt-2 relative overflow-hidden rounded-[20px]'>
-      <div className='flex items-center justify-between relative z-30'>
+      <div className='flex items-center justify-between relative z-5'>
         {/* Профиль водителя */}
         <div className='flex items-center p-3 gap-2 flex-1 min-w-0'>
           <Avatar className='w-[50px] h-[50px] flex-shrink-0'>
