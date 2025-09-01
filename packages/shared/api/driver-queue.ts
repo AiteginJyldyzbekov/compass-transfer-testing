@@ -6,6 +6,7 @@ import { apiDelete, apiPost } from '@shared/api/client';
  */
 export interface JoinQueueResponse {
   driverId: string;
+  locationId: string; // ID выбранной локации
   joinedAt: string; // RFC 3339 date-time format
   position?: number; // Позиция в очереди (если доступна)
 }
@@ -15,6 +16,7 @@ export interface JoinQueueResponse {
  */
 export interface QueueStatusResponse {
   driverId: string;
+  locationId: string; // ID локации, для которой водитель в очереди
   joinedAt: string; // RFC 3339 date-time format
   position: number; // Позиция в очереди
   orderId?: string; // ID заказа, если водитель сейчас выполняет заказ
@@ -56,11 +58,12 @@ export const driverQueueApi = {
   },
 
   /**
-   * Встать в очередь
-   * POST /DriverQueue/self
+   * Встать в очередь для указанной локации
+   * POST /DriverQueue/self/{locationId}
+   * @param locationId - ID локации, для которой встаем в очередь
    */
-  async joinQueue() {
-    const result = await apiPost<JoinQueueResponse>('/DriverQueue/self');
+  async joinQueue(locationId: string) {
+    const result = await apiPost<JoinQueueResponse>(`/DriverQueue/self/${locationId}`);
     
     if (result.error) {
       throw new Error(result.error.message);

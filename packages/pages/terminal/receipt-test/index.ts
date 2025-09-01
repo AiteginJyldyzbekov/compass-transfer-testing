@@ -1,0 +1,1 @@
+export { ReceiptTest } from './ReceiptTest';

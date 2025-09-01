@@ -1,30 +1,59 @@
 'use client';
 
 import type { NextPage } from 'next';
-import Image from 'next/image';
+// import Image from 'next/image'; // Убрано, так как логотип не используется
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { captureReceiptImage } from '@shared/utils/receiptCapture';
+// import { captureReceiptImage } from '@shared/utils/receiptCapture'; // Отключено для тестирования
 import { useFiscalReceipt } from '@entities/fiscal';
-import { useTerminalReceipt } from '@entities/orders/context';
 
 // 🔄 ПЕРЕКЛЮЧАТЕЛЬ СПОСОБА ПЕЧАТИ
 // true - растровая печать (html2canvas -> printRaster)
 // false - построчная печать (printReceiptLines)
 const USE_RASTER_PRINT = true;
 
-export const Receipt: NextPage = () => {
-  const t = useTranslations('Receipt');
+// 🧪 МОКОВЫЕ ДАННЫЕ ДЛЯ ТЕСТИРОВАНИЯ
+const MOCK_RECEIPT_DATA = {
+  id: 'test-receipt-123',
+  orderId: 'order-456789',
+  data: {
+    orderNumber: '123456',
+    driver: {
+      fullName: 'Иванов Иван Иванович',
+      phoneNumber: '+996 555 123 456'
+    },
+    car: {
+      make: 'Toyota',
+      model: 'Camry',
+      licensePlate: '01 KG 777 AA',
+      color: 'Белый'
+    },
+    queueNumber: 42
+  }
+};
+
+const MOCK_ORDER_DATA = {
+  finalPrice: 250,
+  tariff: {
+    basePrice: 250
+  },
+  locations: [
+    { name: 'Аэропорт Манас' },
+    { name: 'ТРЦ Дордой Плаза' }
+  ]
+};
+
+export const ReceiptTest: NextPage = () => {
+  const _t = useTranslations('Receipt');
   const router = useRouter();
-  const { receiptData, orderData, clearReceiptData } = useTerminalReceipt();
   const { printReceiptLines, printReceiptImage } = useFiscalReceipt();
 
   const hasAutoSavedRef = useRef(false);
 
-  // InfoRow компонент
-  const InfoRow: React.FC<{ label: string; value: string | React.ReactNode; className?: string }> = ({ 
+  // InfoRow компонент (не используется в новом дизайне)
+  const _InfoRow: React.FC<{ label: string; value: string | React.ReactNode; className?: string }> = ({ 
     label, 
     value, 
     className = '' 
@@ -39,8 +68,8 @@ export const Receipt: NextPage = () => {
     </div>
   );
 
-  // CountdownButton компонент
-  const CountdownButton: React.FC<{
+  // CountdownButton компонент (не используется)
+  const _CountdownButton: React.FC<{
     initialSeconds: number;
     targetPath: string;
     buttonText: string;
@@ -88,26 +117,19 @@ export const Receipt: NextPage = () => {
   };
   
   const currentDate = new Date();
-  const formattedDate = currentDate.toLocaleDateString('ru-RU', {
+  const _formattedDate = currentDate.toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: '2-digit',
   });
 
-  // Очищаем данные при размонтировании компонента
+  // Автоматическая печать изображения чека после его отображения (отключена для тестирования)
   useEffect(() => {
-    return () => {
-      clearReceiptData();
-    };
-  }, [clearReceiptData]);
-
-  // Автоматическая печать изображения чека после его отображения
-  useEffect(() => {
-    if (receiptData && orderData && !hasAutoSavedRef.current) {
+    if (MOCK_RECEIPT_DATA && MOCK_ORDER_DATA && !hasAutoSavedRef.current) {
       // Ждем немного, чтобы компонент полностью отрендерился
       const timeoutId = setTimeout(async () => {
         try {
-          // Начинаем автоматическую печать изображения чека
+          // 🧪 ТЕСТОВЫЙ РЕЖИМ: Печать отключена
           
           // Проверяем что элемент существует и отрендерился
           const receiptElement = document.getElementById('receipt-container');
@@ -117,43 +139,28 @@ export const Receipt: NextPage = () => {
 
             return;
           }
+
           
           let success = false;
           
           if (USE_RASTER_PRINT) {
             // 🖼️ РАСТРОВАЯ ПЕЧАТЬ - через html2canvas
-            // 📸 Используется растровая печать чека
+            // 🧪 ТЕСТОВЫЙ РЕЖИМ: Растровая печать (отключена)
             
-            // Создаем скриншот чека
-            const receiptBase64 = await captureReceiptImage('receipt-container', 384);
-            
-            // Печатаем растровое изображение
-            success = await printReceiptImage(receiptBase64);
+            // В тестовом режиме не печатаем
+            // const receiptBase64 = await captureReceiptImage('receipt-container', 384);
+            // success = await printReceiptImage(receiptBase64);
+            success = true; // Имитируем успех
           } else {
             // 📄 ПОСТРОЧНАЯ ПЕЧАТЬ - через API строки
-            // 📝 Используется построчная печать чека
+            // 🧪 ТЕСТОВЫЙ РЕЖИМ: Построчная печать (отключена)
             
-            // Печатаем чек одним запросом
-            success = await printReceiptLines({
-              price: orderData.tariff?.basePrice || orderData.finalPrice || 0,
-              route: orderData.locations?.map((loc: { name: string }) => loc.name).join(' → ') || 'Неизвестный маршрут',
-              paymentMethod: 'CARD',
-              orderNumber: receiptData.data?.orderNumber || '000000',
-              driver: {
-                fullName: receiptData.data?.driver?.fullName || 'Неизвестный водитель',
-                phoneNumber: receiptData.data?.driver?.phoneNumber
-              },
-              car: {
-                make: receiptData.data?.car?.make || 'Неизвестная марка',
-                model: receiptData.data?.car?.model || 'Неизвестная модель',
-                licensePlate: receiptData.data?.car?.licensePlate || 'Неизвестный номер',
-                color: receiptData.data?.car?.color || 'Неизвестный цвет'
-              },
-              queueNumber: receiptData.data?.queueNumber
-            });
+            // В тестовом режиме не печатаем
+            success = true; // Имитируем успех
           }
           
           if (success) {
+            toast.success('🧪 ТЕСТОВЫЙ РЕЖИМ: Печать имитирована');
           } else {
             toast.warning('⚠️ Проблема с печатью чека');
           }
@@ -162,33 +169,15 @@ export const Receipt: NextPage = () => {
         } finally {
           hasAutoSavedRef.current = true;
         }
-      }, 2000); // Увеличиваем задержку до 2 секунд для полного рендера
+      }, 2000);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [receiptData, orderData, printReceiptLines, printReceiptImage]);
-
-  // Если нет данных чека или заказа, показываем сообщение об ошибке
-  if (!receiptData || !orderData) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <h3 className="text-[32px] text-red-600 font-bold">
-          Данные чека не найдены
-        </h3>
-        <p className="text-[24px] text-gray-600">
-          Пожалуйста, вернитесь на главную страницу и создайте новый заказ
-        </p>
-        <CountdownButton
-          initialSeconds={10}
-          targetPath="/"
-          buttonText="На главную"
-        />
-      </div>
-    );
-  }
+  }, [printReceiptLines, printReceiptImage]);
 
   return (
     <div className="flex flex-col gap-[50px]">
+
       {/* Заголовок */}
       <h3 className="max-w-[800px] mx-auto text-[50px] text-[#0866FF] text-center leading-[120%] font-bold" style={{ fontFamily: 'Gilroy', fontWeight: 700 }}>
         Получите чек
@@ -198,7 +187,7 @@ export const Receipt: NextPage = () => {
       <div className="flex justify-center">
         <div 
           id="receipt-container" 
-          className="mx-auto relative overflow-hidden rounded-xl"
+          className="mx-auto relative"
           style={{
             width: '638px',
             height: '1000px',
@@ -213,13 +202,8 @@ export const Receipt: NextPage = () => {
           
           {/* Иконка поверх фонового изображения */}
           <div className="absolute z-20" style={{ top: '60%', left: '114px', transform: 'translateY(-50%)' }}>
-            <Image 
-              src="/logo/checklogo.png" 
-              alt="Check logo" 
-              width={410}
-              height={520}
-              style={{ objectFit: 'fill' }}
-            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo/checklogo.png" alt="Check logo" style={{ width: '410px', height: '520px', objectFit: 'fill' }} />
           </div>
 
           <div className="w-[90%] mx-auto py-[56px] px-[44px] flex flex-col gap-10 relative z-10"
@@ -254,72 +238,86 @@ export const Receipt: NextPage = () => {
             <h3 className="text-[37px] text-[#4CAF50] text-center font-medium">
               Транзакция успешна
             </h3>
+
           </div>
 
-          {/* Разделитель */}
-          <span className="flex border-wide-dashed h-[2px]" />
+          {/* Пунктирная линия */}
+          <div className="border-t-2 border-dashed border-[#0047FF]" />
 
           {/* Информация о заказе */}
-          <div className="flex flex-col gap-[26px]">
-            <InfoRow
-              label={t('status')}
-              value={
-                <div className="py-[11px] px-[19px] flex items-center justify-center rounded-[42px] bg-[#41D1951F]">
-                  <span className="text-[18px] text-[#41D195] leading-[30px] font-medium">
-                    {t('active')}
-                  </span>
-                </div>
-              }
-            />
+          <div className="space-y-[15px]">
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Статус</span>
+              <div className="bg-[#E8F5E8] px-[15px] py-[8px] rounded-[25px]">
+                <span className="text-[18px] text-[#4CAF50] font-medium">Активен</span>
+              </div>
+            </div>
 
-            <InfoRow
-              label={t('date')}
-              value={formattedDate}
-            />
-            <InfoRow
-              label={t('name')}
-              value={receiptData.data.driver.fullName}
-            />
-            <InfoRow
-              label={t('car')}
-              value={receiptData.data.car.model}
-            />
-            <InfoRow
-              label={t('carNumber')}
-              value={receiptData.data.car.licensePlate}
-            />
-            <InfoRow
-              label={t('code')}
-              value={(receiptData.id || receiptData.orderId || '000000').split('').reverse().slice(0, 6).join('').toUpperCase()}
-            />
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Дата</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">Mar 22, 2023</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Водитель</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">Адиль Ниязов</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Телефон службы</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">+996 (700) 700 700</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Тариф</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">Базовый / Седан</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Марка</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">Hyundai Sonata</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Цвет авто</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">Серый</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Номер авто</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">01 P 4885 IKL</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-[24px] text-[#A3A5AE] font-medium">Код</span>
+              <span className="text-[24px] text-[#0047FF] font-medium">QR1265</span>
+            </div>
           </div>
 
-          {/* Разделитель */}
-          <span className="flex border-wide-dashed h-[2px]" />
+          {/* Пунктирная линия */}
+          <div className="border-t-2 border-dashed border-[#0047FF]" />
 
           {/* Итоговая сумма */}
-          <div className="flex items-center justify-between">
-            <h4 className="text-[30px] text-[#0047FF] leading-[34px] font-medium">
-              {t('purchase')}
-            </h4>
-            <span className="text-[30px] text-[#0047FF] leading-[46px] font-bold">
-              {orderData.tariff?.basePrice || orderData.finalPrice}KGS
-            </span>
+          <div className="flex justify-between items-center">
+            <span className="text-[28px] text-[#0047FF] font-semibold">Покупка</span>
+            <span className="text-[28px] text-[#0047FF] font-bold">1 240KGS</span>
+          </div>
+
           </div>
         </div>
       </div>
-      </div>
 
-      {/* Кнопка возврата */}
-      <div className="flex justify-center">
+      {/* Кнопка возврата - пока что закоментируем чтобы не мешал */}
+      {/* <div className="flex justify-center">
         <CountdownButton
           initialSeconds={60}
           targetPath="/"
           buttonText={t('toMain')}
         />
-      </div>
+      </div> */}
+
     </div>
   );
 };
 
-export default Receipt;
+export default ReceiptTest;

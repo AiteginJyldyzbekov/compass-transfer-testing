@@ -3,6 +3,7 @@ import { Locations } from '@pages/terminal/locations';
 import { Main } from '@pages/terminal/main';
 import { Payment } from '@pages/terminal/payment';
 import { Receipt } from '@pages/terminal/receipt';
+import { ReceiptTest } from '@pages/terminal/receipt-test';
 import { registerTerminalComponents } from './terminal-routes';
 
 // Централизованная инициализация компонентов терминала
@@ -38,5 +39,12 @@ export function initializeTerminalComponents() {
     component: Receipt,
     title: 'Чек | Compass 2.0',
     description: 'Страница чека',
+  });
+
+  // Тестовая страница чека (для настройки верстки)
+  registerTerminalComponents('receipt-test', {
+    component: ReceiptTest,
+    title: 'Тестовый чек | Compass 2.0',
+    description: 'Тестовая страница чека с моковыми данными',
   });
 }

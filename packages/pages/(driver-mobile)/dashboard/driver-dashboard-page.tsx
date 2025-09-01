@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { orderService, type GetOrderDTO } from '@shared/api/orders';
 import { ActiveOrderCard } from '@features/active-ride';  
 import { useDriverQueue } from '@features/driver-queue';
-import { DriverStatusCard } from './components/driver-status-card';
+import { LocationSelectionModal } from '@features/driver-queue/components/location-selection-modal';
 import DriverStatusBlock from './components/driver-status-block';
+import { DriverStatusCard } from './components/driver-status-card';
 
 export default function DriverDashboardPage() {
   const [currentOrder, setCurrentOrder] = useState<GetOrderDTO | null>(null);
@@ -14,6 +15,19 @@ export default function DriverDashboardPage() {
   
   // Используем данные из useDriverQueue вместо дублирования запросов
   const { queueData, isInQueue, isLoading: queueLoading, error: queueError, joinQueue, leaveQueue } = useDriverQueue();
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+
+  const handleJoinQueue = useCallback(() => {
+    setIsLocationModalOpen(true);
+  }, []);
+
+  const handleLocationSelect = useCallback(async (locationId: string) => {
+    try {
+      await joinQueue(locationId);
+    } catch {
+      // Ошибка уже обрабатывается в useDriverQueue
+    }
+  }, [joinQueue]);
 
 
   // Функция для получения активного заказа на основе данных из очереди
@@ -49,7 +63,7 @@ export default function DriverDashboardPage() {
   // Слушатель события принятия заказа
   useEffect(() => {
     const handleOrderAccepted = () => {
-      console.log('🚨 ПОЛУЧЕНО СОБЫТИЕ ПРИНЯТИЯ ЗАКАЗА - ОБНОВЛЯЮ ДАННЫЕ');
+      // Обновляем данные при получении события принятия заказа
       fetchActiveOrder();
     };
 
@@ -60,7 +74,8 @@ export default function DriverDashboardPage() {
     };
   }, [fetchActiveOrder]);
 
-  const hasActiveOrder = !!currentOrder;
+  // Показываем заказ, если он есть
+  const _hasActiveOrder = !!currentOrder;
 
   if (isLoading) {
     return (
@@ -93,11 +108,23 @@ export default function DriverDashboardPage() {
             isInQueue={isInQueue}
             isLoading={queueLoading}
             error={queueError}
-            joinQueue={joinQueue}
+            joinQueue={async () => {
+              try {
+                await handleJoinQueue();
+              } catch {
+                // Ошибка обрабатывается в handleJoinQueue
+              }
+            }}
             leaveQueue={leaveQueue}
           />
         )}
         <DriverStatusBlock />
+        
+        <LocationSelectionModal 
+          isOpen={isLocationModalOpen}
+          onClose={() => setIsLocationModalOpen(false)}
+          onLocationSelect={handleLocationSelect}
+        />
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 import type { ComponentType } from 'react';
 
 // Типы для терминальных маршрутов
-export type TerminalRouteName = 'main' | 'locations' | 'payment' | 'receipt';
+export type TerminalRouteName = 'main' | 'locations' | 'payment' | 'receipt' | 'receipt-test';
 
 // Интерфейс для конфигурации маршрута
 export interface TerminalRouteConfig {

@@ -6,7 +6,7 @@ interface UseDriverQueueReturn {
   isInQueue: boolean;
   isLoading: boolean;
   error: string | null;
-  joinQueue: () => Promise<void>;
+  joinQueue: (locationId: string) => Promise<void>;
   leaveQueue: () => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -40,15 +40,16 @@ export function useDriverQueue(): UseDriverQueueReturn {
     }
   }, []);
 
-  const joinQueue = useCallback(async () => {
+  const joinQueue = useCallback(async (locationId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      const result = await driverQueueApi.joinQueue();
+      const result = await driverQueueApi.joinQueue(locationId);
       
       // Обновляем состояние с данными из ответа
       setQueueData({
         driverId: result.driverId,
+        locationId: result.locationId,
         joinedAt: result.joinedAt,
         position: result.position || 1
       });

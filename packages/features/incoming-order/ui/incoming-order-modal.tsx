@@ -33,7 +33,6 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
   // SignalR слушатель входящих заказов
   useEffect(() => {
     const handleRideRequest = (notification: SignalREventData) => {
-      console.log('🚨 ПОЛУЧЕН ЗАКАЗ:', notification);
 
       if (notification && typeof notification === 'object' && 'data' in notification && notification.data && 'orderId' in notification && notification.orderId) {
         // ID заказа находится в notification.orderId, а данные в notification.data!
@@ -41,9 +40,6 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
         const orderId = notification.orderId as string;
         const rideId = (notification as any).rideId as string;
         const orderTypeValue = (notification as any).orderType as string;
-
-        console.log('🚨 ORDER TYPE:', orderTypeValue);
-        console.log('🚨 RIDE ID:', rideId);
 
         // Создаем правильную структуру данных для модального окна
         const waypoints = signalRData.waypoints || [];
@@ -86,8 +82,6 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
         setTimeLeft(30); // Сбрасываем таймер на 30 секунд
         playSound();
 
-        console.log('🚨 currentOrder установлен:', mappedOrderData);
-
         // Проверим состояние через небольшую задержку
         setTimeout(() => { }, 100);
       } else {
@@ -110,7 +104,6 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
     try {
       setIsAccepting(true);
-      console.log('🚨 ПРИНИМАЮ ЗАКАЗ:', currentOrderId, 'TYPE:', orderType);
 
       stopSound();
       
@@ -144,8 +137,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
         }, 500);
       }
 
-    } catch (error) {
-      console.error('Ошибка принятия заказа:', error);
+    } catch {
       toast.error('Ошибка принятия заказа');
     } finally {
       setIsAccepting(false);
@@ -154,7 +146,6 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
 
   // Закрытие модального окна
   const handleClose = useCallback(async () => {
-    console.log('🚨 ЗАКРЫВАЮ МОДАЛЬНОЕ ОКНО');
     setIsModalOpen(false);
     setCurrentOrderId(null);
     setCurrentRideId(null);
@@ -165,9 +156,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
     // Автоматически выходим из очереди при закрытии модального окна
     try {
       await driverQueueApi.leaveQueue();
-      console.log('🚨 АВТОМАТИЧЕСКИ ВЫШЛИ ИЗ ОЧЕРЕДИ');
-    } catch (error) {
-      console.error('Ошибка выхода из очереди:', error);
+    } catch {
     }
   }, [stopSound]);
 
@@ -197,18 +186,10 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps 
     };
   }, [isModalOpen, timeLeft, handleClose]);
 
-  // Логируем состояние при каждом рендере
-  console.log('🚨 РЕНДЕР МОДАЛЬНОГО ОКНА:');
-  console.log('🚨 isModalOpen:', isModalOpen);
-  console.log('🚨 currentOrderId:', currentOrderId);
-  console.log('🚨 currentOrder:', currentOrder);
-
   // Не показываем модальное окно если оно закрыто или нет данных заказа
   if (!isModalOpen || !currentOrderId || !currentOrder) {
     return null;
   }
-
-  console.log('🚨 ВСЕ УСЛОВИЯ ВЫПОЛНЕНЫ, ПОКАЗЫВАЮ МОДАЛЬНОЕ ОКНО!');
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'>
