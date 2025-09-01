@@ -14,12 +14,12 @@ export default function DriverDashboardPage() {
   const [_error, setError] = useState<string | null>(null);
   
   // Используем данные из useDriverQueue вместо дублирования запросов
-  const { queueData, isInQueue, isLoading: queueLoading, error: queueError, joinQueue, leaveQueue } = useDriverQueue();
+  const { 
+    queueData, 
+    joinQueue
+  } = useDriverQueue();
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  const handleJoinQueue = useCallback(() => {
-    setIsLocationModalOpen(true);
-  }, []);
 
   const handleLocationSelect = useCallback(async (locationId: string) => {
     try {
@@ -28,7 +28,6 @@ export default function DriverDashboardPage() {
       // Ошибка уже обрабатывается в useDriverQueue
     }
   }, [joinQueue]);
-
 
   // Функция для получения активного заказа на основе данных из очереди
   const fetchActiveOrder = useCallback(async () => {  
@@ -67,10 +66,16 @@ export default function DriverDashboardPage() {
       fetchActiveOrder();
     };
 
+    const handleOpenLocationModal = () => {
+      setIsLocationModalOpen(true);
+    };
+
     window.addEventListener('orderAccepted', handleOrderAccepted);
+    window.addEventListener('openLocationModal', handleOpenLocationModal);
 
     return () => {
       window.removeEventListener('orderAccepted', handleOrderAccepted);
+      window.removeEventListener('openLocationModal', handleOpenLocationModal);
     };
   }, [fetchActiveOrder]);
 
@@ -103,20 +108,7 @@ export default function DriverDashboardPage() {
             onStatusUpdate={fetchActiveOrder}
           />
         ) : (
-          <DriverStatusCard 
-            queueData={queueData}
-            isInQueue={isInQueue}
-            isLoading={queueLoading}
-            error={queueError}
-            joinQueue={async () => {
-              try {
-                await handleJoinQueue();
-              } catch {
-                // Ошибка обрабатывается в handleJoinQueue
-              }
-            }}
-            leaveQueue={leaveQueue}
-          />
+          <DriverStatusCard />
         )}
         <DriverStatusBlock />
         

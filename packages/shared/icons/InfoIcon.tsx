@@ -1,33 +1,31 @@
 'use client';
 
 import React from 'react';
-import type { IconProps } from './index';
 
-/**
- * Иконка информации
- */
-const InfoIcon: React.FC<IconProps> = ({ 
-  size = 24, 
-  className = '' 
-}) => {
+interface InfoIconProps {
+  className?: string;
+}
+
+export function InfoIcon({ className = '' }: InfoIconProps) {
   return (
-    <svg
+    <svg 
+      width="40" 
+      height="40" 
+      viewBox="0 0 40 40" 
+      fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
       className={className}
     >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="16" x2="12" y2="12" />
-      <line x1="12" y1="8" x2="12.01" y2="8" />
+      <rect width="40" height="40" rx="20" fill="white"/>
+      <rect x="0.5" y="0.5" width="39" height="39" rx="19.5" stroke="#007BFF" strokeOpacity="0.2"/>
+      <g clipPath="url(#clip0_798_13538)">
+        <path d="M30 23.9415L22.1006 12.4173C21.8733 12.0856 21.5683 11.9 21.2508 11.9C20.1582 11.9 19.6188 13.8869 20.4019 15.0269L28.8797 27.3691C29.2882 27.9637 29.0068 29 28.437 29H13.0657C12.7289 29 12.4059 28.7998 12.1678 28.4435L10.3719 25.7565C10.1338 25.4002 10 24.9169 10 24.413V15.058L17.8994 26.5827C18.1267 26.9144 18.4317 27.1 18.7492 27.1C19.8418 27.1 20.3812 25.1131 19.5982 23.9731L11.1203 11.6309C10.7118 11.0363 10.9932 10 11.563 10H26.9343C27.2711 10 27.5941 10.2002 27.8323 10.5565L29.6281 13.2435C29.8662 13.5998 30 14.0831 30 14.587V23.9415Z" fill="#007BFF"/>
+      </g>
+      <defs>
+        <clipPath id="clip0_798_13538">
+          <rect width="20" height="19" fill="white" transform="translate(10 10)"/>
+        </clipPath>
+      </defs>
     </svg>
   );
-};
-
-export default InfoIcon;
+}

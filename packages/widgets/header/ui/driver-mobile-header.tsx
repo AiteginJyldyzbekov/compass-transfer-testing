@@ -10,7 +10,7 @@ export function DriverMobileHeader() {
 
   if (isLoading) {
     return (
-      <header className='bg-white shadow-sm border-b mx-2 mt-2 px-3 py-3 safe-area-top rounded-2xl'>
+      <header className='bg-white shadow-sm border-b mx-2 mt-2 px-3 py-3 rounded-2xl'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2 flex-1 min-w-0'>
             <div className='w-10 h-10 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
@@ -26,7 +26,7 @@ export function DriverMobileHeader() {
   }
 
   return (
-    <header className='bg-[#F9F9F9]  mx-2 mt-2 relative overflow-hidden safe-area-top rounded-[20px]'>
+    <header className='bg-[#F9F9F9] mx-2 mt-2 relative overflow-hidden rounded-[20px]'>
       <div className='flex items-center justify-between relative z-30'>
         {/* Профиль водителя */}
         <div className='flex items-center p-3 gap-2 flex-1 min-w-0'>

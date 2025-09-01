@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from 'react';
 
 const DriverStatusBlock = () => {
@@ -68,7 +69,7 @@ const DriverStatusBlock = () => {
     return (
         <>
             {/* Основной блок статуса */}
-            <div className="bg-gray-50 rounded-lg p-4 w-full">
+            <div className="bg-gray-50 rounded-lg p-4 w-full mb-20">
                 <div className="flex items-center justify-between gap-8">
                     <div className="text-sm text-gray-600 font-medium">
                         Статус работы
@@ -93,7 +94,7 @@ const DriverStatusBlock = () => {
 
             {/* Модальное окно */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10000">
                     <div
                         className="bg-white rounded-2xl p-6 w-64 shadow-xl"
                         onClick={(e) => e.stopPropagation()}

@@ -41,12 +41,12 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
   // Загружаем данные локаций
   const startLocation = useLocation(order.startLocationId);
   const endLocation = useLocation(order.endLocationId);
-  
+
   // Для дополнительных остановок используем отдельные хуки
   const additionalStop1 = useLocation(order.additionalStops[0] || null);
   const additionalStop2 = useLocation(order.additionalStops[1] || null);
   const additionalStop3 = useLocation(order.additionalStops[2] || null);
-  
+
   const additionalStopsLocations = [
     additionalStop1,
     additionalStop2,
@@ -61,9 +61,9 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
     const startLng = startLocation.location.longitude;
     const endLat = endLocation.location.latitude;
     const endLng = endLocation.location.longitude;
-    
+
     let url = '';
-    
+
     switch (mapType) {
       case '2gis':
         url = `https://2gis.kg/bishkek/directions/points/${startLng},${startLat}|${endLng},${endLat}`;
@@ -75,14 +75,14 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
         url = `https://www.google.com/maps/dir/${startLat},${startLng}/${endLat},${endLng}`;
         break;
     }
-    
+
     window.open(url, '_blank');
   };
 
   // Обработчики действий с поездкой (оптимизированы с useCallback)
   const handleHeadingToClient = useCallback(async () => {
     if (!activeRide?.id || isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
       await ridesApi.driverHeadingToClient(activeRide.id);
@@ -97,7 +97,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
 
   const handleDriverArrived = useCallback(async () => {
     if (!activeRide?.id || isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
       await ridesApi.driverArrived(activeRide.id);
@@ -111,7 +111,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
 
   const handleRideStarted = useCallback(async () => {
     if (!activeRide?.id || isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
       await ridesApi.rideStarted(activeRide.id);
@@ -125,7 +125,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
 
   const handleRideFinished = useCallback(async () => {
     if (!activeRide?.id || isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
       await ridesApi.rideFinished(activeRide.id);
@@ -139,7 +139,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
 
   const handleRideCancelled = useCallback(async () => {
     if (!activeRide?.id || isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
       await ridesApi.rideCancelled(activeRide.id);
@@ -350,7 +350,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
                 <ChevronDown className="w-4 h-4 text-gray-400" />
               )}
             </button>
-            
+
             {showPassengers && (
               <div className="px-3 pb-3 space-y-2 border-t border-gray-100">
                 {order.passengers.map((passenger) => (
@@ -400,7 +400,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
                 <ChevronDown className="w-4 h-4 text-gray-400" />
               )}
             </button>
-            
+
             {showServices && (
               <div className="px-3 pb-3 space-y-2 border-t border-gray-100">
                 {order.services.map((service) => (
@@ -437,7 +437,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
               <Navigation className="w-4 h-4" />
               Дополнительная информация
             </h4>
-            
+
             {order.scheduledTime && (
               <div className="bg-blue-50 p-2 rounded border-l-4 border-l-blue-500">
                 <span className="text-xs text-blue-600 uppercase tracking-wide font-medium">Запланированное время:</span>
@@ -452,14 +452,14 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
                 </p>
               </div>
             )}
-            
+
             {order.description && (
               <div>
                 <span className="text-xs text-gray-500 uppercase tracking-wide">Описание:</span>
                 <p className="text-sm text-gray-700 mt-1">{order.description}</p>
               </div>
             )}
-            
+
             {(order.airFlight || order.flyReis) && (
               <div className="bg-yellow-50 p-2 rounded border-l-4 border-l-yellow-500">
                 <span className="text-xs text-yellow-600 uppercase tracking-wide font-medium">Информация о рейсах:</span>
@@ -477,7 +477,7 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
                 </div>
               </div>
             )}
-            
+
             {order.notes && (
               <div className="bg-gray-50 p-2 rounded border-l-4 border-l-gray-400">
                 <span className="text-xs text-gray-500 uppercase tracking-wide">Комментарии:</span>

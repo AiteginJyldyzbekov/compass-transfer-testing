@@ -1,0 +1,34 @@
+import React from 'react';
+
+interface ChatIconProps {
+  className?: string;
+}
+
+const ChatIcon: React.FC<ChatIconProps> = ({ className = '' }) => {
+  return (
+    <svg 
+      width="25" 
+      height="24" 
+      viewBox="0 0 25 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path 
+        d="M10.8008 10.5L12.0508 11.75L15.0508 8.75" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      <path 
+        d="M6.05078 13.875V7.25C6.05078 6.14543 6.94621 5.25 8.05078 5.25H17.5508C18.6554 5.25 19.5508 6.14543 19.5508 7.25V13.25C19.5508 14.3546 18.6554 15.25 17.5508 15.25H13.5523C13.0678 15.25 12.5998 15.4258 12.2352 15.7448L8.80078 18.75V16.625C8.80078 15.8656 8.18517 15.25 7.42578 15.25C6.66639 15.25 6.05078 14.6344 6.05078 13.875Z" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
+export default ChatIcon;

@@ -1,0 +1,48 @@
+import React from 'react';
+
+interface NotificationNavActiveIconProps {
+  className?: string;
+}
+
+const NotificationNavActiveIcon: React.FC<NotificationNavActiveIconProps> = ({ className = '' }) => {
+  return (
+    <svg 
+      width="25" 
+      height="24" 
+      viewBox="0 0 25 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <g clipPath="url(#clip0_1044_468)">
+        <path 
+          d="M8.15039 15.25V9.25C8.15039 8.18913 8.57182 7.17172 9.32196 6.42157C10.0721 5.67143 11.3395 5.25 12.4004 5.25C13.9004 5.25 14.6678 5.67143 15.418 6.42157C16.1681 7.17172 16.6504 8.18913 16.6504 9.25V15.25" 
+          stroke="#0047FF" 
+          strokeWidth="1.5" 
+          strokeLinecap="round"
+        />
+        <path 
+          d="M6.15039 15.25H18.6504" 
+          stroke="#0047FF" 
+          strokeWidth="1.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        />
+        <path 
+          d="M14.6504 17.25C14.4661 17.694 14.1539 18.0735 13.7534 18.3405C13.3529 18.6075 12.8821 18.75 12.4004 18.75C11.9187 18.75 11.4479 18.6075 11.0474 18.3405C10.6469 18.0735 10.3347 17.694 10.1504 17.25" 
+          stroke="#0047FF" 
+          strokeWidth="1.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_1044_468">
+          <rect width="24" height="24" fill="white" transform="translate(0.400391)"/>
+        </clipPath>
+      </defs>
+    </svg>
+  );
+};
+
+export default NotificationNavActiveIcon;

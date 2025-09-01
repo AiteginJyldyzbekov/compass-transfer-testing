@@ -54,3 +54,19 @@ export { default as QRCodeIcon } from './QRCodeIcon';
 export { default as CreditCardIcon } from './CreditCardIcon';
 export { default as SuccessIcon } from './SuccessIcon';
 export { default as FilterIcon } from './FilterIcon';
+export { default as HomeIcon } from './HomeIcon';
+export { default as HomeActiveIcon } from './HomeActiveIcon';
+export { default as ClockIcon } from './ClockIcon';
+export { default as ClockActiveIcon } from './ClockActiveIcon';
+export { default as ChatIcon } from './ChatIcon';
+export { default as NotificationNavIcon } from './NotificationNavIcon';
+export { default as NotificationNavActiveIcon } from './NotificationNavActiveIcon';
+export { default as StatsNavIcon } from './StatsNavIcon';
+export { default as StatsNavActiveIcon } from './StatsNavActiveIcon';
+export { default as SettingsNavIcon } from './SettingsNavIcon';
+export { default as SettingsNavActiveIcon } from './SettingsNavActiveIcon';
+
+// Notification icons
+export { OrderIcon } from './OrderIcon';
+export { InfoIcon as NotificationInfoIcon } from './InfoIcon';
+export { WarningIcon } from './WarningIcon';

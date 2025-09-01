@@ -1,9 +1,23 @@
-import { Home, Clock, BarChart3, Bell, Settings, MessageCircle } from 'lucide-react';
+import {
+  HomeIcon,
+  HomeActiveIcon,
+  ClockIcon,
+  ClockActiveIcon,
+  ChatIcon,
+  NotificationNavIcon,
+  NotificationNavActiveIcon,
+  StatsNavIcon,
+  StatsNavActiveIcon,
+  SettingsNavIcon,
+  SettingsNavActiveIcon
+} from '@shared/icons';
+
 import type React from 'react';
 
 export interface FooterNavItem {
   id: string;
   icon: React.ComponentType<{ className?: string }>;
+  activeIcon?: React.ComponentType<{ className?: string }>;
   href?: string;
   active?: boolean;
 }
@@ -11,33 +25,38 @@ export interface FooterNavItem {
 export const driverMobileNavItems: FooterNavItem[] = [
   {
     id: 'home',
-    icon: Home,
+    icon: HomeIcon,
+    activeIcon: HomeActiveIcon,
     href: '/',
     active: true,
   },
   {
     id: 'orders',
-    icon: Clock,
+    icon: ClockIcon,
+    activeIcon: ClockActiveIcon,
     href: '/orders',
   },
   {
-    id: 'chat',
-    icon: MessageCircle,
-    href: '/chat',
-  },
-  {
     id: 'notifications',
-    icon: Bell,
+    icon: NotificationNavIcon,
+    activeIcon: NotificationNavActiveIcon,
     href: '/notifications',
   },
   {
-    id: 'stats',
-    icon: BarChart3,
-    href: '/stats',
+    id: 'settings',
+    icon: SettingsNavIcon,
+    activeIcon: SettingsNavActiveIcon,
+    href: '/settings',
   },
   {
-    id: 'settings',
-    icon: Settings,
-    href: '/settings',
+    id: 'chat',
+    icon: ChatIcon,
+    href: '/support',
+  },
+  {
+    id: 'stats',
+    icon: StatsNavIcon,
+    activeIcon: StatsNavActiveIcon,
+    href: '/stats',
   },
 ];

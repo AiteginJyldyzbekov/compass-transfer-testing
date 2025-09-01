@@ -24,7 +24,7 @@ export default async function DriverLayout({ children }: DriverLayoutProps) {
           <LocationProvider intervalMs={30000}>
             <div className='flex flex-col h-screen'>
               <DriverMobileHeader />
-              <main className='flex-1 overflow-y-auto pb-safe'>{children}</main>
+              <main className='flex-1 overflow-y-auto pb-20'>{children}</main>
               <DriverMobileFooter />
 
               {/* Модальное окно для входящих заказов - теперь самодостаточное */}

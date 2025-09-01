@@ -1,35 +1,38 @@
+
 'use client';
 
 import Image from 'next/image';
 import React from 'react';
-import type { QueueStatusResponse } from '@shared/api/driver-queue';
 import { Button } from '@shared/ui/forms/button';
-import { LocationHeaderIcon } from '@features/location-tracking/ui/location-header-icon';
+import { useDriverQueue } from '@features/driver-queue';
+import DriverLocation from './driver-location-block';
 
-interface DriverStatusCardProps {
-  queueData: QueueStatusResponse | null;
-  isInQueue: boolean;
-  isLoading: boolean;
-  error: string | null;
-  joinQueue: () => Promise<void>;
-  leaveQueue: () => Promise<void>;
-}
-
-export function DriverStatusCard({ 
-  queueData, 
-  isInQueue, 
-  isLoading, 
-  error, 
-  joinQueue, 
-  leaveQueue 
-}: DriverStatusCardProps) {
+export function DriverStatusCard() {
+  const { 
+    queueData, 
+    isInQueue, 
+    isLoading, 
+    error,
+    joinQueue: _joinQueue, 
+    leaveQueue 
+  } = useDriverQueue();
 
   const handleToggleQueue = async () => {
     if (isInQueue) {
       await leaveQueue();
     } else {
-      await joinQueue();
+      // Отправляем событие для открытия модалки выбора локации
+      window.dispatchEvent(new CustomEvent('openLocationModal'));
     }
+  };
+
+  const _formatJoinedTime = (dateString: string) => {
+    const date = new Date(dateString);
+    
+    return date.toLocaleTimeString('ru-RU', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   // Показываем loading состояние пока не получили ответ от API
@@ -43,7 +46,7 @@ export function DriverStatusCard({
             <div className='w-32 h-4 bg-gray-200 rounded animate-pulse mb-2' />
             <div className='w-24 h-3 bg-gray-200 rounded animate-pulse' />
           </div>
-
+          
           {/* Нижняя секция - skeleton кнопки */}
           <div className='mt-auto px-1 sm:px-2 pb-1 sm:pb-2'>
             <div className='w-full h-12 sm:h-14 bg-gray-200 rounded-xl animate-pulse' />
@@ -68,7 +71,7 @@ export function DriverStatusCard({
               </p>
             </div>
           </div>
-
+          
           <div className='mt-auto px-1 sm:px-2 pb-1 sm:pb-2'>
             <Button
               onClick={() => window.history.back()}
@@ -83,7 +86,7 @@ export function DriverStatusCard({
   }
 
   return (
-    <div className='bg-[#F9F9F9] h-full flex flex-col relative overflow-hidden rounded-2xl'>
+      <div className='bg-[#F9F9F9] h-full flex flex-col relative overflow-hidden rounded-2xl'>
       {/* Фоновое изображение - показываем только когда НЕ в очереди */}
       {!isInQueue && (
         <div className='absolute inset-0'>
@@ -100,8 +103,8 @@ export function DriverStatusCard({
       {/* Контент поверх фона */}
       <div className='relative z-10 flex flex-col h-full p-3 sm:p-4'>
 
-        {/* Центральная часть - растягивается */}
-        <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4'>
+        {/* Центральная часть - растягивается с возможностью скролла */}
+        <div className='flex-1 flex flex-col items-center justify-center px-2 sm:px-4 overflow-y-auto'>
           {isInQueue ? (
             <div className='text-center w-full'>
               {/* Анимированный спиннер с позицией в очереди */}
@@ -169,9 +172,7 @@ export function DriverStatusCard({
                 <p className='text-[14px] text-[#92929D]'>Активные заявки</p>
                 <div>
                   <p className='text=[#000000] text-[10px]'>Местонахождение</p>
-                  <div className='bg-[#FFFFFF] rounded-[7px] py-[2px] px-[3px] flex gap-[3px] items-center mt-[10px]'>
-                    <LocationHeaderIcon />
-                  </div>
+                  <DriverLocation />
                 </div>
               </div>
             </div>
