@@ -160,12 +160,26 @@ export default function DriverDashboardPage() {
                 <div
                   className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
                   onClick={() => setIsDriverLocationModalOpen(false)}
-                  style={{ zIndex: 99999 }}
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 2147483647,
+                    WebkitTransform: 'translate3d(0,0,0)',
+                    transform: 'translate3d(0,0,0)',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden'
+                  }}
                 >
                   <div
                     className="bg-white rounded-2xl p-6 w-64 shadow-xl"
                     onClick={(e) => e.stopPropagation()}
-                    style={{ zIndex: 100000 }}
+                    style={{
+                      WebkitTransform: 'translate3d(0,0,0)',
+                      transform: 'translate3d(0,0,0)'
+                    }}
                   >
                     <h3 className="text-lg font-medium text-gray-900 mb-4 text-center">
                       Выберите местоположение
