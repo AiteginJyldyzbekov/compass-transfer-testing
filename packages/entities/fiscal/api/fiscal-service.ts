@@ -440,11 +440,13 @@ export class FiscalService {
   /**
    * Печать растрового изображения
    * @param rasterBase64 - изображение в формате Base64, не более 384 пикселей в ширину
+   * @param cutPaper - обрезать бумагу после печати (по умолчанию false)
    */
-  async printRaster(rasterBase64: string): Promise<void> {
+  async printRaster(rasterBase64: string, cutPaper: boolean = false): Promise<void> {
     try {
       await this.fiscalRequest<void>('/fiscal/bills/printRaster/', {
         raster: rasterBase64,
+        cutPaper,
       });
     } catch (error) {
       throw new FiscalError(
@@ -458,12 +460,14 @@ export class FiscalService {
    * Печать строки на чеке
    * @param line - текст строки
    * @param align - выравнивание (0-лево, 1-центр, 2-право)
+   * @param cutPaper - обрезать бумагу после печати (по умолчанию false)
    */
-  async printLine(line: string, align: number = 0): Promise<void> {
+  async printLine(line: string, align: number = 0, cutPaper: boolean = false): Promise<void> {
     try {
       await this.fiscalRequest<void>('/fiscal/bills/printLine/', {
         line,
         align,
+        cutPaper,
       });
     } catch (error) {
       throw new FiscalError(
@@ -474,8 +478,23 @@ export class FiscalService {
   }
 
   /**
+   * Обрезать бумагу
+   */
+  async cutPaper(): Promise<void> {
+    try {
+      await this.fiscalRequest<void>('/fiscal/bills/cutPaper/', {});
+    } catch (error) {
+      throw new FiscalError(
+        FiscalStatus.PRINTER_ERROR,
+        `Ошибка обрезания бумаги: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
    * Печать чека такси построчно одним запросом
    * @param data - данные для печати чека
+   * @param cutPaper - обрезать бумагу после печати (по умолчанию true для обратной совместимости)
    */
   async printTaxiReceiptLines(data: {
     price: number;
@@ -493,7 +512,7 @@ export class FiscalService {
       color: string;
     };
     queueNumber?: string;
-  }): Promise<void> {
+  }, cutPaper: boolean = true): Promise<void> {
     // Форматируем дату
     const date = new Date();
     const formattedDate = date.toLocaleDateString('ru-RU', {
@@ -561,8 +580,45 @@ export class FiscalService {
 
       await this.fiscalRequest<void>('/fiscal/bills/printText/', {
         text: textContent,
-        cutPaper: true // Отрезать бумагу после печати
+        cutPaper // Используем переданный параметр
       });
+      
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Печать чека с логотипом: сначала логотип, затем текст, затем обрезание
+   * @param logoBase64 - логотип в формате Base64
+   * @param data - данные для печати чека
+   */
+  async printTaxiReceiptWithLogo(logoBase64: string, data: {
+    price: number;
+    route: string;
+    paymentMethod: string;
+    orderNumber: string;
+    driver?: {
+      fullName: string;
+      phoneNumber?: string;
+    };
+    car?: {
+      make: string;
+      model: string;
+      licensePlate: string;
+      color: string;
+    };
+    queueNumber?: string;
+  }): Promise<void> {
+    try {
+      // 1. Печатаем логотип БЕЗ обрезания бумаги
+      await this.printRaster(logoBase64, false);
+      
+      // 2. Печатаем текст чека БЕЗ обрезания бумаги
+      await this.printTaxiReceiptLines(data, false);
+      
+      // 3. Обрезаем бумагу в конце
+      await this.cutPaper();
       
     } catch (error) {
       throw error;

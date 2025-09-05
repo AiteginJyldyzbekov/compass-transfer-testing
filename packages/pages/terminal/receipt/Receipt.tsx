@@ -7,15 +7,16 @@ import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { captureReceiptImage } from '@shared/utils/receiptCapture';
+import { getLogoBase64 } from '@shared/utils/logoConverter';
 import { useFiscalReceipt } from '@entities/fiscal';
 import { useTerminalReceipt } from '@entities/orders/context';
 
 // 🔄 ПЕРЕКЛЮЧАТЕЛЬ СПОСОБА ПЕЧАТИ
-// true - растровая печать (html2canvas -> printRaster)
+// true - комбинированная печать (логотип + построчная печать)
 // false - построчная печать (printReceiptLines)
 
 // Добавить после всех импортов
-const USE_RASTER_PRINT = true;
+const USE_COMBINED_PRINT = true;
 
 const FiscalReceiptPrint: React.FC<{
   receiptData: any;
@@ -125,7 +126,7 @@ export const Receipt: NextPage = () => {
   const t = useTranslations('Receipt');
   const router = useRouter();
   const { receiptData, orderData, clearReceiptData } = useTerminalReceipt();
-  const { printReceiptLines, printReceiptImage } = useFiscalReceipt();
+  const { printReceiptLines, printReceiptImage, printReceiptWithLogo } = useFiscalReceipt();
 
   const hasAutoSavedRef = useRef(false);
 
@@ -226,15 +227,53 @@ export const Receipt: NextPage = () => {
 
           let success = false;
 
-          if (USE_RASTER_PRINT) {
-            // 🖼️ РАСТРОВАЯ ПЕЧАТЬ - через html2canvas
-            // 📸 Используется растровая печать чека для физического принтера
+          if (USE_COMBINED_PRINT) {
+            // 🖼️ КОМБИНИРОВАННАЯ ПЕЧАТЬ - логотип + построчная печать
+            // 📸 Сначала печатаем логотип, затем текст, затем обрезаем бумагу
 
-            // Создаем скриншот СКРЫТОГО чека для печати (не основного)
-            const receiptBase64 = await captureReceiptImage('fiscal-receipt-container', 384);
+            try {
+              // Получаем логотип в base64
+              const logoBase64 = await getLogoBase64();
 
-            // Печатаем растровое изображение на фискальном принтере
-            success = await printReceiptImage(receiptBase64);
+              // Печатаем чек с логотипом
+              success = await printReceiptWithLogo(logoBase64, {
+                price: orderData.tariff?.basePrice || orderData.finalPrice || 0,
+                route: orderData.locations?.map((loc: { name: string }) => loc.name).join(' → ') || 'Неизвестный маршрут',
+                paymentMethod: 'CARD',
+                orderNumber: receiptData.data?.orderNumber || '000000',
+                driver: {
+                  fullName: receiptData.data?.driver?.fullName || 'Неизвестный водитель',
+                  phoneNumber: receiptData.data?.driver?.phoneNumber
+                },
+                car: {
+                  make: receiptData.data?.car?.make || 'Неизвестная марка',
+                  model: receiptData.data?.car?.model || 'Неизвестная модель',
+                  licensePlate: receiptData.data?.car?.licensePlate || 'Неизвестный номер',
+                  color: receiptData.data?.car?.color || 'Неизвестный цвет'
+                },
+                queueNumber: receiptData.data?.queueNumber
+              });
+            } catch (error) {
+              console.error('Ошибка получения логотипа, используем построчную печать:', error);
+              // Fallback к построчной печати если не удалось получить логотип
+              success = await printReceiptLines({
+                price: orderData.tariff?.basePrice || orderData.finalPrice || 0,
+                route: orderData.locations?.map((loc: { name: string }) => loc.name).join(' → ') || 'Неизвестный маршрут',
+                paymentMethod: 'CARD',
+                orderNumber: receiptData.data?.orderNumber || '000000',
+                driver: {
+                  fullName: receiptData.data?.driver?.fullName || 'Неизвестный водитель',
+                  phoneNumber: receiptData.data?.driver?.phoneNumber
+                },
+                car: {
+                  make: receiptData.data?.car?.make || 'Неизвестная марка',
+                  model: receiptData.data?.car?.model || 'Неизвестная модель',
+                  licensePlate: receiptData.data?.car?.licensePlate || 'Неизвестный номер',
+                  color: receiptData.data?.car?.color || 'Неизвестный цвет'
+                },
+                queueNumber: receiptData.data?.queueNumber
+              });
+            }
           } else {
             // 📄 ПОСТРОЧНАЯ ПЕЧАТЬ - через API строки
             // 📝 Используется построчная печать чека
