@@ -442,11 +442,10 @@ export class FiscalService {
    * @param rasterBase64 - изображение в формате Base64, не более 384 пикселей в ширину
    * @param cutPaper - обрезать бумагу после печати (по умолчанию false)
    */
-  async printRaster(rasterBase64: string, cutPaper: boolean = false): Promise<void> {
+  async printRaster(rasterBase64: string): Promise<void> {
     try {
       await this.fiscalRequest<void>('/fiscal/bills/printRaster/', {
         raster: rasterBase64,
-        cutPaper,
       });
     } catch (error) {
       throw new FiscalError(
@@ -612,10 +611,10 @@ export class FiscalService {
   }): Promise<void> {
     try {
       // 1. Печатаем логотип БЕЗ обрезания бумаги
-      await this.printRaster(logoBase64, false);
+      await this.printRaster(logoBase64);
       
       // 2. Печатаем текст чека БЕЗ обрезания бумаги
-      await this.printTaxiReceiptLines(data, false);
+      await this.printTaxiReceiptLines(data);
       
       // 3. Обрезаем бумагу в конце
       await this.cutPaper();
