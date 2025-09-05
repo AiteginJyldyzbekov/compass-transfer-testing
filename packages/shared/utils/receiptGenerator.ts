@@ -33,7 +33,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
       // Создаем canvas для генерации изображения
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       if (!ctx) {
         reject(new Error('Не удалось получить контекст canvas'));
         return;
@@ -45,7 +45,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
       const receiptWidth = 384 * dpi;
       const padding = 16 * dpi;
       const contentWidth = receiptWidth - (padding * 2);
-      
+
       // Настройки шрифтов (умеренно увеличенные размеры)
       const fontFamily = 'Arial, sans-serif';
       const titleFont = `bold ${11 * dpi}px ` + fontFamily; // 22px для заголовка
@@ -59,64 +59,72 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
         try {
           // Вычисляем высоту на основе содержимого
           let currentY = padding;
-          
+
           // Логотип (максимальная высота 80px с учетом DPI)
           const logoHeight = Math.min(80 * dpi, logoImg.height * (contentWidth / logoImg.width));
           const logoWidth = contentWidth;
-          
+
           // Заголовок
           ctx.font = titleFont;
           const titleHeight = 14 * dpi;
-          
+
           // Подзаголовок
           ctx.font = headerFont;
           const subtitleHeight = 20 * dpi;
-          
+
           // Основной контент
           ctx.font = normalFont;
           const lineHeight = 20 * dpi;
           const smallLineHeight = 18 * dpi;
-          
-          // Подсчитываем количество строк
+
+          // Подсчитываем количество строк (используем специальные символы отступов)
           const lines = [
-            '',
-            '',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             `Дата: ${data.date} ${data.time}`,
-            '',
-            '',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             `Водитель: ${data.driver.fullName}`,
-            data.driver.phoneNumber ? `Телефон: ${data.driver.phoneNumber}` : '',
-            '',
-            '',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
+            data.driver.phoneNumber ? `Телефон: ${data.driver.phoneNumber}` : '⠀',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             `Тариф: ${data.route}`,
-            '',
-            '',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             `Марка: ${data.car.make}`,
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             `Цвет авто: ${data.car.color}`,
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             `Номер авто: ${data.car.licensePlate}`,
-            data.queueNumber ? `Код: ${data.queueNumber}` : '',
-            '',
-            '',
-            '',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
+            data.queueNumber ? `Код: ${data.queueNumber}` : '⠀',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-            '',
-            '',
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
             `Покупка: ${data.price.toFixed(2)} KGZ`,
-            '',
-            '',
-            ''
-          ].filter(line => line !== '');
+            '⠀', // невидимый символ отступа
+            '⠀', // невидимый символ отступа
+            '⠀'  // невидимый символ отступа
+          ];
 
           // Вычисляем общую высоту (увеличиваем отступы)
           const totalHeight = padding + logoHeight + (40 * dpi) + // логотип + большой отступ
-                              titleHeight + (20 * dpi) + // заголовок "Контрольно-кассовый чек" + отступ
-                              lines.length * lineHeight + // строки
-                              (padding * 2); // увеличенный нижний отступ
+            titleHeight + (20 * dpi) + // заголовок "Контрольно-кассовый чек" + отступ
+            lines.length * lineHeight + // строки
+            (padding * 2); // увеличенный нижний отступ
 
           // Устанавливаем размеры canvas с высоким DPI
           canvas.width = receiptWidth;
           canvas.height = totalHeight;
-          
+
           // Масштабируем контекст для высокого DPI
           ctx.scale(dpi, dpi);
 
@@ -147,9 +155,9 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
               ctx.font = smallFont;
               ctx.fillText(line, padding / dpi, currentY / dpi);
               currentY += lineHeight;
-            } else if (line === '') {
-              // Пустая строка - увеличиваем Y на полную высоту строки для лучших отступов
-              currentY += lineHeight;
+            } else if (line === '⠀' || line === ' ' || line.trim() === '') {
+              // Невидимый символ отступа - увеличиваем Y на 1.25x высоты строки для умеренных отступов
+              currentY += lineHeight * 1.25;
             } else {
               ctx.font = normalFont;
               ctx.fillText(line, padding / dpi, currentY / dpi);
@@ -160,7 +168,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           // Конвертируем в base64
           const pngBase64 = canvas.toDataURL('image/png');
           const base64Data = pngBase64.split(',')[1]; // Убираем префикс data:image/png;base64,
-          
+
           resolve(base64Data);
         } catch (error) {
           reject(error);
@@ -191,7 +199,7 @@ export async function generateFullReceiptPNG(data: ReceiptData): Promise<string>
     if (!logoResponse.ok) {
       throw new Error('Не удалось загрузить логотип');
     }
-    
+
     const logoBlob = await logoResponse.blob();
     const logoBase64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
