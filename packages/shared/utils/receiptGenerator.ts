@@ -48,7 +48,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
       
       // Настройки шрифтов (умеренно увеличенные размеры)
       const fontFamily = 'Arial, sans-serif';
-      const titleFont = `bold ${16 * dpi}px ` + fontFamily; // Уменьшен для заголовка
+      const titleFont = `bold ${11 * dpi}px ` + fontFamily; // 22px для заголовка
       const headerFont = `bold ${16 * dpi}px ` + fontFamily;
       const normalFont = `${14 * dpi}px ` + fontFamily;
       const smallFont = `${12 * dpi}px ` + fontFamily;
@@ -66,7 +66,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           
           // Заголовок
           ctx.font = titleFont;
-          const titleHeight = 20 * dpi;
+          const titleHeight = 14 * dpi;
           
           // Подзаголовок
           ctx.font = headerFont;
@@ -83,10 +83,13 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
             '',
             `Дата: ${data.date} ${data.time}`,
             '',
+            '',
             `Водитель: ${data.driver.fullName}`,
             data.driver.phoneNumber ? `Телефон: ${data.driver.phoneNumber}` : '',
             '',
+            '',
             `Тариф: ${data.route}`,
+            '',
             '',
             `Марка: ${data.car.make}`,
             `Цвет авто: ${data.car.color}`,
@@ -94,9 +97,12 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
             data.queueNumber ? `Код: ${data.queueNumber}` : '',
             '',
             '',
+            '',
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
             '',
+            '',
             `Покупка: ${data.price.toFixed(2)} KGZ`,
+            '',
             '',
             ''
           ].filter(line => line !== '');
