@@ -50,6 +50,7 @@ interface UseFiscalReceiptResult {
     };
     queueNumber?: string;
   }) => Promise<boolean>;
+  printFullReceiptPNG: (receiptPNGBase64: string) => Promise<boolean>;
 }
 
 /**
@@ -283,6 +284,35 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
     }
   }, []);
 
+  /**
+   * Печать полного чека как PNG изображения
+   */
+  const printFullReceiptPNG = useCallback(async (receiptPNGBase64: string): Promise<boolean> => {
+    console.log('🖨️ Печатаем полный чек как PNG...');
+
+    // Проверяем, включена ли фискализация
+    if (!FISCAL_ENABLED) {
+      console.log('⚠️ Фискализация отключена, пропускаем печать');
+      return true;
+    }
+
+    try {
+      await fiscalService.printFullReceiptPNG(receiptPNGBase64);
+      console.log('✅ Полный чек PNG успешно напечатан');
+      return true;
+    } catch (error) {
+      console.error('❌ Ошибка печати полного чека PNG:', error);
+      
+      if (error instanceof FiscalError) {
+        toast.error(`Ошибка печати чека: ${error.message}`);
+      } else {
+        toast.error('Неизвестная ошибка при печати чека');
+      }
+
+      return false;
+    }
+  }, []);
+
   return {
     isCreating,
     isChecking,
@@ -292,5 +322,6 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
     printReceiptImage,
     printReceiptLines,
     printReceiptWithLogo,
+    printFullReceiptPNG,
   };
 };

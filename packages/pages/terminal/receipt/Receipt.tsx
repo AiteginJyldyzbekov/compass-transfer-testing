@@ -8,15 +8,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { captureReceiptImage } from '@shared/utils/receiptCapture';
 import { getLogoBase64 } from '@shared/utils/logoConverter';
+import { generateFullReceiptPNG } from '@shared/utils/receiptGenerator';
 import { useFiscalReceipt } from '@entities/fiscal';
 import { useTerminalReceipt } from '@entities/orders/context';
 
 // 🔄 ПЕРЕКЛЮЧАТЕЛЬ СПОСОБА ПЕЧАТИ
-// true - комбинированная печать (логотип + построчная печать)
+// true - генерация PNG чека с логотипом и печать одним запросом
 // false - построчная печать (printReceiptLines)
 
 // Добавить после всех импортов
-const USE_COMBINED_PRINT = true;
+const USE_PNG_RECEIPT = true;
 
 const FiscalReceiptPrint: React.FC<{
   receiptData: any;
@@ -126,7 +127,7 @@ export const Receipt: NextPage = () => {
   const t = useTranslations('Receipt');
   const router = useRouter();
   const { receiptData, orderData, clearReceiptData } = useTerminalReceipt();
-  const { printReceiptLines, printReceiptImage, printReceiptWithLogo } = useFiscalReceipt();
+  const { printReceiptLines, printReceiptImage, printReceiptWithLogo, printFullReceiptPNG } = useFiscalReceipt();
 
   const hasAutoSavedRef = useRef(false);
 
@@ -227,20 +228,28 @@ export const Receipt: NextPage = () => {
 
           let success = false;
 
-          if (USE_COMBINED_PRINT) {
-            // 🖼️ КОМБИНИРОВАННАЯ ПЕЧАТЬ - логотип + построчная печать
-            // 📸 Сначала печатаем логотип, затем текст, затем обрезаем бумагу
+          if (USE_PNG_RECEIPT) {
+            // 🖼️ ГЕНЕРАЦИЯ PNG ЧЕКА - логотип + данные в одном изображении
+            // 📸 Генерируем PNG с логотипом и данными, печатаем одним запросом
 
             try {
-              // Получаем логотип в base64
-              const logoBase64 = await getLogoBase64();
+              // Форматируем дату и время
+              const date = new Date();
+              const formattedDate = date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+              });
+              const formattedTime = date.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+              });
 
-              // Печатаем чек с логотипом
-              success = await printReceiptWithLogo(logoBase64, {
-                price: orderData.tariff?.basePrice || orderData.finalPrice || 0,
-                route: orderData.locations?.map((loc: { name: string }) => loc.name).join(' → ') || 'Неизвестный маршрут',
-                paymentMethod: 'CARD',
+              // Генерируем PNG чек
+              const receiptPNGBase64 = await generateFullReceiptPNG({
                 orderNumber: receiptData.data?.orderNumber || '000000',
+                date: formattedDate,
+                time: formattedTime,
                 driver: {
                   fullName: receiptData.data?.driver?.fullName || 'Неизвестный водитель',
                   phoneNumber: receiptData.data?.driver?.phoneNumber
@@ -251,11 +260,16 @@ export const Receipt: NextPage = () => {
                   licensePlate: receiptData.data?.car?.licensePlate || 'Неизвестный номер',
                   color: receiptData.data?.car?.color || 'Неизвестный цвет'
                 },
+                route: orderData.locations?.map((loc: { name: string }) => loc.name).join(' → ') || 'Неизвестный маршрут',
+                price: orderData.tariff?.basePrice || orderData.finalPrice || 0,
                 queueNumber: receiptData.data?.queueNumber
               });
+
+              // Печатаем сгенерированный PNG чек
+              success = await printFullReceiptPNG(receiptPNGBase64);
             } catch (error) {
-              console.error('Ошибка получения логотипа, используем построчную печать:', error);
-              // Fallback к построчной печати если не удалось получить логотип
+              console.error('Ошибка генерации PNG чека, используем построчную печать:', error);
+              // Fallback к построчной печати если не удалось сгенерировать PNG
               success = await printReceiptLines({
                 price: orderData.tariff?.basePrice || orderData.finalPrice || 0,
                 route: orderData.locations?.map((loc: { name: string }) => loc.name).join(' → ') || 'Неизвестный маршрут',

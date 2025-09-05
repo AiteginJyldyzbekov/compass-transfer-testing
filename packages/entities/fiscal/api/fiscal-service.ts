@@ -623,6 +623,23 @@ export class FiscalService {
       throw error;
     }
   }
+
+  /**
+   * Печать полного чека как PNG изображения (логотип + данные в одном изображении)
+   * @param receiptPNGBase64 - полный чек в формате Base64 PNG
+   */
+  async printFullReceiptPNG(receiptPNGBase64: string): Promise<void> {
+    try {
+      // Печатаем полный чек как растровое изображение
+      await this.printRaster(receiptPNGBase64);
+      
+      // Обрезаем бумагу после печати
+      await this.cutPaper();
+      
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 // Экспортируем экземпляр сервиса для использования в приложении
