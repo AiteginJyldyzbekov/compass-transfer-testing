@@ -64,17 +64,20 @@ export default function TestReceiptPage() {
         {generatedImage && (
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Сгенерированный чек</h2>
-            <div className="border-2 border-dashed border-gray-300 p-4 rounded-lg">
+            <div className="border-2 border-dashed border-gray-300 p-4 rounded-lg bg-white">
               <img
                 src={generatedImage}
                 alt="Сгенерированный чек"
-                className="max-w-full h-auto mx-auto"
-                style={{ maxWidth: '384px' }}
+                className="max-w-full h-auto mx-auto border border-gray-200"
+                style={{ maxWidth: '384px', minWidth: '384px' }}
               />
             </div>
             <div className="mt-4 text-sm text-gray-600">
               <p>Размер: 384px ширина (стандарт для термопринтеров)</p>
-              <p>Формат: PNG с прозрачным фоном</p>
+              <p>Формат: PNG с белым фоном</p>
+              <p>DPI: 2x для высокого качества печати</p>
+              <p>Шрифты: 32px заголовок, 24px подзаголовок, 18px основной текст</p>
+              <p>Логотип: до 120px высоты</p>
             </div>
           </div>
         )}

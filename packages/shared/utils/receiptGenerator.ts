@@ -40,16 +40,18 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
       }
 
       // Размеры чека (384px ширина - стандарт для термопринтеров)
-      const receiptWidth = 384;
-      const padding = 12;
+      // Увеличиваем DPI для лучшего качества печати
+      const dpi = 2; // Увеличиваем в 2 раза для лучшего качества
+      const receiptWidth = 384 * dpi;
+      const padding = 16 * dpi;
       const contentWidth = receiptWidth - (padding * 2);
       
-      // Настройки шрифтов
+      // Настройки шрифтов (значительно увеличенные размеры)
       const fontFamily = 'Arial, sans-serif';
-      const titleFont = 'bold 18px ' + fontFamily;
-      const headerFont = 'bold 14px ' + fontFamily;
-      const normalFont = '11px ' + fontFamily;
-      const smallFont = '9px ' + fontFamily;
+      const titleFont = `bold ${32 * dpi}px ` + fontFamily;
+      const headerFont = `bold ${24 * dpi}px ` + fontFamily;
+      const normalFont = `${18 * dpi}px ` + fontFamily;
+      const smallFont = `${16 * dpi}px ` + fontFamily;
 
       // Загружаем логотип
       const logoImg = new Image();
@@ -58,30 +60,33 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           // Вычисляем высоту на основе содержимого
           let currentY = padding;
           
-          // Логотип (максимальная высота 60px)
-          const logoHeight = Math.min(60, logoImg.height * (contentWidth / logoImg.width));
+          // Логотип (максимальная высота 120px с учетом DPI)
+          const logoHeight = Math.min(120 * dpi, logoImg.height * (contentWidth / logoImg.width));
           const logoWidth = contentWidth;
           
           // Заголовок
           ctx.font = titleFont;
-          const titleHeight = 22;
+          const titleHeight = 40 * dpi;
           
           // Подзаголовок
           ctx.font = headerFont;
-          const subtitleHeight = 16;
+          const subtitleHeight = 30 * dpi;
           
           // Основной контент
           ctx.font = normalFont;
-          const lineHeight = 14;
-          const smallLineHeight = 12;
+          const lineHeight = 24 * dpi;
+          const smallLineHeight = 20 * dpi;
           
           // Подсчитываем количество строк
           const lines = [
             '',
             `Дата: ${data.date} ${data.time}`,
+            '',
             `Водитель: ${data.driver.fullName}`,
             data.driver.phoneNumber ? `Телефон: ${data.driver.phoneNumber}` : '',
+            '',
             `Тариф: ${data.route}`,
+            '',
             `Марка: ${data.car.make}`,
             `Цвет авто: ${data.car.color}`,
             `Номер авто: ${data.car.licensePlate}`,
@@ -93,41 +98,44 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           ].filter(line => line !== '');
 
           // Вычисляем общую высоту
-          const totalHeight = padding + logoHeight + 15 + // логотип + отступ
-                              titleHeight + 8 + // заголовок + отступ
-                              subtitleHeight + 8 + // подзаголовок + отступ
+          const totalHeight = padding + logoHeight + (30 * dpi) + // логотип + отступ
+                              titleHeight + (16 * dpi) + // заголовок + отступ
+                              subtitleHeight + (16 * dpi) + // подзаголовок + отступ
                               lines.length * lineHeight + // строки
                               padding; // нижний отступ
 
-          // Устанавливаем размеры canvas
+          // Устанавливаем размеры canvas с высоким DPI
           canvas.width = receiptWidth;
           canvas.height = totalHeight;
+          
+          // Масштабируем контекст для высокого DPI
+          ctx.scale(dpi, dpi);
 
           // Белый фон
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillRect(0, 0, canvas.width / dpi, canvas.height / dpi);
 
           // Сбрасываем контекст после изменения размеров
           ctx.fillStyle = '#000000';
           ctx.textAlign = 'center';
 
           // Рисуем логотип
-          ctx.drawImage(logoImg, padding, currentY, logoWidth, logoHeight);
-          currentY += logoHeight + 15;
+          ctx.drawImage(logoImg, padding / dpi, currentY / dpi, logoWidth / dpi, logoHeight / dpi);
+          currentY += logoHeight + (30 * dpi);
 
           // Заголовок
           ctx.font = titleFont;
-          ctx.fillText('COMPASS', receiptWidth / 2, currentY);
-          currentY += titleHeight + 5;
+          ctx.fillText('COMPASS', (receiptWidth / dpi) / 2, currentY / dpi);
+          currentY += titleHeight + (16 * dpi);
 
           ctx.font = headerFont;
-          ctx.fillText('TRANSFER', receiptWidth / 2, currentY);
-          currentY += subtitleHeight + 10;
+          ctx.fillText('TRANSFER', (receiptWidth / dpi) / 2, currentY / dpi);
+          currentY += subtitleHeight + (16 * dpi);
 
           // Подзаголовок
           ctx.font = normalFont;
-          ctx.fillText('Контрольно-кассовый чек', receiptWidth / 2, currentY);
-          currentY += lineHeight + 15;
+          ctx.fillText('Контрольно-кассовый чек', (receiptWidth / dpi) / 2, currentY / dpi);
+          currentY += lineHeight + (30 * dpi);
 
           // Основной контент
           ctx.textAlign = 'left';
@@ -137,15 +145,16 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
             if (line.includes('━━')) {
               // Рисуем пунктирную линию
               ctx.font = smallFont;
-              ctx.fillText(line, padding, currentY);
+              ctx.fillText(line, padding / dpi, currentY / dpi);
+              currentY += lineHeight;
             } else if (line === '') {
-              // Пустая строка - просто увеличиваем Y
+              // Пустая строка - увеличиваем Y на половину высоты строки
               currentY += lineHeight / 2;
             } else {
               ctx.font = normalFont;
-              ctx.fillText(line, padding, currentY);
+              ctx.fillText(line, padding / dpi, currentY / dpi);
+              currentY += lineHeight;
             }
-            currentY += lineHeight;
           }
 
           // Конвертируем в base64
