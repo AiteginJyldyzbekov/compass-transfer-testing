@@ -46,12 +46,12 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
       const padding = 16 * dpi;
       const contentWidth = receiptWidth - (padding * 2);
       
-      // Настройки шрифтов (значительно увеличенные размеры)
+      // Настройки шрифтов (умеренно увеличенные размеры)
       const fontFamily = 'Arial, sans-serif';
-      const titleFont = `bold ${32 * dpi}px ` + fontFamily;
-      const headerFont = `bold ${24 * dpi}px ` + fontFamily;
-      const normalFont = `${18 * dpi}px ` + fontFamily;
-      const smallFont = `${16 * dpi}px ` + fontFamily;
+      const titleFont = `bold ${20 * dpi}px ` + fontFamily;
+      const headerFont = `bold ${16 * dpi}px ` + fontFamily;
+      const normalFont = `${14 * dpi}px ` + fontFamily;
+      const smallFont = `${12 * dpi}px ` + fontFamily;
 
       // Загружаем логотип
       const logoImg = new Image();
@@ -60,22 +60,22 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           // Вычисляем высоту на основе содержимого
           let currentY = padding;
           
-          // Логотип (максимальная высота 120px с учетом DPI)
-          const logoHeight = Math.min(120 * dpi, logoImg.height * (contentWidth / logoImg.width));
+          // Логотип (максимальная высота 80px с учетом DPI)
+          const logoHeight = Math.min(80 * dpi, logoImg.height * (contentWidth / logoImg.width));
           const logoWidth = contentWidth;
           
           // Заголовок
           ctx.font = titleFont;
-          const titleHeight = 40 * dpi;
+          const titleHeight = 24 * dpi;
           
           // Подзаголовок
           ctx.font = headerFont;
-          const subtitleHeight = 30 * dpi;
+          const subtitleHeight = 20 * dpi;
           
           // Основной контент
           ctx.font = normalFont;
-          const lineHeight = 24 * dpi;
-          const smallLineHeight = 20 * dpi;
+          const lineHeight = 18 * dpi;
+          const smallLineHeight = 16 * dpi;
           
           // Подсчитываем количество строк
           const lines = [
@@ -97,10 +97,9 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
             `Покупка: ${data.price.toFixed(2)} KGZ`
           ].filter(line => line !== '');
 
-          // Вычисляем общую высоту
-          const totalHeight = padding + logoHeight + (30 * dpi) + // логотип + отступ
-                              titleHeight + (16 * dpi) + // заголовок + отступ
-                              subtitleHeight + (16 * dpi) + // подзаголовок + отступ
+          // Вычисляем общую высоту (убираем заголовки COMPASS/TRANSFER)
+          const totalHeight = padding + logoHeight + (20 * dpi) + // логотип + отступ
+                              titleHeight + (12 * dpi) + // заголовок "Контрольно-кассовый чек" + отступ
                               lines.length * lineHeight + // строки
                               padding; // нижний отступ
 
@@ -121,21 +120,12 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
 
           // Рисуем логотип
           ctx.drawImage(logoImg, padding / dpi, currentY / dpi, logoWidth / dpi, logoHeight / dpi);
-          currentY += logoHeight + (30 * dpi);
+          currentY += logoHeight + (20 * dpi);
 
-          // Заголовок
+          // Подзаголовок "Контрольно-кассовый чек"
           ctx.font = titleFont;
-          ctx.fillText('COMPASS', (receiptWidth / dpi) / 2, currentY / dpi);
-          currentY += titleHeight + (16 * dpi);
-
-          ctx.font = headerFont;
-          ctx.fillText('TRANSFER', (receiptWidth / dpi) / 2, currentY / dpi);
-          currentY += subtitleHeight + (16 * dpi);
-
-          // Подзаголовок
-          ctx.font = normalFont;
           ctx.fillText('Контрольно-кассовый чек', (receiptWidth / dpi) / 2, currentY / dpi);
-          currentY += lineHeight + (30 * dpi);
+          currentY += titleHeight + (20 * dpi);
 
           // Основной контент
           ctx.textAlign = 'left';
