@@ -48,7 +48,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
       
       // Настройки шрифтов (умеренно увеличенные размеры)
       const fontFamily = 'Arial, sans-serif';
-      const titleFont = `bold ${20 * dpi}px ` + fontFamily;
+      const titleFont = `bold ${16 * dpi}px ` + fontFamily; // Уменьшен для заголовка
       const headerFont = `bold ${16 * dpi}px ` + fontFamily;
       const normalFont = `${14 * dpi}px ` + fontFamily;
       const smallFont = `${12 * dpi}px ` + fontFamily;
@@ -66,7 +66,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           
           // Заголовок
           ctx.font = titleFont;
-          const titleHeight = 24 * dpi;
+          const titleHeight = 20 * dpi;
           
           // Подзаголовок
           ctx.font = headerFont;
@@ -74,11 +74,12 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           
           // Основной контент
           ctx.font = normalFont;
-          const lineHeight = 18 * dpi;
-          const smallLineHeight = 16 * dpi;
+          const lineHeight = 20 * dpi;
+          const smallLineHeight = 18 * dpi;
           
           // Подсчитываем количество строк
           const lines = [
+            '',
             '',
             `Дата: ${data.date} ${data.time}`,
             '',
@@ -92,16 +93,19 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
             `Номер авто: ${data.car.licensePlate}`,
             data.queueNumber ? `Код: ${data.queueNumber}` : '',
             '',
+            '',
             '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
             '',
-            `Покупка: ${data.price.toFixed(2)} KGZ`
+            `Покупка: ${data.price.toFixed(2)} KGZ`,
+            '',
+            ''
           ].filter(line => line !== '');
 
-          // Вычисляем общую высоту (убираем заголовки COMPASS/TRANSFER)
-          const totalHeight = padding + logoHeight + (20 * dpi) + // логотип + отступ
-                              titleHeight + (12 * dpi) + // заголовок "Контрольно-кассовый чек" + отступ
+          // Вычисляем общую высоту (увеличиваем отступы)
+          const totalHeight = padding + logoHeight + (40 * dpi) + // логотип + большой отступ
+                              titleHeight + (20 * dpi) + // заголовок "Контрольно-кассовый чек" + отступ
                               lines.length * lineHeight + // строки
-                              padding; // нижний отступ
+                              (padding * 2); // увеличенный нижний отступ
 
           // Устанавливаем размеры canvas с высоким DPI
           canvas.width = receiptWidth;
@@ -120,7 +124,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
 
           // Рисуем логотип
           ctx.drawImage(logoImg, padding / dpi, currentY / dpi, logoWidth / dpi, logoHeight / dpi);
-          currentY += logoHeight + (20 * dpi);
+          currentY += logoHeight + (40 * dpi);
 
           // Подзаголовок "Контрольно-кассовый чек"
           ctx.font = titleFont;
@@ -138,8 +142,8 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
               ctx.fillText(line, padding / dpi, currentY / dpi);
               currentY += lineHeight;
             } else if (line === '') {
-              // Пустая строка - увеличиваем Y на половину высоты строки
-              currentY += lineHeight / 2;
+              // Пустая строка - увеличиваем Y на полную высоту строки для лучших отступов
+              currentY += lineHeight;
             } else {
               ctx.font = normalFont;
               ctx.fillText(line, padding / dpi, currentY / dpi);
