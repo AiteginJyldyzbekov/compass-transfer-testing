@@ -4,18 +4,24 @@
 import Image from 'next/image';
 import React from 'react';
 import { Button } from '@shared/ui/forms/button';
-import { useDriverQueue } from '@features/driver-queue';
+import { type QueueStatusResponse } from '@shared/api/driver-queue';
 import DriverLocation from './driver-location-block';
 
-export function DriverStatusCard() {
-  const {
-    queueData,
-    isInQueue,
-    isLoading,
-    error,
-    joinQueue: _joinQueue,
-    leaveQueue
-  } = useDriverQueue();
+interface DriverStatusCardProps {
+  queueData: QueueStatusResponse | null;
+  isInQueue: boolean;
+  isLoading: boolean;
+  error: string | null;
+  leaveQueue: () => Promise<void>;
+}
+
+export function DriverStatusCard({
+  queueData,
+  isInQueue,
+  isLoading,
+  error,
+  leaveQueue
+}: DriverStatusCardProps) {
 
   const handleToggleQueue = async () => {
     if (isInQueue) {

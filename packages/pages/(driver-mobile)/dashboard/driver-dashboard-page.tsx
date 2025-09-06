@@ -17,13 +17,17 @@ export default function DriverDashboardPage() {
   // Используем данные из useDriverQueue вместо дублирования запросов
   const {
     queueData,
-    joinQueue
+    isInQueue,
+    isLoading: queueIsLoading,
+    error: queueError,
+    joinQueue,
+    leaveQueue
   } = useDriverQueue();
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   const handleLocationSelect = useCallback(async (locationId: string) => {
     try {
-      await joinQueue(locationId);
+      await joinQueue(locationId)
     } catch {
       // Ошибка уже обрабатывается в useDriverQueue
     }
@@ -146,10 +150,16 @@ export default function DriverDashboardPage() {
         ) : (
           // Если нет заказа, показываем DriverStatusCard + DriverStatusBlock
           <>
-            {/* DriverStatusCard занимает основное место */}
-            <div className='flex-1 min-h-0'>
-              <DriverStatusCard />
-            </div>
+             {/* DriverStatusCard занимает основное место */}
+             <div className='flex-1 min-h-0'>
+               <DriverStatusCard
+                 queueData={queueData}
+                 isInQueue={isInQueue}
+                 isLoading={queueIsLoading}
+                 error={queueError}
+                 leaveQueue={leaveQueue}
+               />
+             </div>
 
             {/* DriverStatusBlock занимает столько места, сколько нужно */}
             <div className='flex-shrink-0'>
