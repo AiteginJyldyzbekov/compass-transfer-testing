@@ -83,25 +83,25 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
-            `Дата: ${data.date} ${data.time}`,
+            { type: 'field', label: 'Дата:', value: `${data.date} ${data.time}` },
             '⠀', // невидимый символ отступа
-            `Водитель: ${data.driver.fullName}`,
+            { type: 'field', label: 'Водитель:', value: data.driver.fullName },
             '⠀', // невидимый символ отступа
-            data.driver.phoneNumber ? `Телефон: ${data.driver.phoneNumber}` : '⠀',
+            data.driver.phoneNumber ? { type: 'field', label: 'Телефон:', value: data.driver.phoneNumber } : '⠀',
             '⠀', // невидимый символ отступа
-            `Тариф: ${data.route}`,
+            { type: 'field', label: 'Тариф:', value: data.route },
             '⠀', // невидимый символ отступа
-            `Марка: ${data.car.make}`,
+            { type: 'field', label: 'Марка:', value: data.car.make },
             '⠀', // невидимый символ отступа
-            `Цвет авто: ${data.car.color}`,
+            { type: 'field', label: 'Цвет авто:', value: data.car.color },
             '⠀', // невидимый символ отступа
-            `Номер авто: ${data.car.licensePlate}`,
+            { type: 'field', label: 'Номер авто:', value: data.car.licensePlate },
             '⠀', // невидимый символ отступа
-            data.queueNumber ? `Код: ${data.queueNumber}` : '⠀',
-            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            data.queueNumber ? { type: 'field', label: 'Код:', value: data.queueNumber } : '⠀',
+            '━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━',
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
-            `Покупка: ${data.price.toFixed(2)} KGZ`,
+            { type: 'field', label: 'Покупка:', value: `${data.price.toFixed(2)} KGZ` },
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
             '⠀'  // невидимый символ отступа
@@ -142,17 +142,36 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
           ctx.font = normalFont;
 
           for (const line of lines) {
-            if (line.includes('━━')) {
-              // Рисуем пунктирную линию
-              ctx.font = smallFont;
-              ctx.fillText(line, padding / dpi, currentY / dpi);
-              currentY += lineHeight;
-            } else if (line === '⠀' || line === ' ' || line.trim() === '') {
-              // Невидимый символ отступа - увеличиваем Y на 1.25x высоты строки для умеренных отступов
-              currentY += lineHeight * 1.25;
-            } else {
+            if (typeof line === 'string') {
+              if (line.includes('━━')) {
+                // Рисуем пунктирную линию
+                ctx.font = smallFont;
+                ctx.fillText(line, padding / dpi, currentY / dpi);
+                currentY += lineHeight;
+              } else if (line === '⠀' || line === ' ' || line.trim() === '') {
+                // Невидимый символ отступа - увеличиваем Y на 1.25x высоты строки для умеренных отступов
+                currentY += lineHeight * 1.25;
+              } else {
+                ctx.font = normalFont;
+                ctx.fillText(line, padding / dpi, currentY / dpi);
+                currentY += lineHeight;
+              }
+            } else if (line && typeof line === 'object' && line.type === 'field') {
+              // Рисуем поле с жирным названием и обычным значением
+              const field = line as { type: string; label: string; value: string };
+              
+              // Сначала рисуем жирное название поля
+              ctx.font = `bold ${14 * dpi}px ` + fontFamily;
+              ctx.fillText(field.label, padding / dpi, currentY / dpi);
+              
+              // Вычисляем ширину названия поля для позиционирования значения
+              const labelWidth = ctx.measureText(field.label).width;
+              const valueX = (padding / dpi) + labelWidth;
+              
+              // Затем рисуем обычное значение
               ctx.font = normalFont;
-              ctx.fillText(line, padding / dpi, currentY / dpi);
+              ctx.fillText(field.value, valueX, currentY / dpi);
+              
               currentY += lineHeight;
             }
           }
