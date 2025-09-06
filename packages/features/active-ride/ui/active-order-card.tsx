@@ -520,7 +520,10 @@ export function ActiveOrderCard({ order, onStatusUpdate }: ActiveOrderCardProps)
                     key={index}
                     variant={action.variant}
                     size="sm"
-                    onClick={action.action}
+                    onClick={() => {
+                      action.action
+                      window?.location.reload()
+                    }}
                     disabled={isUpdating}
                     className="flex items-center gap-2"
                   >
