@@ -50,8 +50,8 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
       const fontFamily = 'Arial, sans-serif';
       const titleFont = `bold ${11 * dpi}px ` + fontFamily; // 22px для заголовка
       const headerFont = `bold ${16 * dpi}px ` + fontFamily;
-      const normalFont = `${14 * dpi}px ` + fontFamily;
-      const smallFont = `${12 * dpi}px ` + fontFamily;
+      const normalFont = `${12 * dpi}px ` + fontFamily; // Уменьшили с 14px до 12px
+      const smallFont = `${10 * dpi}px ` + fontFamily; // Уменьшили с 12px до 10px
 
       // Загружаем логотип
       const logoImg = new Image();
@@ -74,8 +74,8 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
 
           // Основной контент
           ctx.font = normalFont;
-          const lineHeight = 20 * dpi;
-          const smallLineHeight = 18 * dpi;
+          const lineHeight = 18 * dpi; // Уменьшили с 20px до 18px
+          const smallLineHeight = 16 * dpi; // Уменьшили с 18px до 16px
 
           // Подсчитываем количество строк (используем специальные символы отступов)
           const lines = [
@@ -83,25 +83,26 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
-            { type: 'field', label: 'Дата:', value: `${data.date} ${data.time}` },
+            { type: 'field', label: 'Дата:', value: ` ${data.date} ${data.time}` },
             '⠀', // невидимый символ отступа
-            { type: 'field', label: 'Водитель:', value: data.driver.fullName },
+            { type: 'field', label: 'Водитель:', value: " " + data.driver.fullName },
             '⠀', // невидимый символ отступа
-            data.driver.phoneNumber ? { type: 'field', label: 'Телефон:', value: data.driver.phoneNumber } : '⠀',
+            data.driver.phoneNumber ? { type: 'field', label: 'Телефон:', value: " " +  data.driver.phoneNumber } : '⠀',
             '⠀', // невидимый символ отступа
-            { type: 'field', label: 'Тариф:', value: data.route },
+            { type: 'field', label: 'Тариф:', value: " " + data.route },
             '⠀', // невидимый символ отступа
-            { type: 'field', label: 'Марка:', value: data.car.make },
+            { type: 'field', label: 'Марка:', value: " " + data.car.make },
             '⠀', // невидимый символ отступа
-            { type: 'field', label: 'Цвет авто:', value: data.car.color },
+            { type: 'field', label: 'Цвет авто:', value: " " + data.car.color },
             '⠀', // невидимый символ отступа
-            { type: 'field', label: 'Номер авто:', value: data.car.licensePlate },
+            { type: 'field', label: 'Номер авто:', value: " " + data.car.licensePlate },
             '⠀', // невидимый символ отступа
-            data.queueNumber ? { type: 'field', label: 'Код:', value: data.queueNumber } : '⠀',
-            '━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━',
+            data.queueNumber ? { type: 'field', label: 'Код:', value: " " + data.queueNumber } : '⠀',
+            // '━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━',
+            '- - - - - - - - - - - - - - - - - - - - -',
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
-            { type: 'field', label: 'Покупка:', value: `${data.price.toFixed(2)} KGZ` },
+            { type: 'field', label: 'Покупка:', value: `${" " + data.price.toFixed(2)} KGZ` },
             '⠀', // невидимый символ отступа
             '⠀', // невидимый символ отступа
             '⠀'  // невидимый символ отступа
@@ -161,7 +162,7 @@ export async function generateReceiptPNG(logoBase64: string, data: ReceiptData):
               const field = line as { type: string; label: string; value: string };
               
               // Сначала рисуем жирное название поля
-              ctx.font = `bold ${14 * dpi}px ` + fontFamily;
+              ctx.font = `bold ${12 * dpi}px ` + fontFamily;
               ctx.fillText(field.label, padding / dpi, currentY / dpi);
               
               // Вычисляем ширину названия поля для позиционирования значения
