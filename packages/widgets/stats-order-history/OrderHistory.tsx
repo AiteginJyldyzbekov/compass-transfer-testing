@@ -59,42 +59,42 @@ export default function OrderHistoryComponent() {
             <div className="px-4 space-y-3">
                 {orders.map((order) => (
                     <div key={order.id} className="py-4 px-4 rounded-xl" style={{ backgroundColor: '#0047FF08' }}>
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start gap-4">
                             {/* Левая часть - имя */}
-                            <div className="w-32">
+                            <div className="flex-shrink-0 w-24 sm:w-32">
                                 <h3 className="text-sm font-medium leading-tight" style={{ color: '#212227' }}>
                                     {order.client}
                                 </h3>
                             </div>
 
                             {/* Правая часть - все остальные данные */}
-                            <div className="flex flex-col items-end space-y-2">
-                                <div className="flex items-center space-x-8">
-                                    <div className="flex flex-col items-center w-16">
-                                        <span className="text-xs font-medium" style={{ color: '#212227' }}>{order.date}</span>
+                            <div className="flex flex-col items-end space-y-2 min-w-0 flex-1">
+                                <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-8">
+                                    <div className="flex flex-col items-center min-w-0 w-12 sm:w-16">
+                                        <span className="text-xs font-medium truncate w-full text-center" style={{ color: '#212227' }}>{order.date}</span>
                                         <span className="text-xs" style={{ color: '#92929D' }}>Дата</span>
                                     </div>
-                                    <div className="flex flex-col items-center w-16">
-                                        <span className="text-xs font-medium" style={{ color: '#212227' }}>{order.time}</span>
+                                    <div className="flex flex-col items-center min-w-0 w-12 sm:w-16">
+                                        <span className="text-xs font-medium truncate w-full text-center" style={{ color: '#212227' }}>{order.time}</span>
                                         <span className="text-xs" style={{ color: '#92929D' }}>Время</span>
                                     </div>
-                                    <div className="flex flex-col items-center w-16">
-                                        <span className="text-xs font-medium" style={{ color: '#212227' }}>{order.reference}</span>
+                                    <div className="flex flex-col items-center min-w-0 w-12 sm:w-16">
+                                        <span className="text-xs font-medium truncate w-full text-center" style={{ color: '#212227' }}>{order.reference}</span>
                                         <span className="text-xs" style={{ color: '#92929D' }}>Рейс</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center space-x-8">
-                                    <div className="flex flex-col items-center w-16">
-                                        <span className="text-sm text-gray-900">Статус</span>
+                                <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-8">
+                                    <div className="flex flex-col items-center w-12 sm:w-16">
+                                        <span className="text-sm" style={{ color: '#212227' }}>Статус</span>
                                     </div>
-                                    <div className="flex flex-col items-center w-16">
+                                    <div className="flex flex-col items-center w-12 sm:w-16">
                                         {/* Пустое место под временем */}
                                     </div>
-                                    <div className="flex flex-col items-center w-16">
+                                    <div className="flex flex-col items-center w-12 sm:w-16">
                                         <div className="flex items-center">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                            <span className="text-green-600 text-sm font-medium">Завершен</span>
+                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 flex-shrink-0"></div>
+                                            <span className="text-green-600 text-sm font-medium whitespace-nowrap">Завершен</span>
                                         </div>
                                     </div>
                                 </div>
