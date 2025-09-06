@@ -21,7 +21,8 @@ export default function DriverDashboardPage() {
     isLoading: queueIsLoading,
     error: queueError,
     joinQueue,
-    leaveQueue
+    leaveQueue,
+    refetch: refetchQueue
   } = useDriverQueue();
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
@@ -57,6 +58,19 @@ export default function DriverDashboardPage() {
       setIsLoading(false);
     }
   }, [queueData]);
+
+  // Функция для обновления после действий водителя (обновляет и очередь, и заказ)
+  const handleStatusUpdate = useCallback(async () => {
+    try {
+      // Сначала обновляем данные очереди
+      await refetchQueue();
+      
+      // Затем обновляем заказ
+      await fetchActiveOrder();
+    } catch (err) {
+      console.error('Ошибка при обновлении статуса:', err);
+    }
+  }, [refetchQueue, fetchActiveOrder]);
 
   useEffect(() => {
     fetchActiveOrder();
@@ -144,7 +158,7 @@ export default function DriverDashboardPage() {
           <div className='flex-1 min-h-0'>
             <ActiveOrderCard
               order={currentOrder}
-              onStatusUpdate={fetchActiveOrder}
+              onStatusUpdate={handleStatusUpdate}
             />
           </div>
         ) : (
