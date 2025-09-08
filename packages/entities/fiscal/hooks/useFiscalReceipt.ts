@@ -276,9 +276,10 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
       
       if (error instanceof FiscalError) {
         toast.error(`Ошибка печати чека: ${error.message}`);
-      } else {
-        toast.error('Неизвестная ошибка при печати чека');
       }
+      //  else {
+      //   toast.error('Неизвестная ошибка при печати чека');
+      // }
 
       return false;
     }
@@ -305,9 +306,10 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
       
       if (error instanceof FiscalError) {
         toast.error(`Ошибка печати чека: ${error.message}`);
-      } else {
-        toast.error('Неизвестная ошибка при печати чека');
       }
+      //  else {
+      //   toast.error('Неизвестная ошибка при печати чека');
+      // }
 
       return false;
     }
