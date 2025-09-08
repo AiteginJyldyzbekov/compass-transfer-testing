@@ -302,11 +302,11 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
       console.log('✅ Полный чек PNG успешно напечатан');
       return true;
     } catch (error) {
-      console.error('❌ Ошибка печати полного чека PNG:', error);
+      // console.error('❌ Ошибка печати полного чека PNG:', error);
       
-      if (error instanceof FiscalError) {
-        toast.error(`Ошибка печати чека: ${error.message}`);
-      }
+      // if (error instanceof FiscalError) {
+      //   toast.error(`Ошибка печати чека: ${error.message}`);
+      // }
       //  else {
       //   toast.error('Неизвестная ошибка при печати чека');
       // }
