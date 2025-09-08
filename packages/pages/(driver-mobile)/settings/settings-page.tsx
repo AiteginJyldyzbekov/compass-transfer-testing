@@ -77,19 +77,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Помощь */}
-          <div className='bg-white rounded-2xl shadow-sm'>
-            <div className='p-4 border-b border-gray-100'>
-              <h2 className='text-lg font-semibold text-gray-900'>Помощь</h2>
-            </div>
-            <div className='p-4 space-y-3'>
-              <div className='flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer'>
-                <HelpCircle className='w-5 h-5 text-gray-600' />
-                <span className='text-gray-900'>Поддержка</span>
-              </div>
-            </div>
-          </div>
-
           {/* Выход */}
           <div className='bg-white rounded-2xl shadow-sm mb-[70px]'>
             <div className='p-4'>
@@ -107,6 +94,19 @@ export default function SettingsPage() {
                   {isLoggingOut ? 'Выход...' : 'Выйти из аккаунта'}
                 </span>
               </button>
+            </div>
+          </div>
+
+          {/* Помощь */}
+          <div className='bg-white rounded-2xl shadow-sm'>
+            <div className='p-4 border-b border-gray-100'>
+              <h2 className='text-lg font-semibold text-gray-900'>Помощь</h2>
+            </div>
+            <div className='p-4 space-y-3'>
+              <div className='flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer'>
+                <HelpCircle className='w-5 h-5 text-gray-600' />
+                <span className='text-gray-900'>Поддержка</span>
+              </div>
             </div>
           </div>
         </div>
