@@ -41,6 +41,8 @@ export function DriverStatusCard({
     });
   };
 
+  const driverPosition = queueData && queueData?.position + 1
+
   // Показываем loading состояние пока не получили ответ от API
   if (isLoading) {
     return (
@@ -159,7 +161,7 @@ export function DriverStatusCard({
                   {/* Номер позиции в центре */}
                   <div className='absolute inset-0 flex items-center justify-center'>
                     <span className='text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600'>
-                      {queueData?.position || 1}
+                      {driverPosition}
                     </span>
                   </div>
                 </div>
