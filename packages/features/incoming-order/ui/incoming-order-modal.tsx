@@ -164,13 +164,15 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
     if (isModalOpen && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
+          console.log(`Таймер: ${prev} секунд осталось`);
           if (prev <= 1) {
             // Время вышло - автоматически закрываем модальное окно
+            console.log('Время вышло, закрываем модальное окно');
             handleClose();
 
             return 0;
           }
-          
+
           return prev - 1;
         });
       }, 1000);
@@ -190,7 +192,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
 
   // Вычисляем процент для анимации кнопки - теперь считаем оставшееся время
   const progressPercent = (timeLeft / 10) * 100;
-  
+
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <div className='w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300'>
