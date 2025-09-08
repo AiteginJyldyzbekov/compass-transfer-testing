@@ -4,7 +4,7 @@ import { User, Shield, HelpCircle, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { logger } from '@shared/lib';
-import {ChangePasswordModal} from "@features/auth/ui/modal/change-password-modal"
+import { ChangePasswordModal } from "@features/auth/ui/modal/change-password-modal"
 
 export default function SettingsPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -91,7 +91,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Выход */}
-          <div className='bg-white rounded-2xl shadow-sm'>
+          <div className='bg-white rounded-2xl shadow-sm mb-[30px]'>
             <div className='p-4'>
               <button
                 onClick={handleLogout}
