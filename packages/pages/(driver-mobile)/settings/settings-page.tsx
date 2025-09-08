@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { logger } from '@shared/lib';
 import { ChangePasswordModal } from "@features/auth/ui/modal/change-password-modal"
+import { apiPost } from '@shared/api';
 
 export default function SettingsPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -15,17 +16,16 @@ export default function SettingsPage() {
 
     try {
       // Вызываем API route для очистки куки
-      const logoutResponse = await fetch('/api/Auth/logout', {
+      const logoutResponse = await apiPost('/Auth/logout', {
         method: 'POST',
         credentials: 'include',
-      });
-
-      if (logoutResponse.ok) {
-        // Перенаправляем на страницу входа
+      }).then(() => {
         window.location.href = '/login';
-      } else {
+      }).catch(() => {
         logger.error('Ошибка при выходе из системы');
-      }
+      })
+
+      return logoutResponse
     } catch (error) {
       logger.error('Ошибка при выходе:', error);
     } finally {
@@ -91,7 +91,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Выход */}
-          <div className='bg-white rounded-2xl shadow-sm mb-[30px]'>
+          <div className='bg-white rounded-2xl shadow-sm mb-[70px]'>
             <div className='p-4'>
               <button
                 onClick={handleLogout}
