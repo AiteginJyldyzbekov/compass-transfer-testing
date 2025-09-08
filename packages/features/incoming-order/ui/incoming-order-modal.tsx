@@ -23,7 +23,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<GetOrderDTO | null>(null);
-  const [timeLeft, setTimeLeft] = useState(30); // Таймер на 30 секунд
+  const [timeLeft, setTimeLeft] = useState(20); // Таймер на 20 секунд
 
   // Хуки
   const { on, off } = useSignalR();
@@ -78,7 +78,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
         setCurrentRideId(rideId);
         setOrderType(orderTypeValue);
         setIsModalOpen(true);
-        setTimeLeft(30); // Сбрасываем таймер на 30 секунд
+        setTimeLeft(20); // Сбрасываем таймер на 20 секунд
         playSound();
 
         // Проверим состояние через небольшую задержку
@@ -157,7 +157,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
     }
   }, [stopSound]);
 
-  // Таймер автоматического закрытия через 30 секунд
+  // Таймер автоматического закрытия через 20 секунд
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -170,7 +170,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
 
             return 0;
           }
-          
+
           return prev - 1;
         });
       }, 1000);
@@ -189,8 +189,8 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
   }
 
   // Вычисляем процент для анимации кнопки - теперь считаем оставшееся время
-  const progressPercent = (timeLeft / 30) * 100;
-  
+  const progressPercent = (timeLeft / 10) * 100;
+
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <div className='w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300'>
