@@ -11,6 +11,7 @@ import { getLogoBase64 } from '@shared/utils/logoConverter';
 import { generateFullReceiptPNG } from '@shared/utils/receiptGenerator';
 import { useFiscalReceipt } from '@entities/fiscal';
 import { useTerminalReceipt } from '@entities/orders/context';
+import { PhotoReceiptModal } from '@features/orders/modals/PhotoReceiptModal';
 
 // 🔄 ПЕРЕКЛЮЧАТЕЛЬ СПОСОБА ПЕЧАТИ
 // true - генерация PNG чека с логотипом и печать одним запросом
@@ -130,6 +131,8 @@ export const Receipt: NextPage = () => {
   const { printReceiptLines, printReceiptImage, printReceiptWithLogo, printFullReceiptPNG } = useFiscalReceipt();
 
   const hasAutoSavedRef = useRef(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   // InfoRow компонент
   const InfoRow: React.FC<{ label: string; value: string | React.ReactNode; className?: string }> = ({
@@ -154,17 +157,19 @@ export const Receipt: NextPage = () => {
     buttonText: string;
     className?: string;
     handleClick?: () => void;
+    disabled?: boolean;
   }> = ({
     initialSeconds = 60,
     targetPath = '/',
     buttonText = 'На главную',
     className = '',
     handleClick,
+    disabled = false,
   }) => {
       const [buttonSeconds, setButtonSeconds] = useState(initialSeconds);
 
       useEffect(() => {
-        if (buttonSeconds <= 0) {
+        if (buttonSeconds <= 0 && !disabled) {
           handleClick?.();
           router.push(targetPath);
 
@@ -176,17 +181,24 @@ export const Receipt: NextPage = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-      }, [buttonSeconds, targetPath, handleClick]);
+      }, [buttonSeconds, targetPath, handleClick, disabled]);
 
       const returnToMainPage = () => {
-        handleClick?.();
-        router.push(targetPath);
+        if (!disabled) {
+          handleClick?.();
+          router.push(targetPath);
+        }
       };
 
       return (
         <button
-          className={`w-[610px] m-auto mb-[120px] h-[124px] flex items-center justify-center flex-1 rounded-[100px] bg-gradient-to-r from-[#0053BF] to-[#2F79D8] ${className}`}
+          className={`w-[610px] m-auto mb-[120px] h-[124px] flex items-center justify-center flex-1 rounded-[100px] ${
+            disabled 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-gradient-to-r from-[#0053BF] to-[#2F79D8]'
+          } ${className}`}
           onClick={returnToMainPage}
+          disabled={disabled}
         >
           <span className="text-[46px] text-[#F5F6F7] font-bold leading-[100%]">
             {buttonText} {buttonSeconds < 10 ? `0:0${buttonSeconds}` : `0:${buttonSeconds}`}
@@ -208,6 +220,29 @@ export const Receipt: NextPage = () => {
       clearReceiptData();
     };
   }, [clearReceiptData]);
+
+  // Показываем модальное окно через 3 секунды после отображения чека
+  useEffect(() => {
+    if (receiptData && orderData) {
+      const timer = setTimeout(() => {
+        setShowPhotoModal(true);
+      }, 3000); // 3 секунды
+
+      return () => clearTimeout(timer);
+    }
+  }, [receiptData, orderData]);
+
+  // Закрываем модальное окно через 3 секунды и активируем кнопку
+  useEffect(() => {
+    if (showPhotoModal) {
+      const timer = setTimeout(() => {
+        setShowPhotoModal(false);
+        setIsButtonDisabled(false);
+      }, 3000); // Еще 3 секунды
+
+      return () => clearTimeout(timer);
+    }
+  }, [showPhotoModal]);
 
   // Автоматическая печать изображения чека после его отображения
   useEffect(() => {
@@ -484,8 +519,15 @@ export const Receipt: NextPage = () => {
           initialSeconds={60}
           targetPath="/"
           buttonText={t('toMain')}
+          disabled={isButtonDisabled}
         />
       </div>
+
+      {/* Модальное окно для предложения сфотографировать чек */}
+      <PhotoReceiptModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+      />
     </div>
   );
 };
