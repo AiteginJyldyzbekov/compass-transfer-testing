@@ -196,35 +196,33 @@ export const Locations: NextPage = () => {
 
         {/* Кнопки навигации */}
         <div className="flex gap-[30px]">
-          <div className='flex justify-center items-center'>
-            <button
-              onClick={handleBack}
-              className={clsx(
-                // Основные стили контейнера
-                'w-[500px] h-32 relative rounded-[100px] backdrop-blur-md mx-auto',
-                // Цвет фона с прозрачностью #00000059 ≈ bg-black/35
-                'bg-black/35',
-                // Состояния
-                'transition-all duration-200',
-                'hover:bg-black/40 active:bg-black/50',
-                // Фокус
-                'focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-transparent'
-              )}
-            >
-              {/* Иконка стрелки строго слева */}
-              <div className="absolute left-16 top-1/2 transform -translate-y-1/2">
-                <ChevronLeftIcon
-                  size={52}
-                  className="text-white"
-                />
-              </div>
+          <button
+            onClick={handleBack}
+            className={clsx(
+              // Основные стили контейнера
+              'h-32 relative rounded-[100px] backdrop-blur-md flex-1',
+              // Цвет фона с прозрачностью #00000059 ≈ bg-black/35
+              'bg-black/35',
+              // Состояния
+              'transition-all duration-200',
+              'hover:bg-black/40 active:bg-black/50',
+              // Фокус
+              'focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-transparent'
+            )}
+          >
+            {/* Иконка стрелки строго слева */}
+            <div className="absolute left-16 top-1/2 transform -translate-y-1/2">
+              <ChevronLeftIcon
+                size={52}
+                className="text-white"
+              />
+            </div>
 
-              {/* Текст по центру */}
-              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-medium leading-10" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
-                {t('back')}
-              </div>
-            </button>
-          </div>
+            {/* Текст по центру */}
+            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-medium leading-10" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
+              {t('Common.back')}
+            </div>
+          </button>
 
           {selectedLocations.length > 0 && (
             <Link
