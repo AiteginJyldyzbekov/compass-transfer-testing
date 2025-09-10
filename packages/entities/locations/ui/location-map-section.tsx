@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { Label } from '@shared/ui/forms/label';
 import { LeafletLocationMap } from '@shared/ui/maps/leaflet-location-map';
 import type { LocationCreateFormData } from '../schemas/locationCreateSchema';

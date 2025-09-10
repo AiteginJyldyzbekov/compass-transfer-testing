@@ -2,7 +2,7 @@
 
 import { X, User, CheckCircle, XCircle, Clock, MapPin, Star, Car, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { orderService, type PotentialDriverResponse } from '@shared/api/orders';
 import { Button } from '@shared/ui/forms/button';
 

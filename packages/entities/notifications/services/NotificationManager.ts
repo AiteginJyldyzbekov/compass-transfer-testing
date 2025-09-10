@@ -1,7 +1,7 @@
 /**
  * Менеджер уведомлений
  */
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import type { NotificationHandler } from '@shared/hooks/signal/interface/NotificationHandler';
 import { logger } from '@shared/lib/logger';
 

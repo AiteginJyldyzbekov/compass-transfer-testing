@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { notificationsApi, type GetNotificationDTO } from '@shared/api/notifications';
 
 interface UseNotificationActionsProps {

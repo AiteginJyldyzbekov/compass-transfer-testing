@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { captureReceiptImage } from '@shared/utils/receiptCapture';
 import { getLogoBase64 } from '@shared/utils/logoConverter';
 import { generateFullReceiptPNG } from '@shared/utils/receiptGenerator';

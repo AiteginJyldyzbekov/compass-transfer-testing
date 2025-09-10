@@ -3,7 +3,7 @@
  */
 
 import html2canvas from 'html2canvas';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 
 /**
  * Создает скриншот элемента и возвращает его как base64

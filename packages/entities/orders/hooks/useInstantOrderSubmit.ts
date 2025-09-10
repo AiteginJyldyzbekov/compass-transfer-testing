@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { OrdersApi, type CreateInstantOrderRequest, type CreateInstantOrderByPartnerRequest } from '../api/orders';
 import { OrderStatus } from '../enums';
 import type { GetOrderDTO, UpdateInstantOrderDTO } from '../interface';

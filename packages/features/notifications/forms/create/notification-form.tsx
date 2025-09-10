@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { AxiosError } from 'axios';
 import { useState, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { notificationsApi } from '@shared/api/notifications';
 import { logger } from '@shared/lib';
 import { NotificationType } from '@entities/notifications/enums/NotificationType.enum';

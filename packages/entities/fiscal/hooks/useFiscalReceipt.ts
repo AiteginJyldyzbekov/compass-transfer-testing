@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { fiscalService } from '../api/fiscal-service';
 import { FiscalError } from '../interface/fiscal-error';
 import type { TaxiReceiptData } from '../interface/fiscal-types';

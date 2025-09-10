@@ -3,7 +3,7 @@
 import L from 'leaflet';
 import React, { useState, useCallback, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { MapClickHandler } from '@shared/components/map/components';
 import { MapSearch } from './components/map-search';
 

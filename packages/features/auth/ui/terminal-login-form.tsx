@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { AuthService } from '@shared/api/auth-service';
 import { cn } from '@shared/lib/utils';
 import { Button } from '@shared/ui/forms/button';

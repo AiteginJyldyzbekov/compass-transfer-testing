@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { paymentService } from '@entities/payments/api/payment-service';
 import type { PaymentReceivedNotificationDTO } from '@entities/payments/interface/PaymentReceivedNotificationDTO';

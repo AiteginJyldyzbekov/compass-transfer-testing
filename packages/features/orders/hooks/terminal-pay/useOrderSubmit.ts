@@ -1,7 +1,7 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { orderService } from '@shared/api/orders';
 import { usePaymentContext } from '@shared/contexts/PaymentContext';
 import type { OrderCancelledNotificationDTO } from '@shared/hooks/signal/interface';

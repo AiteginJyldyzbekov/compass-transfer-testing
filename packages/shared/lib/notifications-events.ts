@@ -1,4 +1,4 @@
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 
 /**
  * Простой event emitter для синхронизации уведомлений между компонентами

@@ -5,7 +5,7 @@ import type { NextPage } from 'next';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 // import { captureReceiptImage } from '@shared/utils/receiptCapture'; // Отключено для тестирования
 import { useFiscalReceipt } from '@entities/fiscal';
 

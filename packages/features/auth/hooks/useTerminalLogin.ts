@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import type { TerminalLoginFormData } from '@entities/auth/schemas';
 
 // Mock функция для авторизации терминала

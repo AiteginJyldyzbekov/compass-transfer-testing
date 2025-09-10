@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@shared/lib/conditional-toast';
 import { driverQueueApi } from '@shared/api/driver-queue';
 import { driverOrderApi } from '@shared/api/orders';
 import { ridesApi } from '@shared/api/rides/rides-api';
