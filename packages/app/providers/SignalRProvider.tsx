@@ -31,6 +31,7 @@ export const SignalRProvider: React.FC<SignalRProviderProps> = ({ children, acce
       'DriverArrivedNotification',
       'DriverHeadingNotification',
       'DriverCancelledNotification',
+      'OrderCreatedNotification',
       'OrderConfirmedNotification',
       'OrderCancelledNotification',
       'OrderCompletedNotification',

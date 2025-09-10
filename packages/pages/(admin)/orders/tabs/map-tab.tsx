@@ -231,7 +231,19 @@ export function MapTab({
           userRole={userRole}
           onBoundsChange={handleMapBoundsChange}
           onLocationToggle={handleLocationToggle}
-          onDriverSelect={isInstantOrder ? undefined : (handleDriverSelect as unknown as (driver: string | ActiveDriverDTO) => void)}
+          onDriverSelect={isInstantOrder ? undefined : (driver: string | ActiveDriverDTO) => {
+            if (typeof driver === 'string') {
+              // Отмена водителя (пустая строка)
+              handleDriverSelect(null);
+            } else {
+              // Выбор водителя - нужно преобразовать ActiveDriverDTO в GetDriverDTO
+              const fullDriverData = getDriverById(driver.id);
+
+              if (fullDriverData) {
+                handleDriverSelect(fullDriverData as unknown as GetDriverDTO, driver.currentLocation);
+              }
+            }
+          }}
           onRouteDistanceChange={handleRouteDistanceChange}
           getDriverById={getDriverById}
           loadDriverData={loadDriverData}

@@ -1,6 +1,7 @@
 'use client';
 
 import { MapPin } from 'lucide-react';
+import { Checkbox } from '@shared/ui/forms/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/layout/card';
 
 interface RouteInfoCardProps {
@@ -8,6 +9,8 @@ interface RouteInfoCardProps {
   endLocation: string;
   intermediatePoints: string[];
   distance: string;
+  includeIntermediateInPrice?: boolean;
+  onIncludeIntermediateChange?: (include: boolean) => void;
 }
 
 /**
@@ -17,7 +20,9 @@ export function RouteInfoCard({
   startLocation,
   endLocation,
   intermediatePoints,
-  distance
+  distance,
+  includeIntermediateInPrice = true,
+  onIncludeIntermediateChange
 }: RouteInfoCardProps) {
   return (
     <Card className="mb-4">
@@ -74,6 +79,22 @@ export function RouteInfoCard({
               </div>
             </div>
           </div>
+
+          {/* Переключатель включения доп.точек в стоимость */}
+          {intermediatePoints.length > 0 && onIncludeIntermediateChange && (
+            <div className="pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-sm text-gray-900">Включать доп.точки в стоимость</p>
+                  <p className="text-xs text-gray-500">Учитывать расстояние через остановки при расчете цены</p>
+                </div>
+                <Checkbox
+                  checked={includeIntermediateInPrice}
+                  onCheckedChange={onIncludeIntermediateChange}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

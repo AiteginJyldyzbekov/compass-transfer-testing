@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { fiscalService } from '@entities/fiscal/api/fiscal-service';
@@ -47,14 +48,6 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     })();
   }, [isOpen, amount, onSuccess, handleClose]);
 
-  // Если произошла ошибка – автоматически закрываем модалку через 5 секунд
-  useEffect(() => {
-    if (status !== 'error') return;
-
-    const timer = setTimeout(handleClose, 5000);
-
-    return () => clearTimeout(timer);
-  }, [status, handleClose]);
 
   if (!isOpen) return null;
 
@@ -77,18 +70,28 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           />
         </div>
 
-        {status === 'processing' && <p>Ожидайте подтверждения оплаты…</p>}
-        {status === 'error' && (
-          <div className="flex flex-col items-center gap-4">
+        {/* Статус и кнопки */}
+        <div className="flex flex-col items-center gap-4">
+          {status === 'processing' && <p>Ожидайте подтверждения оплаты…</p>}
+          {status === 'error' && (
             <p className='text-red-500'>Оплата не прошла. Попробуйте ещё раз или обратитесь к сотруднику.</p>
+          )}
+          
+          {/* Кнопка закрыть/отмена - показываем во всех состояниях кроме success */}
+          {status !== 'success' && (
             <button
               onClick={handleClose}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full text-lg transition-colors"
+              className={clsx(
+                "px-6 py-3 text-white rounded-full text-lg transition-colors",
+                status === 'error' 
+                  ? "bg-red-600 hover:bg-red-700" 
+                  : "bg-gray-600 hover:bg-gray-700"
+              )}
             >
-              Закрыть
+              {status === 'error' ? 'Закрыть' : 'Отмена'}
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

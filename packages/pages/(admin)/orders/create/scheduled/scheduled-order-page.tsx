@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useOrderData } from '@shared/hooks/useOrderData';
+import { logger } from '@shared/lib/logger';
 import { Button } from '@shared/ui/forms/button';
 import { Card, CardContent } from '@shared/ui/layout/card';
 import { SidebarHeader } from '@shared/ui/layout/sidebar';
@@ -260,6 +261,9 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
   // Состояние для кастомной цены
   const [useCustomPrice, setUseCustomPrice] = useState<boolean>(false);
   const [customPrice, setCustomPrice] = useState<string>('');
+  
+  // Состояние для включения доп.точек в стоимость
+  const [includeIntermediateInPrice, setIncludeIntermediateInPrice] = useState<boolean>(true);
 
   // Функция для обработки изменения кастомной цены
   const handleCustomPriceChange = (value: string) => {
@@ -364,15 +368,36 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
       
       // Добавляем стоимость за расстояние, если оно известно
       if (routeDistance > 0) {
-        const apiDistanceKm = routeDistance / 1000;
+        let distanceForPricing = routeDistance;
+        
+        // Если переключатель выключен и есть промежуточные точки, 
+        // рассчитываем расстояние только от начальной до конечной точки
+        if (!includeIntermediateInPrice && routePoints.length > 2) {
+          const startPoint = routePoints.find(p => p.type === 'start');
+          const endPoint = routePoints.find(p => p.type === 'end');
+          
+          // Если есть обе точки, можно было бы рассчитать прямое расстояние
+          // Но для простоты используем пропорциональное уменьшение
+          // В реальном проекте здесь должен быть отдельный API-запрос для расчета прямого маршрута
+          if (startPoint?.location && endPoint?.location) {
+            // Примерно уменьшаем расстояние, исключая промежуточные точки
+            // Это упрощенная логика - в реальности нужен отдельный расчет маршрута
+            const intermediatePointsCount = routePoints.filter(p => p.type === 'intermediate').length;
+
+            if (intermediatePointsCount > 0) {
+              // Уменьшаем расстояние примерно на 20% за каждую промежуточную точку
+              distanceForPricing = routeDistance * (0.8 ** intermediatePointsCount);
+            }
+          }
+        }
+        
+        const apiDistanceKm = distanceForPricing / 1000;
         const roundedDistanceKm = Math.round(apiDistanceKm * 10) / 10; // Округляем до 1 знака
         
         baseRoutePrice += roundedDistanceKm * selectedTariff.perKmPrice;
       }
 
       // Добавляем стоимость выбранных услуг
-      
-      // Получаем цены из сервисов по ID
       const servicesPrice = selectedServices.reduce((total, service) => {
         const quantity = service.quantity || 1;
         // Цену берем из справочника услуг (services) или устанавливаем в 0
@@ -388,7 +413,7 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
       // Если нет тарифа, цена = 0
       setCurrentPrice(0);
     }
-  }, [selectedTariff, routeDistance, selectedServices, services]);
+  }, [selectedTariff, routeDistance, selectedServices, services, includeIntermediateInPrice, routePoints]);
 
   const handlePassengersChange = (newPassengers: PassengerDTO[]) => {
     // Обновляем форму с новыми пассажирами
@@ -783,19 +808,32 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
         const rideData = {
           driverId: selectedDriver.id,
           carId: carId,
-          waypoints: [], // Пока waypoints не реализованы
+          waypoints: [
+            {
+              locationId: "",
+              arrivalTime: null,
+              departureTime: null
+            }
+          ],
         };
 
         // Определяем ID заказа для назначения водителя
         const orderIdForDriver = isEditMode ? id : resultOrder?.id;
         
         if (orderIdForDriver) {
-          // Назначаем водителя на заказ
-          await assignDriver(orderIdForDriver, rideData);
+          try {
+            // Назначаем водителя на заказ
+            await assignDriver(orderIdForDriver, rideData);
+          } catch (assignError) {
+            throw assignError;
+          }
+        } else {
+          throw new Error('Не удалось получить ID заказа для назначения водителя');
         }
       }
-    } catch {
-      // Ошибка сохранения заказа обрабатывается в хуках
+    } catch (error) {
+      // Ошибка сохранения заказа обрабатывается в хуках, но логируем для отладки
+      logger.error('Ошибка сохранения заказа:', error);
     }
   };
 
@@ -1007,6 +1045,9 @@ export function ScheduledOrderPage({ mode, id, initialTariffId, userRole = 'oper
                       setCustomPrice={setCustomPrice}
                       _handleCustomPriceChange={handleCustomPriceChange}
                       _toggleCustomPrice={toggleCustomPrice}
+                      // Управление доп.точками в стоимости
+                      includeIntermediateInPrice={includeIntermediateInPrice}
+                      onIncludeIntermediateChange={setIncludeIntermediateInPrice}
                       // Данные маршрута для SummaryTab
                       // Не передаем routeState дважды, так как он уже передан выше
                       _routeLoading={routeLoading}

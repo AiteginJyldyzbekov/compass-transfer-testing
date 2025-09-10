@@ -55,6 +55,10 @@ interface SummaryTabProps {
   _handleCustomPriceChange?: (value: string) => void;
   _toggleCustomPrice?: () => void;
   
+  // Управление включением доп.точек в стоимость
+  includeIntermediateInPrice?: boolean;
+  onIncludeIntermediateChange?: (include: boolean) => void;
+  
   // Информация о водителе (только для режима редактирования)
   _selectedDriver?: GetDriverDTO & {
     firstName?: string;
@@ -119,6 +123,10 @@ export function SummaryTab({
   _handleCustomPriceChange,
   _toggleCustomPrice,
   
+  // Управление доп.точками
+  includeIntermediateInPrice = true,
+  onIncludeIntermediateChange,
+  
   // Информация о водителе
   _selectedDriver,
   _onTabChange,
@@ -141,6 +149,13 @@ export function SummaryTab({
   const [isDriverSheetOpen, setIsDriverSheetOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('main');
   const [activeOrderType, setActiveOrderType] = useState('all');
+  
+  // Локальное состояние для включения доп.точек в стоимость (если не передано извне)
+  const [localIncludeIntermediate, setLocalIncludeIntermediate] = useState(true);
+  
+  // Используем переданное состояние или локальное
+  const currentIncludeIntermediate = includeIntermediateInPrice ?? localIncludeIntermediate;
+  const handleIncludeIntermediateChange = onIncludeIntermediateChange ?? setLocalIncludeIntermediate;
 
   // Функция для открытия sheet с информацией о водителе
   const handleDriverDetailsClick = () => {
@@ -228,6 +243,8 @@ export function SummaryTab({
             endLocation={routeState.endLocation?.name || 'Не выбрано'}
             intermediatePoints={routeState.intermediatePoints?.map(p => p.name) || []}
             distance={routeDistance ? `${Math.round(routeDistance / 1000)} км` : 'Не определено'}
+            includeIntermediateInPrice={currentIncludeIntermediate}
+            onIncludeIntermediateChange={handleIncludeIntermediateChange}
           />
           
           <PriceInfoCard 
