@@ -121,84 +121,81 @@ export const Locations: NextPage = () => {
 
   return (
     <>
-    <div className="flex flex-col w-full max-w-3xl mx-auto min-h-screen">
-        {/* Основной контент */}
-        <div className="flex flex-col gap-14 flex-1">
-          {/* Выбранные локации */}
-          <LocationContainer>
-            <LocationItem locationName={terminal?.name} />
-            {selectedLocations.map((location: GetLocationDTO) => (
-              <React.Fragment key={location.id}>
-                <div className="border-b border-gray-200" />
-                <LocationItem
-                  location={location}
-                  showDeleteButton
-                  onDelete={() => deleteSelectedLocation(location.id)}
-                />
-              </React.Fragment>
-            ))}
-          </LocationContainer>
-
-          {/* Поиск ОТДЕЛЬНО от выбранных локаций */}
-          {(selectedLocations.length === 0 || isSearchingLocation) && (
-            <LocationContainer>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onClick={handleSearchClick}
-                placeholder={t('Locations.searchPlaceholder')}
-                className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold w-full outline-none cursor-pointer"
-                readOnly
+    <div className="flex flex-col w-full max-w-3xl mx-auto gap-14">
+        {/* Выбранные локации */}
+        <LocationContainer>
+          <LocationItem locationName={terminal?.name} />
+          {selectedLocations.map((location: GetLocationDTO) => (
+            <React.Fragment key={location.id}>
+              <div className="border-b border-gray-200" />
+              <LocationItem
+                location={location}
+                showDeleteButton
+                onDelete={() => deleteSelectedLocation(location.id)}
               />
+            </React.Fragment>
+          ))}
+        </LocationContainer>
+
+        {/* Поиск ОТДЕЛЬНО от выбранных локаций */}
+        {(selectedLocations.length === 0 || isSearchingLocation) && (
+          <LocationContainer>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onClick={handleSearchClick}
+              placeholder={t('Locations.searchPlaceholder')}
+              className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold w-full outline-none cursor-pointer"
+              readOnly
+            />
+          </LocationContainer>
+        )}
+
+        {/* Список локаций */}
+        {(selectedLocations.length === 0 || isSearchingLocation) && (
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <h3 className="text-[32px] text-[#090A0B] font-bold leading-[150%]">
+                {t('Locations.locationsTitle')}
+              </h3>
+            </div>
+            
+            <LocationContainer 
+              className="max-h-[403px] overflow-y-auto scrollbar-hide"
+              showEmptyMessage
+              emptyMessage="Локации не найдены"
+            >
+              {displayLocations.map((location, i) => (
+                <React.Fragment key={location.id}>
+                  {i > 0 && <div className="border-b border-gray-200" />}
+                  <LocationItem
+                    handleClick={() => handleSelectLocation(location)}
+                    location={location}
+                  />
+                </React.Fragment>
+              ))}
             </LocationContainer>
-          )}
+          </div>
+        )}
 
-          {/* Список локаций */}
-          {(selectedLocations.length === 0 || isSearchingLocation) && (
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-center">
-                <h3 className="text-[32px] text-[#090A0B] font-bold leading-[150%]">
-                  {t('Locations.locationsTitle')}
-                </h3>
-              </div>
-              
-              <LocationContainer 
-                className="max-h-[403px] overflow-y-auto scrollbar-hide"
-                showEmptyMessage
-                emptyMessage="Локации не найдены"
-              >
-                {displayLocations.map((location, i) => (
-                  <React.Fragment key={location.id}>
-                    {i > 0 && <div className="border-b border-gray-200" />}
-                    <LocationItem
-                      handleClick={() => handleSelectLocation(location)}
-                      location={location}
-                    />
-                  </React.Fragment>
-                ))}
-              </LocationContainer>
-            </div>
-          )}
+        {/* Кнопка добавления точки */}
+        {selectedLocations.length > 0 && !isSearchingLocation && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => setIsSearchingLocation(true)}
+              className="h-[92px] px-[40px] flex items-center gap-[14px] bg-gradient-to-r from-[#1943E6] to-[#0866FF] rounded-[100px] cursor-pointer"
+            >
+              <AddIcon />
+              <span className="text-[38px] text-white font-semibold leading-[150%]">
+                {t('Locations.addPoint')}
+              </span>
+            </button>
+          </div>
+        )}
 
-          {/* Кнопка добавления точки */}
-          {selectedLocations.length > 0 && !isSearchingLocation && (
-            <div className="flex justify-center">
-              <button
-                onClick={() => setIsSearchingLocation(true)}
-                className="h-[92px] px-[40px] flex items-center gap-[14px] bg-gradient-to-r from-[#1943E6] to-[#0866FF] rounded-[100px] cursor-pointer"
-              >
-                <AddIcon />
-                <span className="text-[38px] text-white font-semibold leading-[150%]">
-                  {t('Locations.addPoint')}
-                </span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Кнопки навигации - прижаты к низу */}
-        <div className="flex gap-[30px] mt-auto pt-8">
+        {/* Кнопки навигации */}
+        <div className="flex gap-[30px]">
           <button
             onClick={handleBack}
             className="w-32 h-32 relative bg-black/30 rounded-[100px] backdrop-blur-md flex items-center justify-center cursor-pointer"
