@@ -44,11 +44,12 @@ export const TerminalFooter: React.FC<TerminalFooterProps> = ({ className }) => 
         // // Градиент: Linear Gradient · 30% #0047FF to #0047FF00 (снизу вверх)
         // 'bg-gradient-to-t from-[#0047FF]/30 to-[#0047FF]/0',
         'flex flex-col items-center gap-2',
+        'fixed bottom-0 ',
         className
       )}
     >
       {/* Кнопки языков и FAQ - выше контента футера */}
-      <div className="fixed bottom-0 left-4 right-4 z-40 flex justify-between items-center mb-4">
+      <div className="left-4 right-4 z-40 flex justify-between items-center mb-4">
         {/* Кнопки языков */}
         <div className="flex gap-4">
           {languages.map(item => (
