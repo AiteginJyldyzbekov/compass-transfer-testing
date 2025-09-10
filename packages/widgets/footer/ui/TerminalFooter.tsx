@@ -37,14 +37,13 @@ export const TerminalFooter: React.FC<TerminalFooterProps> = ({ className }) => 
   };
 
   return (
-    <footer 
+    <footer
       className={clsx(
         // Основные стили футера из дизайна
         'w-full px-20 py-4',
         // // Градиент: Linear Gradient · 30% #0047FF to #0047FF00 (снизу вверх)
         // 'bg-gradient-to-t from-[#0047FF]/30 to-[#0047FF]/0',
         'flex flex-col items-center gap-2',
-        'fixed bottom-0 ',
         className
       )}
     >
@@ -56,9 +55,8 @@ export const TerminalFooter: React.FC<TerminalFooterProps> = ({ className }) => 
             <button
               onClick={() => handleLanguageChange(item.locale)}
               key={item.locale}
-              className={`w-[150px] max-w-[150px] p-4 text-[#FFFFFF] text-[28px] font-bold rounded-2xl flex items-center gap-3 cursor-pointer shadow-lg ${
-                item.locale === currentLanguage ? 'bg-[#0047FF]' : 'bg-[#0A205747]'
-              }`}
+              className={`w-[150px] max-w-[150px] p-4 text-[#FFFFFF] text-[28px] font-bold rounded-2xl flex items-center gap-3 cursor-pointer shadow-lg ${item.locale === currentLanguage ? 'bg-[#0047FF]' : 'bg-[#0A205747]'
+                }`}
             >
               {/* Флаг языка с оптимизацией */}
               <Image
@@ -79,6 +77,7 @@ export const TerminalFooter: React.FC<TerminalFooterProps> = ({ className }) => 
         <button
           type="button"
           onClick={handleHelpClick}
+          style={{ marginLeft: "12px" }}
           className="flex items-center gap-2 text-white text-[28px] font-bold bg-[#0A205747] p-4 rounded-2xl cursor-pointer hover:bg-[#0A205760] transition-colors shadow-lg"
         >
           {t('MainTerminal.helpButton')}{' '}
@@ -114,18 +113,18 @@ export const TerminalFooter: React.FC<TerminalFooterProps> = ({ className }) => 
         >
           {t('Footer.companyDetails')}
         </button>
-        
+
         <span className="hidden sm:block text-white/60">•</span>
-        
+
         <button
           onClick={handleShowPublicOffer}
           className="text-white/80 hover:text-white transition-colors text-sm hover:underline-offset-4 font-bold"
         >
           {t('Footer.publicOffer')}
         </button>
-        
+
         <span className="hidden sm:block text-white/60">•</span>
-        
+
         <button
           onClick={handleShowPrivacyPolicy}
           className="text-white/80 hover:text-white transition-colors text-sm hover:underline-offset-4 font-bold"
@@ -135,21 +134,21 @@ export const TerminalFooter: React.FC<TerminalFooterProps> = ({ className }) => 
       </div>
 
       {/* Модальные окна */}
-      <CompanyDetailsModal 
-        isOpen={showCompanyDetails} 
-        onClose={() => setShowCompanyDetails(false)} 
+      <CompanyDetailsModal
+        isOpen={showCompanyDetails}
+        onClose={() => setShowCompanyDetails(false)}
       />
-      <FAQModal 
-        isOpen={showPublicOffer} 
-        onClose={() => setShowPublicOffer(false)} 
+      <FAQModal
+        isOpen={showPublicOffer}
+        onClose={() => setShowPublicOffer(false)}
       />
-      <PrivacyPolicyModal 
-        isOpen={showPrivacyPolicy} 
-        onClose={() => setShowPrivacyPolicy(false)} 
+      <PrivacyPolicyModal
+        isOpen={showPrivacyPolicy}
+        onClose={() => setShowPrivacyPolicy(false)}
       />
-      <FAQModal 
-        isOpen={showFAQModal} 
-        onClose={() => setShowFAQModal(false)} 
+      <FAQModal
+        isOpen={showFAQModal}
+        onClose={() => setShowFAQModal(false)}
       />
     </footer>
   );

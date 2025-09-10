@@ -64,9 +64,9 @@ export const Main: NextPage = () => {
       // 1. Очищаем выбранные локации при заходе на главную
       clearLocations();
       
-      // 2. Загружаем популярные локации только если их еще нет И мы не в процессе загрузки
+      // 2. Загружаем все локации только если их еще нет И мы не в процессе загрузки
       if (allLocations.length === 0 && !isLoadingLocations) {
-        loadLocations({ popularOnly: true });
+        loadLocations({});
       }
     }
   }, [pathname, clearLocations, loadLocations, isLoadingLocations, allLocations.length]);
