@@ -26,7 +26,7 @@ export const PhotoReceiptModal: React.FC<PhotoReceiptModalProps> = ({
       <div className="flex flex-col items-center justify-center">
         {/* Белый контейнер только для текста */}
         <div 
-          className="bg-white rounded-[168px] flex items-center justify-center mb-8"
+          className="bg-white rounded-[24px] flex items-center justify-center mb-8"
           style={{
             height: '280px', // Высота только для текста
             paddingTop: '56px', // 8px × 7
