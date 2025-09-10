@@ -26,21 +26,21 @@ export const PhotoReceiptModal: React.FC<PhotoReceiptModalProps> = ({
       <div className="flex flex-col items-center justify-center">
         {/* Белый контейнер только для текста */}
         <div 
-          className="bg-white rounded-[24px] flex items-center justify-center mb-8"
+          className="bg-white rounded-[168px] flex items-center justify-center mb-8"
           style={{
-            height: '140px', // Уменьшенная высота
-            paddingTop: '32px', // Уменьшенные отступы
-            paddingRight: '40px',
-            paddingBottom: '32px',
-            paddingLeft: '40px',
-            width: '80%', // 80% ширины экрана
-            maxWidth: '800px', // Уменьшенная максимальная ширина
+            height: '280px', // Высота только для текста
+            paddingTop: '56px', // 8px × 7
+            paddingRight: '140px', // 20px × 7
+            paddingBottom: '56px', // 8px × 7
+            paddingLeft: '140px', // 20px × 7
+            width: '80%', // 80% ширины экрана вместо фиксированной ширины
+            maxWidth: '1200px', // Максимальная ширина
           }}
         >
           {/* Текст */}
-          <p className="text-center text-gray-800 text-[32px] font-medium">
-            Сфотографируйте чек,<br/>
-            чтобы не потерять информацию о поездке
+          <p className="text-center text-gray-800 text-6xl font-medium">
+            Сфотографируйте чек, чтобы<br/>
+            не потерять информацию о поездке
           </p>
         </div>
         
