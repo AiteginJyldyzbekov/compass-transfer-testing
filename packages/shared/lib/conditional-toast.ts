@@ -21,9 +21,9 @@ const isTerminalApp = () => {
 let toast: any;
 
 if (isTerminalApp()) {
-  // Use no-op toast for terminal
-  const { noOpToast } = require('./no-op-toast');
-  toast = noOpToast;
+  // Use smart toast for terminal (shows only allowed notifications)
+  const { terminalToast } = require('./terminal-toast');
+  toast = terminalToast;
 } else {
   // Use real toast for other apps
   const { toast: realToast } = require('sonner');

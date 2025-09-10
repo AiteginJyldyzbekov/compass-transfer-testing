@@ -80,10 +80,10 @@ export class NotificationManager {
         toast.success(`✅ ${title}: ${content}`);
         break;
       case 'OrderCancelledNotification':
-        toast.warning(`❌ ${title}: ${content}`);
+        toast.warning(`❌ ${title}: ${content}`, { type: 'order_cancelled' });
         break;
       case 'OrderCompletedNotification':
-        toast.success(`🎉 ${title}: ${content}`);
+        toast.success(`🎉 ${title}: ${content}`, { type: 'order_success' });
         break;
       case 'RideRejectedNotification':
         toast.error(`❌ ${title}: ${content}`);
@@ -95,7 +95,7 @@ export class NotificationManager {
         toast.info(`💳 ${title}: ${content}`);
         break;
       case 'PaymentReceivedNotification':
-        toast.success(`💰 ${title}: ${content}`);
+        toast.success(`💰 ${title}: ${content}`, { type: 'payment_success' });
         break;
       case 'PaymentFailedNotification':
         toast.error(`💸 ${title}: ${content}`);

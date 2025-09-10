@@ -10,6 +10,7 @@ interface CardPaymentModalProps {
   amount: number;
   onClose: () => void;
   onSuccess: () => void;
+  onCancel?: () => void;
 }
 
 export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
@@ -17,13 +18,42 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   amount,
   onClose,
   onSuccess,
+  onCancel,
 }) => {
-  const [status, setStatus] = useState<'init'|'processing'|'success'|'error'>('init');
+  const [status, setStatus] = useState<'init'|'processing'|'success'|'error'|'cancelled'>('init');
+  const [paymentId, setPaymentId] = useState<string | null>(null);
 
   // Закрытие модалки
   const handleClose = React.useCallback(() => {
     onClose();
   }, [onClose]);
+
+  // Отмена платежа
+  const handleCancel = React.useCallback(async () => {
+    if (status === 'processing' && paymentId) {
+      try {
+        // Пытаемся отменить платеж через фискальный сервис
+        const cancelResult = await fiscalService.cancelPayment(paymentId, amount);
+        
+        if (cancelResult.status === 'Success') {
+          setStatus('cancelled');
+          // Вызываем callback отмены если он передан
+          onCancel?.();
+        } else {
+          console.error('Не удалось отменить платеж:', cancelResult.reason);
+          setStatus('error');
+        }
+      } catch (error) {
+        console.error('Ошибка отмены платежа:', error);
+        // Даже если отмена не удалась, показываем статус отмены
+        setStatus('cancelled');
+        onCancel?.();
+      }
+    } else {
+      // Если платеж еще не начался, просто закрываем модалку
+      onClose();
+    }
+  }, [status, paymentId, amount, onCancel, onClose]);
 
   // Реальная оплата через POS-терминал
   useEffect(() => {
@@ -38,15 +68,18 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
         if (res.status !== 'Success') throw new Error(res.reason || 'Payment failed');
         
+        // Сохраняем ID платежа для возможной отмены
+        setPaymentId(res.id);
         setStatus('success');
         
         // Вызываем обработчик успешной оплаты
         await onSuccess();
-      } catch {
+      } catch (error) {
+        console.error('Ошибка платежа:', error);
         setStatus('error');
       }
     })();
-  }, [isOpen, amount, onSuccess, handleClose]);
+  }, [isOpen, amount, onSuccess]);
 
 
   if (!isOpen) return null;
@@ -72,23 +105,46 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
         {/* Статус и кнопки */}
         <div className="flex flex-col items-center gap-4">
-          {status === 'processing' && <p>Ожидайте подтверждения оплаты…</p>}
+          {status === 'processing' && (
+            <div className="text-center">
+              <p className="text-lg mb-2">Ожидайте подтверждения оплаты…</p>
+              <p className="text-sm text-gray-600">Приложите карту к терминалу</p>
+            </div>
+          )}
           {status === 'error' && (
-            <p className='text-red-500'>Оплата не прошла. Попробуйте ещё раз или обратитесь к сотруднику.</p>
+            <p className='text-red-500 text-center'>Оплата не прошла. Попробуйте ещё раз или обратитесь к сотруднику.</p>
+          )}
+          {status === 'cancelled' && (
+            <p className='text-orange-500 text-center'>Платеж отменен</p>
           )}
           
-          {/* Кнопка закрыть/отмена - показываем во всех состояниях кроме success */}
-          {status !== 'success' && (
+          {/* Кнопки управления */}
+          {status === 'processing' && (
+            <div className="flex gap-4">
+              <button
+                onClick={handleCancel}
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full text-lg transition-colors"
+              >
+                Отменить
+              </button>
+            </div>
+          )}
+          
+          {status === 'error' && (
             <button
               onClick={handleClose}
-              className={clsx(
-                "px-6 py-3 text-white rounded-full text-lg transition-colors",
-                status === 'error' 
-                  ? "bg-red-600 hover:bg-red-700" 
-                  : "bg-gray-600 hover:bg-gray-700"
-              )}
+              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full text-lg transition-colors"
             >
-              {status === 'error' ? 'Закрыть' : 'Отмена'}
+              Закрыть
+            </button>
+          )}
+          
+          {status === 'cancelled' && (
+            <button
+              onClick={handleClose}
+              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-full text-lg transition-colors"
+            >
+              Закрыть
             </button>
           )}
         </div>

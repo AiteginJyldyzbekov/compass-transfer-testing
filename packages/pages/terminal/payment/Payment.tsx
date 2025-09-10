@@ -110,6 +110,7 @@ export const Payment: NextPage = () => {
     closeCardModal,
     closeQRModal,
     handleCardPaymentSuccess,
+    handleCardPaymentCancel,
     handleQRPaymentSuccess,
     calculatedPrice: _hookCalculatedPrice
   } = useOrderSubmit({
@@ -348,6 +349,7 @@ export const Payment: NextPage = () => {
         amount={calculatedPrice}
         onClose={closeCardModal}
         onSuccess={handleCardPaymentSuccess}
+        onCancel={handleCardPaymentCancel}
       />
 
       <QRPaymentModal

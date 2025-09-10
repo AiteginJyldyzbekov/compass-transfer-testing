@@ -1,8 +1,10 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { Toaster } from 'sonner';
 import { PaymentProvider } from '@app/providers/PaymentProvider';
 import '@shared/styles/globals.css';
 import '@shared/styles/welcomePage.css';
+import 'sonner/dist/styles.css';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
@@ -20,6 +22,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {children}
           </PaymentProvider>
         </NextIntlClientProvider>
+        {/* Toaster для селективных уведомлений в терминале */}
+        <Toaster
+          position='top-right'
+          expand
+          richColors
+          closeButton
+          duration={5000}
+          style={{
+            zIndex: 99999,
+          }}
+        />
       </body>
     </html>
   );

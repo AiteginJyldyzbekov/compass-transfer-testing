@@ -309,6 +309,69 @@ export class FiscalService {
   }
 
   /**
+   * Отменить платеж через POS-терминал
+   */
+  async cancelPayment(
+    paymentId: string,
+    amount: number,
+  ): Promise<{
+    result: string;
+    id: string;
+    status: 'Success' | 'Failed';
+    reason?: string;
+  }> {
+    const body = {
+      paymentId,
+      amount: amount.toString(),
+      type: 'cancel',
+    };
+
+    try {
+      const response = await fetch(`${this.baseUrl}/fiscal/payments/cancelPayment/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const rawResult = await response.json();
+
+      // Если ответ пустой или undefined, считаем успешным
+      if (!rawResult || rawResult === null) {
+        return {
+          result: 'success',
+          id: `cancel_${paymentId}`,
+          status: 'Success',
+          reason: undefined,
+        };
+      }
+
+      // Если есть поле status в корне (не в data), используем его
+      if (rawResult.status !== undefined) {
+        return {
+          result: rawResult.result || 'success',
+          id: rawResult.id || `cancel_${paymentId}`,
+          status: rawResult.status === 0 ? 'Success' : 'Failed',
+          reason: rawResult.reason || rawResult.errorMessage,
+        };
+      }
+
+      // Иначе используем стандартную обработку
+      return rawResult;
+    } catch (error) {
+      throw new FiscalError(
+        FiscalStatus.INTERNAL_SERVICE_ERROR,
+        `Ошибка отмены платежа: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
    * Создать полный чек для поездки на такси
    * Основной метод для терминального приложения
    */

@@ -276,6 +276,13 @@ export const useOrderSubmit = ({
     await createOrder(); // Создаем заказ и показываем анимацию поиска водителя
   }, [createOrder, closeCardModal]);
 
+  // Обработчик отмены карточной оплаты
+  const handleCardPaymentCancel = useCallback(() => {
+    closeCardModal(); // Закрываем модалку
+    // Показываем уведомление об отмене платежа (разрешено в терминале)
+    toast.info('Платеж отменен', { type: 'payment_cancelled' });
+  }, [closeCardModal]);
+
   // Обработчик успешной QR оплаты
   const handleQRPaymentSuccess = useCallback(async (paymentId: string) => {
     closeQRModal(); // Закрываем модалку сразу
@@ -291,6 +298,7 @@ export const useOrderSubmit = ({
     closeCardModal,
     closeQRModal,
     handleCardPaymentSuccess,
+    handleCardPaymentCancel,
     handleQRPaymentSuccess,
     calculatedPrice,
   };
