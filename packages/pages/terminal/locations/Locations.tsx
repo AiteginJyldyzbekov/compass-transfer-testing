@@ -229,7 +229,7 @@ export const Locations: NextPage = () => {
               href="/payment"
               className="h-[124px] flex items-center justify-center flex-1 rounded-[100px] bg-gradient-to-r from-[#0053BF] to-[#2F79D8]"
             >
-              <span className="text-[46px] text-[#F5F6F7] font-bold leading-[100%]">{t('Locations.goToPayment')}</span>
+              <span className="text-3xl text-[#F5F6F7] font-bold leading-[100%]">{t('Locations.goToPayment')}</span>
             </Link>
           )}
         </div>
