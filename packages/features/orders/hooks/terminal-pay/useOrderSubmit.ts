@@ -280,7 +280,7 @@ export const useOrderSubmit = ({
   const handleCardPaymentCancel = useCallback(() => {
     closeCardModal(); // Закрываем модалку
     // Показываем уведомление об отмене платежа (разрешено в терминале)
-    toast.info('Платеж отменен', { type: 'payment_cancelled' });
+    toast.info('Платеж отменен локально. Если платеж прошел на терминале, обратитесь к сотруднику.', { type: 'payment_cancelled' });
   }, [closeCardModal]);
 
   // Обработчик успешной QR оплаты

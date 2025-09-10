@@ -32,7 +32,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const handleCancel = React.useCallback(async () => {
     if (status === 'processing' && paymentId) {
       try {
-        // Пытаемся отменить платеж через фискальный сервис
+        // Выполняем локальную отмену (POS терминал не поддерживает программную отмену)
         const cancelResult = await fiscalService.cancelPayment(paymentId, amount);
         
         if (cancelResult.status === 'Success') {
@@ -115,7 +115,14 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             <p className='text-red-500 text-center'>Оплата не прошла. Попробуйте ещё раз или обратитесь к сотруднику.</p>
           )}
           {status === 'cancelled' && (
-            <p className='text-orange-500 text-center'>Платеж отменен</p>
+            <div className="text-center">
+              <p className='text-orange-500 text-lg mb-2'>Платеж отменен</p>
+              <p className='text-sm text-gray-600'>
+                Отмена выполнена локально.<br/>
+                Если платеж уже прошел на терминале,<br/>
+                обратитесь к сотруднику для возврата.
+              </p>
+            </div>
           )}
           
           {/* Кнопки управления */}
