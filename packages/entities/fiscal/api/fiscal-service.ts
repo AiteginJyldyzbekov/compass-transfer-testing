@@ -309,9 +309,8 @@ export class FiscalService {
   }
 
   /**
-   * Локальная отмена платежа (без API вызова)
-   * POS терминалы не поддерживают программную отмену платежей
-   * Отмена должна происходить физически на терминале
+   * Отменить платеж через POS-терминал (аннулировать чек)
+   * Использует API endpoint RecVoid для аннулирования последнего чека
    */
   async cancelPayment(
     paymentId: string,
@@ -322,18 +321,56 @@ export class FiscalService {
     status: 'Success' | 'Failed';
     reason?: string;
   }> {
-    // POS терминалы не поддерживают программную отмену платежей
-    // Отмена должна происходить физически на терминале
-    console.warn('⚠️ POS терминал не поддерживает программную отмену платежей');
-    console.warn('💡 Отмена должна происходить физически на терминале');
-    
-    // Возвращаем "успешную" отмену локально
-    return {
-      result: 'cancelled_locally',
-      id: `local_cancel_${paymentId}`,
-      status: 'Success',
-      reason: 'Отмена выполнена локально (POS терминал не поддерживает программную отмену)',
-    };
+    try {
+      // Используем RecVoid API для аннулирования последнего чека
+      const response = await fetch(`${this.baseUrl}/fiscal/bills/recVoid/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({}), // Пустое тело запроса согласно документации
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // RecVoid не возвращает данные, только статус
+      const rawResult = await response.json();
+
+      // Если ответ пустой или undefined, считаем успешным
+      if (!rawResult || rawResult === null) {
+        return {
+          result: 'success',
+          id: `void_${paymentId}`,
+          status: 'Success',
+          reason: 'Чек успешно аннулирован',
+        };
+      }
+
+      // Если есть поле status в корне (не в data), используем его
+      if (rawResult.status !== undefined) {
+        return {
+          result: rawResult.result || 'success',
+          id: rawResult.id || `void_${paymentId}`,
+          status: rawResult.status === 0 ? 'Success' : 'Failed',
+          reason: rawResult.reason || rawResult.errorMessage || 'Чек аннулирован',
+        };
+      }
+
+      // Иначе считаем успешным
+      return {
+        result: 'success',
+        id: `void_${paymentId}`,
+        status: 'Success',
+        reason: 'Чек успешно аннулирован',
+      };
+    } catch (error) {
+      throw new FiscalError(
+        FiscalStatus.INTERNAL_SERVICE_ERROR,
+        `Ошибка аннулирования чека: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   /**
