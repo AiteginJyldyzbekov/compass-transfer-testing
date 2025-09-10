@@ -33,6 +33,24 @@ interface UseFiscalReceiptResult {
     };
     queueNumber?: string;
   }) => Promise<boolean>;
+  printReceiptWithLogo: (logoBase64: string, data: {
+    price: number;
+    route: string;
+    paymentMethod: string;
+    orderNumber: string;
+    driver?: { 
+      fullName: string;
+      phoneNumber?: string;
+    };
+    car?: { 
+      make: string;
+      model: string; 
+      licensePlate: string;
+      color: string;
+    };
+    queueNumber?: string;
+  }) => Promise<boolean>;
+  printFullReceiptPNG: (receiptPNGBase64: string) => Promise<boolean>;
 }
 
 /**
@@ -221,6 +239,82 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
     }
   }, []);
 
+  /**
+   * Печать чека с логотипом: сначала логотип, затем текст, затем обрезание
+   */
+  const printReceiptWithLogo = useCallback(async (logoBase64: string, data: {
+    price: number;
+    route: string;
+    paymentMethod: string;
+    orderNumber: string;
+    driver?: { 
+      fullName: string;
+      phoneNumber?: string;
+    };
+    car?: { 
+      make: string;
+      model: string; 
+      licensePlate: string;
+      color: string;
+    };
+    queueNumber?: string;
+  }): Promise<boolean> => {
+    console.log('🖨️ Печатаем чек с логотипом...');
+
+    // Проверяем, включена ли фискализация
+    if (!FISCAL_ENABLED) {
+      console.log('⚠️ Фискализация отключена, пропускаем печать');
+      return true;
+    }
+
+    try {
+      await fiscalService.printTaxiReceiptWithLogo(logoBase64, data);
+      console.log('✅ Чек с логотипом успешно напечатан');
+      return true;
+    } catch (error) {
+      console.error('❌ Ошибка печати чека с логотипом:', error);
+      
+      if (error instanceof FiscalError) {
+        toast.error(`Ошибка печати чека: ${error.message}`);
+      }
+      //  else {
+      //   toast.error('Неизвестная ошибка при печати чека');
+      // }
+
+      return false;
+    }
+  }, []);
+
+  /**
+   * Печать полного чека как PNG изображения
+   */
+  const printFullReceiptPNG = useCallback(async (receiptPNGBase64: string): Promise<boolean> => {
+    console.log('🖨️ Печатаем полный чек как PNG...');
+
+    // Проверяем, включена ли фискализация
+    if (!FISCAL_ENABLED) {
+      console.log('⚠️ Фискализация отключена, пропускаем печать');
+      return true;
+    }
+
+    try {
+      await fiscalService.printFullReceiptPNG(receiptPNGBase64);
+      console.log('✅ Полный чек PNG успешно напечатан');
+      return true;
+    } catch (error) {
+      // console.error('❌ Ошибка печати полного чека PNG:', error);
+      
+      // if (error instanceof FiscalError) {
+      //   toast.error(`Ошибка печати чека: ${error.message}`);
+      // }
+      //  else {
+      //   toast.error('Неизвестная ошибка при печати чека');
+      // }
+
+      return false;
+    }
+  }, []);
+
   return {
     isCreating,
     isChecking,
@@ -229,5 +323,7 @@ export const useFiscalReceipt = (): UseFiscalReceiptResult => {
     voidLastReceipt,
     printReceiptImage,
     printReceiptLines,
+    printReceiptWithLogo,
+    printFullReceiptPNG,
   };
 };

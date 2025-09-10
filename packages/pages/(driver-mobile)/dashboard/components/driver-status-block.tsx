@@ -66,6 +66,10 @@ const DriverStatusBlock = () => {
         }
     };
 
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
     return (
         <>
             {/* Основной блок статуса */}
@@ -94,20 +98,45 @@ const DriverStatusBlock = () => {
 
             {/* Модальное окно */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10000">
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+                    onClick={handleCloseModal}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 2147483647,
+                        WebkitTransform: 'translate3d(0,0,0)',
+                        transform: 'translate3d(0,0,0)',
+                        WebkitBackfaceVisibility: 'hidden',
+                        backfaceVisibility: 'hidden'
+                    }}
+                >
                     <div
                         className="bg-white rounded-2xl p-6 w-64 shadow-xl"
                         onClick={(e) => e.stopPropagation()}
+                        style={{
+                            WebkitTransform: 'translate3d(0,0,0)',
+                            transform: 'translate3d(0,0,0)'
+                        }}
                     >
+                        <h3 className="text-lg font-medium text-gray-900 mb-4 text-center">
+                            Выберите статус
+                        </h3>
                         <div className="space-y-3">
                             {statuses.map((status) => (
                                 <button
                                     key={status.id}
                                     onClick={() => updateStatus(status.label)}
-                                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${currentStatus === status.label
+                                        ? 'bg-blue-50 border-2 border-blue-200'
+                                        : 'hover:bg-gray-50 border-2 border-transparent'
+                                        }`}
                                 >
                                     <div
-                                        className={`w-2 h-2 rounded-full ${status.color}`}
+                                        className={`w-3 h-3 rounded-full ${status.color}`}
                                     ></div>
                                     <span className="text-sm text-gray-900 font-medium">
                                         {status.label}
@@ -117,14 +146,6 @@ const DriverStatusBlock = () => {
                         </div>
                     </div>
                 </div>
-            )}
-
-            {/* Overlay для закрытия модального окна */}
-            {isModalOpen && (
-                <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsModalOpen(false)}
-                ></div>
             )}
         </>
     );

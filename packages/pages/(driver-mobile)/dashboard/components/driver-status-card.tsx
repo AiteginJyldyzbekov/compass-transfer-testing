@@ -4,18 +4,24 @@
 import Image from 'next/image';
 import React from 'react';
 import { Button } from '@shared/ui/forms/button';
-import { useDriverQueue } from '@features/driver-queue';
+import { type QueueStatusResponse } from '@shared/api/driver-queue';
 import DriverLocation from './driver-location-block';
 
-export function DriverStatusCard() {
-  const { 
-    queueData, 
-    isInQueue, 
-    isLoading, 
-    error,
-    joinQueue: _joinQueue, 
-    leaveQueue 
-  } = useDriverQueue();
+interface DriverStatusCardProps {
+  queueData: QueueStatusResponse | null;
+  isInQueue: boolean;
+  isLoading: boolean;
+  error: string | null;
+  leaveQueue: () => Promise<void>;
+}
+
+export function DriverStatusCard({
+  queueData,
+  isInQueue,
+  isLoading,
+  error,
+  leaveQueue
+}: DriverStatusCardProps) {
 
   const handleToggleQueue = async () => {
     if (isInQueue) {
@@ -28,12 +34,14 @@ export function DriverStatusCard() {
 
   const _formatJoinedTime = (dateString: string) => {
     const date = new Date(dateString);
-    
+
     return date.toLocaleTimeString('ru-RU', {
       hour: '2-digit',
       minute: '2-digit'
     });
   };
+
+  const queue = queueData?.position || 0
 
   // Показываем loading состояние пока не получили ответ от API
   if (isLoading) {
@@ -46,7 +54,7 @@ export function DriverStatusCard() {
             <div className='w-32 h-4 bg-gray-200 rounded animate-pulse mb-2' />
             <div className='w-24 h-3 bg-gray-200 rounded animate-pulse' />
           </div>
-          
+
           {/* Нижняя секция - skeleton кнопки */}
           <div className='mt-auto px-1 sm:px-2 pb-1 sm:pb-2'>
             <div className='w-full h-12 sm:h-14 bg-gray-200 rounded-xl animate-pulse' />
@@ -71,7 +79,7 @@ export function DriverStatusCard() {
               </p>
             </div>
           </div>
-          
+
           <div className='mt-auto px-1 sm:px-2 pb-1 sm:pb-2'>
             <Button
               onClick={() => window.history.back()}
@@ -86,7 +94,7 @@ export function DriverStatusCard() {
   }
 
   return (
-      <div className='bg-[#F9F9F9] h-full flex flex-col relative overflow-hidden rounded-2xl'>
+    <div className='bg-[#F9F9F9] h-full flex flex-col relative rounded-2xl'>
       {/* Фоновое изображение - показываем только когда НЕ в очереди */}
       {!isInQueue && (
         <div className='absolute inset-0'>
@@ -153,7 +161,7 @@ export function DriverStatusCard() {
                   {/* Номер позиции в центре */}
                   <div className='absolute inset-0 flex items-center justify-center'>
                     <span className='text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600'>
-                      {queueData?.position || 1}
+                      {queue + 1}
                     </span>
                   </div>
                 </div>

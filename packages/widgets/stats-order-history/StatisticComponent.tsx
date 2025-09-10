@@ -58,7 +58,7 @@ export default function StatisticsComponent() {
                 {/* Левый кружок */}
                 <div className="flex-1">
                     <div className="text-center mb-3">
-                        <span className="text-gray-700 text-sm font-medium block mb-2">Количество рабочих дней</span>
+                        <span className="text-gray-700 text-sm font-medium block mb-2 h-10">Количество рабочих дней</span>
                        <div className="relative inline-block">
                             <select
                                 value={earningsMonth}
@@ -108,7 +108,7 @@ export default function StatisticsComponent() {
                 {/* Правый кружок */}
                 <div className="flex-1">
                     <div className="text-center mb-3">
-                        <span className="text-gray-700 text-sm font-medium block mb-2">Итого денег</span>
+                        <span className="text-gray-700 text-sm font-medium block mb-2 h-10">Итого денег</span>
                         <div className="relative inline-block">
                             <select
                                 value={earningsMonth}
