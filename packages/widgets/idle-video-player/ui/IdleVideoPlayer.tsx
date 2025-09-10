@@ -16,8 +16,8 @@ export const IdleVideoPlayer: React.FC = () => {
   const lastActivityRef = useRef<number>(Date.now());
   const startVideoRef = useRef<(() => Promise<void>) | null>(null);
 
-  // Время неактивности в миллисекундах (20 секунд)
-  const IDLE_TIME = 20 * 1000;
+  // Время неактивности в миллисекундах (10 секунд)
+  const IDLE_TIME = 10 * 1000;
 
   // Сброс таймера неактивности
   const resetIdleTimer = useCallback(() => {
@@ -183,7 +183,7 @@ export const IdleVideoPlayer: React.FC = () => {
       {/* Blur фон с обработчиком клика */}
       {isVideoPlaying && (
         <div 
-          className="fixed inset-0 w-full h-full z-40 cursor-pointer"
+          className="fixed inset-0 w-full h-full z-50 cursor-pointer"
           style={{
             backdropFilter: 'blur(20px)',
             backgroundColor: 'rgba(0, 0, 0, 0.3)',
@@ -198,7 +198,7 @@ export const IdleVideoPlayer: React.FC = () => {
         ref={videoRef}
         className={`
           fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-          w-[80vw] h-[60vh] object-cover z-50 bg-black cursor-pointer rounded-lg shadow-2xl
+          w-[80vw] h-[60vh] object-cover z-60 bg-black cursor-pointer rounded-lg shadow-2xl
           ${isVideoPlaying ? 'block' : 'hidden'}
         `}
         src="/video/video.mp4"
