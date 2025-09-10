@@ -23,24 +23,27 @@ export const PhotoReceiptModal: React.FC<PhotoReceiptModalProps> = ({
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
       }}
     >
-      <div 
-        className="bg-white rounded-[168px] flex flex-col items-center justify-center"
-        style={{
-          height: '980px', // 140px × 7
-          paddingTop: '224px', // 32px × 7
-          paddingRight: '280px', // 40px × 7
-          paddingBottom: '224px', // 32px × 7
-          paddingLeft: '280px', // 40px × 7
-          minWidth: '2800px', // 400px × 7
-        }}
-      >
-        {/* Текст */}
-        <p className="text-center text-gray-800 text-6xl font-medium mb-8">
-          Сфотографируйте чек, чтобы<br/>
-          не потерять информацию о поездке
-        </p>
+      <div className="flex flex-col items-center justify-center">
+        {/* Белый контейнер только для текста */}
+        <div 
+          className="bg-white rounded-[168px] flex items-center justify-center mb-8"
+          style={{
+            height: '280px', // Высота только для текста
+            paddingTop: '56px', // 8px × 7
+            paddingRight: '140px', // 20px × 7
+            paddingBottom: '56px', // 8px × 7
+            paddingLeft: '140px', // 20px × 7
+            minWidth: '1400px', // Ширина для текста
+          }}
+        >
+          {/* Текст */}
+          <p className="text-center text-gray-800 text-6xl font-medium">
+            Сфотографируйте чек, чтобы<br/>
+            не потерять информацию о поездке
+          </p>
+        </div>
         
-        {/* GIF камеры */}
+        {/* Камера отдельно, без белого контейнера */}
         <div>
           <Lottie
             animationData={cameraAnimation}

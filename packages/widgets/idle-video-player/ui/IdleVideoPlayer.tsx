@@ -200,7 +200,6 @@ export const IdleVideoPlayer: React.FC = () => {
           ${isVideoPlaying ? 'block' : 'hidden'}
         `}
         src="/video/video.mp4"
-        muted
         loop
         playsInline
         controls={false} // Убираем встроенные контролы
