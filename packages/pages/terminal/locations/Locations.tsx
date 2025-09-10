@@ -178,6 +178,7 @@ export const Locations: NextPage = () => {
   }, [debouncedSearchQuery, loadLocations]);
 
   return (
+    <>
     <div className="flex flex-col w-full max-w-3xl mx-auto gap-14">
         {/* Выбранные локации */}
         <LocationContainer>
@@ -306,8 +307,7 @@ export const Locations: NextPage = () => {
         )}
       </div>
 
-      {/* Фиксированные кнопки языков и FAQ */}
       <FixedLanguageButtons />
-    </div>
+    </>
   );
 };
