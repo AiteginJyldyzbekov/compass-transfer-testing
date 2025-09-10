@@ -13,7 +13,6 @@ import { useTerminalData } from '@entities/users/context/TerminalDataContext';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
 import { VirtualKeyboard } from '@widgets/virtual-keyboard';
-import { FixedLanguageButtons } from '@widgets/header';
 
 export const Locations: NextPage = () => {
   const { terminalLocation: terminal } = useTerminalData();
@@ -226,8 +225,6 @@ export const Locations: NextPage = () => {
           />
         )}
       </div>
-
-      <FixedLanguageButtons />
     </>
   );
 };

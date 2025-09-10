@@ -20,7 +20,6 @@ import { CardPaymentModal } from '@features/orders/modals/CardPaymentModal';
 import { QRPaymentModal } from '@features/orders/modals/QRPaymentModal';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
-import { FixedLanguageButtons } from '@widgets/header';
 
 export const Payment: NextPage = () => {
   const { economyTariff, isLoading: isTariffLoading } = useTerminalTariff();
@@ -360,8 +359,6 @@ export const Payment: NextPage = () => {
         onSuccess={handleQRPaymentSuccess}
       />
 
-      {/* Фиксированные кнопки языков и FAQ */}
-      <FixedLanguageButtons />
     </div>
   );
 };

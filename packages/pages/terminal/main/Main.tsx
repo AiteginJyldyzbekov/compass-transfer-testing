@@ -11,7 +11,6 @@ import type { GetLocationDTO } from '@entities/locations/interface';
 import { useTerminalData } from '@entities/users/context/TerminalDataContext';
 import { IdleVideoPlayer } from '@widgets/idle-video-player';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
-import { FixedLanguageButtons } from '@widgets/header';
 import LocationItem from '@widgets/location/ui/LocationItem';
 import Regions from '@widgets/regions/Regions';
 
@@ -148,9 +147,6 @@ export const Main: NextPage = () => {
 
       {/* IdleVideoPlayer - работает только на главной странице */}
       <IdleVideoPlayer />
-      
-      {/* Фиксированные кнопки языков и FAQ */}
-      <FixedLanguageButtons />
     </div>
   );
 };

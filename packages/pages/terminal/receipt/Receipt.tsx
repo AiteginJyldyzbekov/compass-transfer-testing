@@ -12,7 +12,6 @@ import { generateFullReceiptPNG } from '@shared/utils/receiptGenerator';
 import { useFiscalReceipt } from '@entities/fiscal';
 import { useTerminalReceipt } from '@entities/orders/context';
 import { PhotoReceiptModal } from '@features/orders/modals/PhotoReceiptModal';
-import { FixedLanguageButtons } from '@widgets/header';
 
 // 🔄 ПЕРЕКЛЮЧАТЕЛЬ СПОСОБА ПЕЧАТИ
 // true - генерация PNG чека с логотипом и печать одним запросом
@@ -530,8 +529,6 @@ export const Receipt: NextPage = () => {
         onClose={() => setShowPhotoModal(false)}
       />
 
-      {/* Фиксированные кнопки языков и FAQ */}
-      <FixedLanguageButtons />
     </div>
   );
 };
