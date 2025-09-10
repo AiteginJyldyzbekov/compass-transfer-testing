@@ -14,6 +14,7 @@ import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
 import { FilterDropdown, type FilterState } from '@widgets/terminal-filter-dropdown';
 import { VirtualKeyboard } from '@widgets/virtual-keyboard';
+import { FixedLanguageButtons } from '@widgets/header';
 
 export const Locations: NextPage = () => {
   const { terminalLocation: terminal } = useTerminalData();
@@ -305,5 +306,8 @@ export const Locations: NextPage = () => {
         )}
       </div>
 
+      {/* Фиксированные кнопки языков и FAQ */}
+      <FixedLanguageButtons />
+    </div>
   );
 };

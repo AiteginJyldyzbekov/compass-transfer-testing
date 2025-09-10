@@ -20,6 +20,7 @@ import { CardPaymentModal } from '@features/orders/modals/CardPaymentModal';
 import { QRPaymentModal } from '@features/orders/modals/QRPaymentModal';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
+import { FixedLanguageButtons } from '@widgets/header';
 
 export const Payment: NextPage = () => {
   const { economyTariff, isLoading: isTariffLoading } = useTerminalTariff();
@@ -211,7 +212,7 @@ export const Payment: NextPage = () => {
         </div>
 
         {/* Локации с расстоянием */}
-        <LocationContainer>
+        <LocationContainer className="max-h-[403px] overflow-y-auto scrollbar-hide">
           <LocationItem locationName={terminalLocation.address} />
           {selectedLocations.map((location: GetLocationDTO, i: number) => (
             <React.Fragment key={location.id}>
@@ -358,6 +359,9 @@ export const Payment: NextPage = () => {
         onClose={closeQRModal}
         onSuccess={handleQRPaymentSuccess}
       />
+
+      {/* Фиксированные кнопки языков и FAQ */}
+      <FixedLanguageButtons />
     </div>
   );
 };

@@ -5,14 +5,13 @@ import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useMemo, useState } from 'react';
-import { MagnifyingGlassIcon, QuestionCircleIcon } from '@shared/icons';
-import { useLanguages } from '@shared/language';
+import { MagnifyingGlassIcon } from '@shared/icons';
 import { useTerminalLocations } from '@entities/locations/context/TerminalLocationsContext';
 import type { GetLocationDTO } from '@entities/locations/interface';
 import { useTerminalData } from '@entities/users/context/TerminalDataContext';
-import { FAQModal } from '@widgets/footer/modal';
 import { IdleVideoPlayer } from '@widgets/idle-video-player';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
+import { FixedLanguageButtons } from '@widgets/header';
 import LocationItem from '@widgets/location/ui/LocationItem';
 import Regions from '@widgets/regions/Regions';
 
@@ -21,9 +20,6 @@ export const Main: NextPage = () => {
   const router = useRouter();
   const pathname = usePathname();
   
-  // Используем хук для работы с языками
-  const { languages, handleLanguageChange, currentLanguage } = useLanguages();
-  const [showFAQModal, setShowFAQModal] = useState(false);
   const { terminalLocation: terminal } = useTerminalData();
   const { 
     addLocation, 
@@ -58,10 +54,6 @@ export const Main: NextPage = () => {
     router.push('/locations?openKeyboard=true');
   };
 
-  // Обработчик клика по кнопке помощи
-  const handleHelpClick = () => {
-    setShowFAQModal(true);
-  };
 
   // Инициализация главной страницы (ИСПРАВЛЕНО - избегаем циклических обновлений)
   useEffect(() => {
@@ -116,7 +108,11 @@ export const Main: NextPage = () => {
         </button>
 
         {/* Контейнер локаций */}
-        <LocationContainer>
+        <LocationContainer 
+          className="max-h-[403px] overflow-y-auto scrollbar-hide"
+          showEmptyMessage
+          emptyMessage={isLoadingLocations ? 'Загрузка локаций...' : 'Локации не найдены'}
+        >
           {displayLocations.length > 0 ? (
             displayLocations.map((item, i) => (
               <React.Fragment key={item.id}>
@@ -149,53 +145,12 @@ export const Main: NextPage = () => {
         </span>
       </div>
 
-      {/* Языки и помощь */}
-      <div className="flex justify-between pb-4 px-[80px]">
-        <div className="flex gap-4">
-          {languages.map(item => (
-            <button
-              onClick={() => handleLanguageChange(item.locale)}
-              key={item.locale}
-              className={`w-[150px] max-w-[150px] p-4 text-[#FFFFFF] text-[28px] font-bold rounded-2xl flex items-center gap-3 cursor-pointer ${
-                item.locale === currentLanguage ? 'bg-[#0047FF]' : 'bg-[#0A205747]'
-              }`}
-            >
-              {/* Флаг языка с оптимизацией */}
-              <Image
-                src={item.icon}
-                alt={`${item.name} flag`}
-                width={32}
-                height={24}
-                className="rounded-sm"
-                priority={item.locale === currentLanguage}
-                loading={item.locale === currentLanguage ? 'eager' : 'lazy'}
-              />
-              {item.name}
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={handleHelpClick}
-          className="flex items-center gap-2 text-white text-[28px] font-bold bg-[#0A205747] p-4 rounded-2xl cursor-pointer hover:bg-[#0A205760] transition-colors"
-        >
-          {t('MainTerminal.helpButton')}{' '}
-          <QuestionCircleIcon
-            size={28}
-            className="text-white"
-          />
-        </button>
-      </div>
 
       {/* IdleVideoPlayer - работает только на главной странице */}
       <IdleVideoPlayer />
       
-      {/* FAQ Modal */}
-      <FAQModal 
-        isOpen={showFAQModal} 
-        onClose={() => setShowFAQModal(false)} 
-      />
+      {/* Фиксированные кнопки языков и FAQ */}
+      <FixedLanguageButtons />
     </div>
   );
 };

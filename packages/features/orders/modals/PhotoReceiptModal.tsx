@@ -33,7 +33,8 @@ export const PhotoReceiptModal: React.FC<PhotoReceiptModalProps> = ({
             paddingRight: '140px', // 20px × 7
             paddingBottom: '56px', // 8px × 7
             paddingLeft: '140px', // 20px × 7
-            minWidth: '1400px', // Ширина для текста
+            width: '80%', // 80% ширины экрана вместо фиксированной ширины
+            maxWidth: '1200px', // Максимальная ширина
           }}
         >
           {/* Текст */}
