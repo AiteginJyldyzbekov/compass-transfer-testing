@@ -201,7 +201,7 @@ export const Receipt: NextPage = () => {
           onClick={returnToMainPage}
           disabled={disabled}
         >
-          <span className="text-[46px] text-[#F5F6F7] font-bold leading-[100%]">
+          <span className="text-[46px] text-[#F5F6F7] font-bold leading-[100%]" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
             {buttonText} {buttonSeconds < 10 ? `0:0${buttonSeconds}` : `0:${buttonSeconds}`}
           </span>
         </button>
@@ -394,7 +394,7 @@ export const Receipt: NextPage = () => {
       </div>
 
       {/* Заголовок */}
-      <h3 className="max-w-[800px] mx-auto text-[50px] text-[#0866FF] text-center leading-[120%] font-bold" style={{ fontFamily: 'Gilroy', fontWeight: 700 }}>
+      <h3 className="max-w-[800px] mx-auto text-[50px] text-[#0866FF] text-center leading-[120%] font-bold" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif', fontWeight: 700 }}>
         Получите чек
       </h3>
 
@@ -455,7 +455,7 @@ export const Receipt: NextPage = () => {
               </div>
 
               {/* Заголовок */}
-              <h3 className="text-[37px] text-[#4CAF50] text-center font-medium">
+              <h3 className="text-[37px] text-[#4CAF50] text-center font-medium" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
                 Транзакция успешна
               </h3>
             </div>
@@ -503,10 +503,10 @@ export const Receipt: NextPage = () => {
 
             {/* Итоговая сумма */}
             <div className="flex items-center justify-between">
-              <h4 className="text-[30px] text-[#0047FF] leading-[34px] font-medium">
+              <h4 className="text-[30px] text-[#0047FF] leading-[34px] font-medium" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
                 {t('purchase')}
               </h4>
-              <span className="text-[30px] text-[#0047FF] leading-[46px] font-bold">
+              <span className="text-[30px] text-[#0047FF] leading-[46px] font-bold" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
                 {orderData.tariff?.basePrice || orderData.finalPrice}KGS
               </span>
             </div>

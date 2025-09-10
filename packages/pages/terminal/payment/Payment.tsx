@@ -180,8 +180,8 @@ export const Payment: NextPage = () => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-[55px]">
-      <div className="max-w-3xl mx-auto flex flex-col gap-[50px]">
+    <div className="w-full flex flex-col min-h-screen">
+      <div className="max-w-3xl mx-auto flex flex-col gap-[50px] flex-1">
         {/* Анимация ожидания водителя - абсолютное позиционирование */}
         {isLoading && (
           <div className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-6">
@@ -204,116 +204,123 @@ export const Payment: NextPage = () => {
           </div>
         )}
 
-        {/* Заголовок и описание */}
-        <div className="text-center flex flex-col gap-[10px]">
-          <h3 className="text-[50px] text-[#090A0B] leading-[150%] font-bold">
-            {isLoading ? t('waitingDriver') : t('title')}
-          </h3>
-        </div>
+        {/* Основной контент */}
+        <div className="flex flex-col gap-[50px] flex-1">
+          {/* Заголовок и описание */}
+          <div className="text-center flex flex-col gap-[10px]">
+            <h3 className="text-[50px] text-[#090A0B] leading-[150%] font-bold">
+              {isLoading ? t('waitingDriver') : t('title')}
+            </h3>
+          </div>
 
-        {/* Локации с расстоянием */}
-        <LocationContainer className="max-h-[403px] overflow-y-auto scrollbar-hide">
-          <LocationItem locationName={terminalLocation.address} />
-          {selectedLocations.map((location: GetLocationDTO, i: number) => (
-            <React.Fragment key={location.id}>
-              {i > 0 && <div className="border-b border-gray-200" />}
-              <LocationItem
-                location={location}
-                disabled
-              />
-            </React.Fragment>
-          ))}
-          
-          {/* Блок с общим расстоянием маршрута */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-            <div className="text-[27px] text-[#A3A5AE] leading-[150%]">
-              Общее расстояние:
+          {/* Локации с расстоянием */}
+          <LocationContainer className="max-h-[403px] overflow-y-auto scrollbar-hide">
+            <LocationItem locationName={terminalLocation.address} />
+            {selectedLocations.map((location: GetLocationDTO, i: number) => (
+              <React.Fragment key={location.id}>
+                {i > 0 && <div className="border-b border-gray-200" />}
+                <LocationItem
+                  location={location}
+                  disabled
+                />
+              </React.Fragment>
+            ))}
+            
+            {/* Блок с общим расстоянием маршрута */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              <div className="text-[27px] text-[#A3A5AE] leading-[150%]">
+                Общее расстояние:
+              </div>
+              <div className="text-[27px] text-[#A3A5AE] leading-[150%]">
+                {isCalculatingDistance ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#A3A5AE] border-t-transparent" />
+                    <span>рассчитывается...</span>
+                  </div>
+                ) : (
+                  `${Math.round(totalDistance / 1000)} км`
+                )}
+              </div>
             </div>
-            <div className="text-[27px] text-[#A3A5AE] leading-[150%]">
+          </LocationContainer>
+
+          {/* Блок с информацией о тарифе */}
+          <div className="w-full h-36 bg-white/70 rounded-[36px] flex items-center pl-[50px]">
+            <div className="flex items-center gap-[30px] w-full">
+              <div className="text-black text-3xl font-semibold leading-[49.97px]" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
+                {economyTariff?.name || "Эконом-тест"}
+              </div>
+              <div className="flex-1 flex justify-end">
+                <div className="relative w-[302px] h-36">
+                  <Image 
+                    src="/taxi-tariffs/sedan.png" 
+                    alt="Sedan" 
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Сумма к оплате */}
+          <div className="flex items-center justify-between">
+            <h4 className="text-[64px] text-[#1E1E1E] leading-[90px] font-bold">
+              {t('paymentAmount')}
+            </h4>
+            <span className="text-[74px] text-[#0866FF] leading-[90px] font-bold">
               {isCalculatingDistance ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#A3A5AE] border-t-transparent" />
-                  <span>рассчитывается...</span>
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#0866FF] border-t-transparent" />
+                  <span className="text-[32px]">рассчитывается...</span>
                 </div>
               ) : (
-                `${Math.round(totalDistance / 1000)} км`
+                `${Math.round(calculatedPrice)}KGS`
               )}
-            </div>
+            </span>
           </div>
-        </LocationContainer>
 
-        {/* Блок с информацией о тарифе */}
-        <div className="w-full h-36 bg-white/70 rounded-[36px] flex items-center pl-[50px]">
-          <div className="flex items-center gap-[30px] w-full">
-            <div className="text-black text-3xl font-semibold font-['Gilroy'] leading-[49.97px]">
-              {economyTariff?.name || "Эконом-тест"}
-            </div>
-            <div className="flex-1 flex justify-end">
-              <div className="relative w-[302px] h-36">
-                <Image 
-                  src="/taxi-tariffs/sedan.png" 
-                  alt="Sedan" 
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
+        </div>
+
+        {/* Способы оплаты и кнопка назад - прижаты к низу */}
+        <div className="mt-auto pt-8 flex flex-col gap-8">
+          {/* Выбор способа оплаты */}
+          <div className="flex justify-center">
+            <span className="text-[34px] text-[#1E1E1E] leading-[100%] font-medium">
+              {t('selectPaymentMethod')}
+            </span>
           </div>
-        </div>
 
-        {/* Сумма к оплате */}
-        <div className="flex items-center justify-between">
-          <h4 className="text-[64px] text-[#1E1E1E] leading-[90px] font-bold">
-            {t('paymentAmount')}
-          </h4>
-          <span className="text-[74px] text-[#0866FF] leading-[90px] font-bold">
-            {isCalculatingDistance ? (
-              <div className="flex items-center gap-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#0866FF] border-t-transparent" />
-                <span className="text-[32px]">рассчитывается...</span>
-              </div>
-            ) : (
-              `${Math.round(calculatedPrice)}KGS`
-            )}
-          </span>
-        </div>
-
-        {/* Выбор способа оплаты */}
-        <div className="flex justify-center">
-          <span className="text-[34px] text-[#1E1E1E] leading-[100%] font-medium">
-            {t('selectPaymentMethod')}
-          </span>
-        </div>
-
-        {/* Методы оплаты */}
-        <div className="grid grid-cols-2 gap-[26px] items-center">
-          {paymentMethods.map((item: { name: string; icon: React.ComponentType<{ isActive: boolean }>; value: PaymentMethod }) => (
-            <button
-              key={item.value}
-              onClick={() => onMethodSelect(item.value)}
-              disabled={isLoading}
-              className={`h-[176px] flex items-center gap-3 px-[50px] cursor-pointer rounded-[30px] transition-all duration-200 ${
-                method === item.value ? 'bg-[#0866FF]' : 'bg-[#F5F6F7]'
-              } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
-            >
-              <Suspense fallback={<div className="w-8 h-8" />}>
-                <item.icon isActive={method === item.value} />
-              </Suspense>
-              <span
-                className={`text-[38px] text-start leading-[100%] font-bold ${
-                  item.value === method ? 'text-white bg-[#0866FF]' : 'text-[#0866FF] bg-[#F5F6F7]'
-                }`}
+          {/* Методы оплаты */}
+          <div className="grid grid-cols-2 gap-[26px] items-center">
+            {paymentMethods.map((item: { name: string; icon: React.ComponentType<{ isActive: boolean }>; value: PaymentMethod }) => (
+              <button
+                key={item.value}
+                onClick={() => onMethodSelect(item.value)}
+                disabled={isLoading}
+                className={`h-[176px] flex items-center gap-3 px-[50px] cursor-pointer rounded-[30px] transition-all duration-200 ${
+                  method === item.value ? 'bg-[#0866FF]' : 'bg-[#F5F6F7]'
+                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
               >
-                {isLoading && method === item.value 
-                  ? t('processing') 
-                  : getTranslatedMethodName(item.name)
-                }
-              </span>
-            </button>
-          ))}
-        </div>
-        {/* Кнопка назад */}
-        <div className='flex justify-center items-center'>
+                <Suspense fallback={<div className="w-8 h-8" />}>
+                  <item.icon isActive={method === item.value} />
+                </Suspense>
+                <span
+                  className={`text-[38px] text-start leading-[100%] font-bold ${
+                    item.value === method ? 'text-white bg-[#0866FF]' : 'text-[#0866FF] bg-[#F5F6F7]'
+                  }`}
+                >
+                  {isLoading && method === item.value 
+                    ? t('processing') 
+                    : getTranslatedMethodName(item.name)
+                  }
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Кнопка назад */}
+          <div className='flex justify-center items-center'>
           <button
             onClick={handleBack}
             className={clsx(
@@ -337,10 +344,11 @@ export const Payment: NextPage = () => {
             </div>
             
             {/* Текст по центру */}
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-medium font-['Gilroy'] leading-10">
+            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-medium leading-10" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
               {t('back')}
             </div>
           </button>
+          </div>
         </div>
       </div>
 

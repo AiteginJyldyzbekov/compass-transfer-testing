@@ -179,7 +179,7 @@ export const ReceiptTest: NextPage = () => {
     <div className="flex flex-col gap-[50px]">
 
       {/* Заголовок */}
-      <h3 className="max-w-[800px] mx-auto text-[50px] text-[#0866FF] text-center leading-[120%] font-bold" style={{ fontFamily: 'Gilroy', fontWeight: 700 }}>
+      <h3 className="max-w-[800px] mx-auto text-[50px] text-[#0866FF] text-center leading-[120%] font-bold" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif', fontWeight: 700 }}>
         Получите чек
       </h3>
       
