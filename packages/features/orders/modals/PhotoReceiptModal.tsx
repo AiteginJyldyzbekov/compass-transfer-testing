@@ -24,31 +24,31 @@ export const PhotoReceiptModal: React.FC<PhotoReceiptModalProps> = ({
       }}
     >
       <div 
-        className="bg-white rounded-[24px] flex flex-col items-center justify-center"
+        className="bg-white rounded-[168px] flex flex-col items-center justify-center"
         style={{
-          height: '140px',
-          paddingTop: '32px',
-          paddingRight: '40px',
-          paddingBottom: '32px',
-          paddingLeft: '40px',
-          minWidth: '400px',
+          height: '980px', // 140px × 7
+          paddingTop: '224px', // 32px × 7
+          paddingRight: '280px', // 40px × 7
+          paddingBottom: '224px', // 32px × 7
+          paddingLeft: '280px', // 40px × 7
+          minWidth: '2800px', // 400px × 7
         }}
       >
+        {/* Текст */}
+        <p className="text-center text-gray-800 text-6xl font-medium mb-8">
+          Сфотографируйте чек, чтобы<br/>
+          не потерять информацию о поездке
+        </p>
+        
         {/* GIF камеры */}
-        <div className="mb-4">
+        <div>
           <Lottie
             animationData={cameraAnimation}
             loop={true}
             autoplay={true}
-            style={{ width: '60px', height: '60px' }}
+            style={{ width: '420px', height: '420px' }} // 60px × 7
           />
         </div>
-        
-        {/* Текст */}
-        <p className="text-center text-gray-800 text-lg font-medium">
-          Сфотографируйте чек, чтобы<br/>
-          не потерять информацию о поездке
-        </p>
       </div>
     </div>
   );
