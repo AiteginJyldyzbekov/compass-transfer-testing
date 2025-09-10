@@ -13,13 +13,14 @@ import { useTerminalData } from '@entities/users/context/TerminalDataContext';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
 import { VirtualKeyboard } from '@widgets/virtual-keyboard';
+import clsx from 'clsx';
 
 export const Locations: NextPage = () => {
   const { terminalLocation: terminal } = useTerminalData();
-  const { 
-    selectedLocations, 
-    addLocation, 
-    removeLocation, 
+  const {
+    selectedLocations,
+    addLocation,
+    removeLocation,
     clearLocations,
     allLocations,
     isLoadingLocations: _isLoadingLocations,
@@ -33,7 +34,7 @@ export const Locations: NextPage = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearchingLocation, setIsSearchingLocation] = useState<boolean>(true);
   const [showVirtualKeyboard, setShowVirtualKeyboard] = useState<boolean>(false);
-  
+
 
   // Проверяем параметр openKeyboard при загрузке страницы
   useEffect(() => {
@@ -48,10 +49,10 @@ export const Locations: NextPage = () => {
   const displayLocations = allLocations.filter(location => {
     // Исключаем терминал
     if (location.id === terminal?.id) return false;
-    
+
     // Исключаем уже выбранные локации
     if (selectedLocations.some(selected => selected.id === location.id)) return false;
-    
+
     return true;
   });
 
@@ -120,7 +121,7 @@ export const Locations: NextPage = () => {
 
   return (
     <>
-    <div className="flex flex-col w-full max-w-3xl mx-auto gap-14">
+      <div className="flex flex-col w-full max-w-3xl mx-auto gap-14">
         {/* Выбранные локации */}
         <LocationContainer>
           <LocationItem locationName={terminal?.name} />
@@ -159,8 +160,8 @@ export const Locations: NextPage = () => {
                 {t('Locations.locationsTitle')}
               </h3>
             </div>
-            
-            <LocationContainer 
+
+            <LocationContainer
               className="max-h-[403px] overflow-y-auto scrollbar-hide"
               showEmptyMessage
               emptyMessage="Локации не найдены"
@@ -195,16 +196,36 @@ export const Locations: NextPage = () => {
 
         {/* Кнопки навигации */}
         <div className="flex gap-[30px]">
-          <button
-            onClick={handleBack}
-            className="w-32 h-32 relative bg-black/30 rounded-[100px] backdrop-blur-md flex items-center justify-center cursor-pointer"
-          >
-            <ChevronLeftIcon 
-              size={40} 
-              className="text-white" 
-            />
-          </button>
-          
+          <div className='flex justify-center items-center'>
+            <button
+              onClick={handleBack}
+              className={clsx(
+                // Основные стили контейнера
+                'w-[500px] h-32 relative rounded-[100px] backdrop-blur-md mx-auto',
+                // Цвет фона с прозрачностью #00000059 ≈ bg-black/35
+                'bg-black/35',
+                // Состояния
+                'transition-all duration-200',
+                'hover:bg-black/40 active:bg-black/50',
+                // Фокус
+                'focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-transparent'
+              )}
+            >
+              {/* Иконка стрелки строго слева */}
+              <div className="absolute left-16 top-1/2 transform -translate-y-1/2">
+                <ChevronLeftIcon
+                  size={52}
+                  className="text-white"
+                />
+              </div>
+
+              {/* Текст по центру */}
+              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-medium leading-10" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
+                {t('back')}
+              </div>
+            </button>
+          </div>
+
           {selectedLocations.length > 0 && (
             <Link
               href="/payment"
