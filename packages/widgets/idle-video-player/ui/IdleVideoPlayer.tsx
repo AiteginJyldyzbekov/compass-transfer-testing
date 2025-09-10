@@ -180,11 +180,23 @@ export const IdleVideoPlayer: React.FC = () => {
 
   return (
     <>
+      {/* Blur фон */}
+      {isVideoPlaying && (
+        <div 
+          className="fixed inset-0 w-full h-full z-40"
+          style={{
+            backdropFilter: 'blur(20px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          }}
+        />
+      )}
+      
       {/* Видео элемент */}
       <video
         ref={videoRef}
         className={`
-          fixed inset-0 w-full h-full object-cover z-50 bg-black cursor-pointer
+          fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+          w-[80vw] h-[60vh] object-cover z-50 bg-black cursor-pointer rounded-lg shadow-2xl
           ${isVideoPlaying ? 'block' : 'hidden'}
         `}
         src="/video/video.mp4"
