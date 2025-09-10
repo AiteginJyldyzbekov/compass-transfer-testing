@@ -88,7 +88,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="flex flex-col justify-between w-[801px] h-[724px] bg-gradient-to-b from-white/90 to-gray-100/90 rounded-[53.41px] backdrop-blur-xl items-center p-8">
         {/* Заголовок */}
-        <div className="text-center justify-start text-black text-4xl font-normal font-['Gilroy-Medium'] leading-10 mb-[95px]">
+        <div className="text-center justify-start text-black text-4xl font-normal leading-10 mb-[95px]" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
           Приложите карту к POS терминалу
         </div>
         

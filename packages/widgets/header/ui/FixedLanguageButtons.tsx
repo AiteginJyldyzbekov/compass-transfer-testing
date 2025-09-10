@@ -19,7 +19,7 @@ export const FixedLanguageButtons: React.FC = () => {
   return (
     <>
       {/* Фиксированные кнопки языков и FAQ */}
-      <div className="fixed bottom-20 left-4 right-4 z-40 flex justify-between items-center">
+      <div className="fixed bottom-40 left-4 right-4 z-40 flex justify-between items-center">
         {/* Кнопки языков */}
         <div className="flex gap-4">
           {languages.map(item => (
