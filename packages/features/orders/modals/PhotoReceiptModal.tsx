@@ -38,7 +38,7 @@ export const PhotoReceiptModal: React.FC<PhotoReceiptModalProps> = ({
           }}
         >
           {/* Текст */}
-          <p className="text-center text-gray-800 text-6xl font-medium">
+          <p className="text-center text-gray-800 text-[28px] font-medium">
             Сфотографируйте чек, чтобы<br/>
             не потерять информацию о поездке
           </p>

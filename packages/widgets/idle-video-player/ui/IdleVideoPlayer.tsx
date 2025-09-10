@@ -183,10 +183,11 @@ export const IdleVideoPlayer: React.FC = () => {
       {/* Blur фон с обработчиком клика */}
       {isVideoPlaying && (
         <div 
-          className="fixed inset-0 w-full h-full z-40 cursor-pointer"
+          className="fixed inset-0 w-full h-full cursor-pointer"
           style={{
             backdropFilter: 'blur(8px)',
             backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            zIndex: 45, // Выше кнопок языков (z-40), но ниже видео (z-index: 50)
           }}
           onClick={stopVideo} // Клик по оверлею = остановка видео
           title="Кликните для остановки видео"
