@@ -3,35 +3,27 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React from 'react';
 import { useTerminalLocations } from '@entities/locations/context/TerminalLocationsContext';
 import { REGIONS } from '@entities/locations/helpers/regions';
-import { LocationGroups } from '@widgets/location-groups';
 
-const Regions = () => {
+interface RegionsProps {
+  onCitySelect?: (cityName: string) => void;
+}
+
+const Regions: React.FC<RegionsProps> = ({ onCitySelect }) => {
   const t = useTranslations();
   const router = useRouter();
   const { loadLocations } = useTerminalLocations();
-  const [selectedCity, setSelectedCity] = useState<string | null>('Бишкек');
 
   const handleClick = (slug: string) => {
     // Получаем название города из slug
     const cityName = REGIONS(t).find(region => region.slug === slug)?.name;
-    if (cityName) {
-      setSelectedCity(cityName);
+    if (cityName && onCitySelect) {
+      onCitySelect(cityName);
     }
   };
 
-  const handleBack = () => {
-    setSelectedCity(null);
-  };
-
-  // Если выбран город, показываем группы
-  if (selectedCity) {
-    return <LocationGroups city={selectedCity} onBack={handleBack} />;
-  }
-
-  // Иначе показываем города
   return (
     <div className="w-full max-w-3xl mx-auto flex flex-wrap justify-center gap-x-[16px] gap-y-[22px]">
       {REGIONS(t).map(region => (

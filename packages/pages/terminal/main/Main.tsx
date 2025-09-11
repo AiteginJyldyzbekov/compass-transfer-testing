@@ -13,6 +13,7 @@ import { IdleVideoPlayer } from '@widgets/idle-video-player';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
 import Regions from '@widgets/regions/Regions';
+import { LocationGroupsList } from '@widgets/location-groups';
 
 export const Main: NextPage = () => {
   const t = useTranslations();
@@ -27,6 +28,8 @@ export const Main: NextPage = () => {
     isLoadingLocations, 
     loadLocations
   } = useTerminalLocations();
+  
+  const [selectedCity, setSelectedCity] = useState<string>('Бишкек');
 
   // Мемоизируем отфильтрованные локации для избежания пересчетов
   const displayLocations = useMemo(() => 
@@ -51,6 +54,11 @@ export const Main: NextPage = () => {
   // Обработчик клика по кнопке поиска - переход на страницу локаций
   const handleSearchClick = () => {
     router.push('/locations?openKeyboard=true');
+  };
+
+  // Обработчик выбора города
+  const handleCitySelect = (cityName: string) => {
+    setSelectedCity(cityName);
   };
 
 
@@ -84,7 +92,7 @@ export const Main: NextPage = () => {
       </div>
 
       {/* Регионы */}
-      <Regions />
+      <Regions onCitySelect={handleCitySelect} />
 
       {/* Кнопка поиска и локации */}
       <div className="flex flex-col gap-[42px] w-full max-w-3xl mx-auto">
@@ -106,35 +114,11 @@ export const Main: NextPage = () => {
           </div>
         </button>
 
-        {/* Контейнер локаций */}
-        <LocationContainer 
+        {/* Контейнер групп локаций */}
+        <LocationGroupsList 
+          city={selectedCity}
           className="max-h-[403px] overflow-y-auto scrollbar-hide"
-          showEmptyMessage
-          emptyMessage={isLoadingLocations ? 'Загрузка локаций...' : 'Локации не найдены'}
-        >
-          {displayLocations.length > 0 ? (
-            displayLocations.map((item, i) => (
-              <React.Fragment key={item.id}>
-                {i > 0 && <div className="border-b border-gray-200" />}
-                <LocationItem
-                  location={item}
-                  handleClick={() => handleLocationClick(item as GetLocationDTO)}
-                />
-              </React.Fragment>
-            ))
-          ) : (
-            <div className="text-center flex flex-col gap-2">
-              <p className="text-[24px] text-[#666666]">
-                {isLoadingLocations ? 'Загрузка локаций...' : 'Локации не найдены'}
-              </p>
-              {!isLoadingLocations && (
-                <p className="text-[18px] text-[#999999]">
-                  Всего локаций: {displayLocations.length || 0}
-                </p>
-              )}
-            </div>
-          )}
-        </LocationContainer>
+        />
       </div>
 
       {/* Описание такси */}
