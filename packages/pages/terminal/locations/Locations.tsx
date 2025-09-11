@@ -151,7 +151,7 @@ export const Locations: NextPage = () => {
               onChange={handleSearchChange}
               onClick={handleSearchClick}
               placeholder={t('Locations.searchPlaceholder')}
-              className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold w-full outline-none cursor-pointer"
+              className="text-[32px] text-[#1E1E1E] leading-[150%] font-semibold w-full outline-none cursor-pointer placeholder:text-[#1E1E1E]"
               readOnly
             />
           </LocationContainer>
