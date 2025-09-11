@@ -10,6 +10,7 @@ import { useSignalR } from '@shared/hooks/signal/useSignalR';
 import { OrderStatus } from '@entities/orders/enums';
 import type { GetOrderDTO } from '@entities/orders/interface/GetOrderDTO';
 import { useNotificationSound } from '@features/notifications';
+import { useOrderStack } from '@features/order-stack';
 
 interface IncomingOrderModalProps {
   onOrderAccepted?: () => void; // Callback для обновления dashboard
@@ -28,6 +29,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
   // Хуки
   const { on, off } = useSignalR();
   const { playSound, stopSound } = useNotificationSound();
+  const { addToStack } = useOrderStack();
 
   // SignalR слушатель входящих заказов
   useEffect(() => {
@@ -142,6 +144,11 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
 
   // Закрытие модального окна
   const handleClose = useCallback(async () => {
+    // Если есть текущий заказ и это мгновенный заказ, добавляем его в стакан
+    if (currentOrder && orderType === 'Instant') {
+      addToStack(currentOrder);
+    }
+
     setIsModalOpen(false);
     setCurrentOrderId(null);
     setCurrentRideId(null);
@@ -155,7 +162,7 @@ export function IncomingOrderModal({ onOrderAccepted }: IncomingOrderModalProps)
     } catch {
       // Игнорируем ошибки выхода из очереди
     }
-  }, [stopSound]);
+  }, [stopSound, currentOrder, orderType, addToStack]);
 
   // Таймер автоматического закрытия через 10 секунд
   useEffect(() => {
