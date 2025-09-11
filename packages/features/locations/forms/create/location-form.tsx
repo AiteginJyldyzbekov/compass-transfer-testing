@@ -51,6 +51,7 @@ export function useLocationFormLogic({
       longitude: 74.603967,
       isActive: true,
       popular: false,
+      group: '',
     },
   });
 
@@ -72,10 +73,10 @@ export function useLocationFormLogic({
         const addressComponents = parseAddress(data.address);
 
         // Используем пользовательское название, если оно задано, иначе формируем из адреса
-        const locationName = data.name.trim() || 
+        const locationName = data.name.trim() ||
           [addressComponents.houseNumber, addressComponents.street]
             .filter(Boolean)
-            .join(', ') || 
+            .join(', ') ||
           'Новая локация';
 
         // Подготавливаем данные для API
@@ -91,8 +92,9 @@ export function useLocationFormLogic({
           longitude: data.longitude,
           isActive: data.isActive,
           popular1: data.popular,
+          group: data.group,
         };
-
+        console.log(data)
         const result = await locationsApi.createLocation(apiData);
 
         if (result && result.name) {

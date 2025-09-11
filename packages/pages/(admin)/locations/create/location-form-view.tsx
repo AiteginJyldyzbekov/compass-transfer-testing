@@ -47,6 +47,7 @@ export function LocationFormView({
                       labels={{
                         name: 'Название локации *',
                         type: 'Тип локации *',
+                        group: 'Группа локации',
                       }}
                     />
                   </div>

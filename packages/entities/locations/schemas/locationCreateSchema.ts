@@ -72,6 +72,11 @@ export const locationCreateSchema = z.object({
       required_error: 'Необходимо указать популярность',
       invalid_type_error: 'Поле должно быть логическим значением',
     }),
+
+  group: z
+    .string()
+    .optional()
+    .or(z.literal('')),
 });
 
 /**

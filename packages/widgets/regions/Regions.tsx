@@ -3,22 +3,35 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTerminalLocations } from '@entities/locations/context/TerminalLocationsContext';
 import { REGIONS } from '@entities/locations/helpers/regions';
+import { LocationGroups } from '@widgets/location-groups';
 
 const Regions = () => {
   const t = useTranslations();
   const router = useRouter();
   const { loadLocations } = useTerminalLocations();
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   const handleClick = (slug: string) => {
-    // Загружаем локации для региона через контекст
-    loadLocations({ regionSlug: slug });
-    // Переходим на страницу выбора локаций
-    router.push('/locations');
+    // Получаем название города из slug
+    const cityName = REGIONS(t).find(region => region.slug === slug)?.name;
+    if (cityName) {
+      setSelectedCity(cityName);
+    }
   };
 
+  const handleBack = () => {
+    setSelectedCity(null);
+  };
+
+  // Если выбран город, показываем группы
+  if (selectedCity) {
+    return <LocationGroups city={selectedCity} onBack={handleBack} />;
+  }
+
+  // Иначе показываем города
   return (
     <div className="w-full max-w-3xl mx-auto flex flex-wrap justify-center gap-x-[16px] gap-y-[22px]">
       {REGIONS(t).map(region => (

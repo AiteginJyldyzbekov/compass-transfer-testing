@@ -10,6 +10,7 @@ import { AddIcon, ChevronLeftIcon } from '@shared/icons';
 import type { GetLocationDTO } from '@entities/locations';
 import { useTerminalLocations, type LoadLocationsParams } from '@entities/locations/context/TerminalLocationsContext';
 import { useTerminalData } from '@entities/users/context/TerminalDataContext';
+import { locationsApi } from '@shared/api/locations';
 import LocationContainer from '@widgets/location/ui/LocationContainer';
 import LocationItem from '@widgets/location/ui/LocationItem';
 import { VirtualKeyboard } from '@widgets/virtual-keyboard';
@@ -34,27 +35,59 @@ export const Locations: NextPage = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearchingLocation, setIsSearchingLocation] = useState<boolean>(true);
   const [showVirtualKeyboard, setShowVirtualKeyboard] = useState<boolean>(false);
+  const [groupLocations, setGroupLocations] = useState<GetLocationDTO[]>([]);
+  const [isLoadingGroup, setIsLoadingGroup] = useState(false);
 
 
-  // Проверяем параметр openKeyboard при загрузке страницы
+  // Проверяем параметры при загрузке страницы
   useEffect(() => {
     const openKeyboard = searchParams.get('openKeyboard');
+    const groupId = searchParams.get('group');
 
     if (openKeyboard === 'true') {
       setShowVirtualKeyboard(true);
     }
+
+    // Если передан параметр group, загружаем локации группы
+    if (groupId) {
+      loadGroupLocations(groupId);
+    }
   }, [searchParams]);
 
-  // Вычисляем отфильтрованные локации напрямую (как в Main.tsx)
-  const displayLocations = allLocations.filter(location => {
-    // Исключаем терминал
-    if (location.id === terminal?.id) return false;
+  // Функция загрузки локаций по группе
+  const loadGroupLocations = async (groupId: string) => {
+    try {
+      setIsLoadingGroup(true);
+      const response = await locationsApi.getLocationsByGroup(groupId);
+      setGroupLocations(response.data || []);
+    } catch (error) {
+      console.error('Ошибка загрузки локаций группы:', error);
+      setGroupLocations([]);
+    } finally {
+      setIsLoadingGroup(false);
+    }
+  };
 
-    // Исключаем уже выбранные локации
-    if (selectedLocations.some(selected => selected.id === location.id)) return false;
+  // Определяем, какие локации показывать
+  const groupId = searchParams.get('group');
+  const isGroupView = Boolean(groupId);
 
-    return true;
-  });
+  // Вычисляем отфильтрованные локации
+  const displayLocations = isGroupView 
+    ? groupLocations.filter(location => {
+        // Исключаем терминал
+        if (location.id === terminal?.id) return false;
+        // Исключаем уже выбранные локации
+        if (selectedLocations.some(selected => selected.id === location.id)) return false;
+        return true;
+      })
+    : allLocations.filter(location => {
+        // Исключаем терминал
+        if (location.id === terminal?.id) return false;
+        // Исключаем уже выбранные локации
+        if (selectedLocations.some(selected => selected.id === location.id)) return false;
+        return true;
+      });
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
@@ -111,16 +144,19 @@ export const Locations: NextPage = () => {
 
 
   useEffect(() => {
-    // ВАЖНО: загружаем локации только если есть реальный поисковый запрос
-    // Пустые строки и строки из одних пробелов игнорируем
-    if (debouncedSearchQuery.trim().length > 0) {
-      // Elastic search по всем полям локации (FTS.Query для автодополнения)
-      loadLocations({ searchQuery: debouncedSearchQuery });
-    } else {
-      // При пустом поиске загружаем все локации региона
-      reloadRegionLocations();
+    // Поиск работает только в обычном режиме (не для группы)
+    if (!isGroupView) {
+      // ВАЖНО: загружаем локации только если есть реальный поисковый запрос
+      // Пустые строки и строки из одних пробелов игнорируем
+      if (debouncedSearchQuery.trim().length > 0) {
+        // Elastic search по всем полям локации (FTS.Query для автодополнения)
+        loadLocations({ searchQuery: debouncedSearchQuery });
+      } else {
+        // При пустом поиске загружаем все локации региона
+        reloadRegionLocations();
+      }
     }
-  }, [debouncedSearchQuery, loadLocations, reloadRegionLocations]);
+  }, [debouncedSearchQuery, loadLocations, reloadRegionLocations, isGroupView]);
 
   return (
     <>
@@ -143,10 +179,10 @@ export const Locations: NextPage = () => {
         {/* Поиск ОТДЕЛЬНО от выбранных локаций */}
         <div className="flex justify-between items-center">
           <h3 className="text-[28px] text-[#090A0B] font-bold leading-[130%]">
-            {t('Locations.locationsTitle')}
+            {isGroupView ? 'Локации группы' : t('Locations.locationsTitle')}
           </h3>
         </div>
-        {(selectedLocations.length === 0 || isSearchingLocation) && (
+        {(selectedLocations.length === 0 || isSearchingLocation) && !isGroupView && (
           <LocationContainer>
             <input
               type="text"
@@ -161,14 +197,18 @@ export const Locations: NextPage = () => {
         )}
 
         {/* Список локаций */}
-        {(selectedLocations.length === 0 || isSearchingLocation) && (
+        {(selectedLocations.length === 0 || isSearchingLocation || isGroupView) && (
           <div className="flex flex-col gap-3">
             <LocationContainer
               className="max-h-[300px] overflow-y-auto scrollbar-hide"
               showEmptyMessage
-              emptyMessage="Локации не найдены"
+              emptyMessage={isGroupView ? "В группе нет локаций" : "Локации не найдены"}
             >
-              {displayLocations.map((location, i) => (
+              {isLoadingGroup ? (
+                <div className="text-center py-8">
+                  <p className="text-[24px] text-[#666666]">Загрузка локаций группы...</p>
+                </div>
+              ) : displayLocations.map((location, i) => (
                 <React.Fragment key={location.id}>
                   {i > 0 && <div className="border-b border-gray-200" />}
                   <LocationItem

@@ -82,6 +82,7 @@ interface CreateLocationDTO {
   isActive: boolean;
   popular1?: boolean;
   popular2?: boolean;
+  group?: string | null;
 }
 
 // DTO для обновления локации
@@ -203,6 +204,19 @@ export const locationsApi = {
     if (result.error) {
       throw new Error(result.error.message);
     }
+  },
+
+  // Получение локаций по группе
+  getLocationsByGroup: async (groupId: string): Promise<LocationListResponseDTO> => {
+    const result = await apiGet<LocationListResponseDTO>('/Location', { 
+      params: { Group: groupId } 
+    });
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data!;
   },
 };
 
