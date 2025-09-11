@@ -179,7 +179,7 @@ export const Payment: NextPage = () => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-[55px]">
+    <div className="w-full flex flex-col gap-[55px] pb-40">
       <div className="max-w-3xl mx-auto flex flex-col gap-[50px]">
         {/* Анимация ожидания водителя - абсолютное позиционирование */}
         {isLoading && (
@@ -311,13 +311,13 @@ export const Payment: NextPage = () => {
             </button>
           ))}
         </div>
-        {/* Кнопка назад */}
-        <div className='flex justify-center items-center'>
+        {/* Кнопка назад - фиксированная внизу */}
+        <div className='fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50'>
           <button
             onClick={handleBack}
             className={clsx(
               // Основные стили контейнера
-              'w-[500px] h-32 relative rounded-[100px] backdrop-blur-md mx-auto',
+              'w-[500px] h-32 relative rounded-[100px] backdrop-blur-md',
               // Цвет фона с прозрачностью #00000059 ≈ bg-black/35
               'bg-black/35',
               // Состояния

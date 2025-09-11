@@ -121,7 +121,7 @@ export const Locations: NextPage = () => {
 
   return (
     <>
-      <div className="flex flex-col w-full max-w-3xl mx-auto gap-14">
+      <div className="flex flex-col w-full max-w-3xl mx-auto gap-14 pb-40">
         {/* Выбранные локации */}
         <LocationContainer>
           <LocationItem locationName={terminal?.name} />
@@ -194,8 +194,8 @@ export const Locations: NextPage = () => {
           </div>
         )}
 
-        {/* Кнопки навигации */}
-        <div className="flex gap-[30px]">
+        {/* Кнопки навигации - фиксированные внизу */}
+        <div className="fixed bottom-8 left-4 right-4 z-50 flex gap-[30px]">
           <button
             onClick={handleBack}
             className={clsx(
