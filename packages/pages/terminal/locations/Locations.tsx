@@ -114,8 +114,8 @@ export const Locations: NextPage = () => {
     // ВАЖНО: загружаем локации только если есть реальный поисковый запрос
     // Пустые строки и строки из одних пробелов игнорируем
     if (debouncedSearchQuery.trim().length > 0) {
-      // Поиск по запросу
-      loadLocations({ address: debouncedSearchQuery });
+      // Elastic search по всем полям локации (FTS.Query для автодополнения)
+      loadLocations({ searchQuery: debouncedSearchQuery });
     }
   }, [debouncedSearchQuery, loadLocations]);
 

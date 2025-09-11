@@ -8,13 +8,13 @@ import type { GetLocationDTO } from '@entities/locations/interface';
 export interface LoadLocationsParams {
   // Основные фильтры
   regionSlug?: string;
-  searchQuery?: string;
+  searchQuery?: string; // Используется для FTS.Query (elastic search)
   popularOnly?: boolean;
   
   // Все доступные параметры API
   type?: LocationType;
   name?: string;
-  address?: string;
+  address?: string; // Точный поиск по адресу
   district?: string;
   city?: string;
   country?: string;
@@ -24,6 +24,10 @@ export interface LoadLocationsParams {
   isActive?: boolean;
   popular1?: boolean;
   popular2?: boolean;
+  
+  // Elastic search параметры
+  'FTS.Query'?: string; // Полнотекстовый поиск для автодополнения
+  'FTS.Plain'?: string; // Простой полнотекстовый поиск
   
   // Для дополнительных параметров (если появятся новые)
   customFilters?: Record<string, unknown>;

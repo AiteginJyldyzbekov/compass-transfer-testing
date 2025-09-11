@@ -165,9 +165,24 @@ export const TerminalLocationsProvider: React.FC<TerminalLocationsProviderProps>
         }
       }
 
-      // Поиск по адресу (для обратной совместимости с searchQuery)
-      if (params?.searchQuery && params.searchQuery.trim() && !params?.address) {
-        requestParams.address = params.searchQuery;
+      // Elastic search по всем полям локации (FTS.Query для автодополнения)
+      if (params?.searchQuery && params.searchQuery.trim()) {
+        requestParams['FTS.Query'] = params.searchQuery;
+      }
+      
+      // Прямая передача FTS.Query (если передан напрямую)
+      if (params?.['FTS.Query']) {
+        requestParams['FTS.Query'] = params['FTS.Query'];
+      }
+      
+      // Прямая передача FTS.Plain (если передан напрямую)
+      if (params?.['FTS.Plain']) {
+        requestParams['FTS.Plain'] = params['FTS.Plain'];
+      }
+      
+      // Поиск по адресу (для обратной совместимости, если не используется searchQuery)
+      if (params?.address && !params?.searchQuery && !params?.['FTS.Query']) {
+        requestParams.address = params.address;
       }
 
       const result: GetLocationDTOKeysetPaginationResult = await locationsApi.getLocations(requestParams);
