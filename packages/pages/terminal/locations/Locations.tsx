@@ -116,8 +116,11 @@ export const Locations: NextPage = () => {
     if (debouncedSearchQuery.trim().length > 0) {
       // Elastic search по всем полям локации (FTS.Query для автодополнения)
       loadLocations({ searchQuery: debouncedSearchQuery });
+    } else {
+      // При пустом поиске загружаем все локации региона
+      reloadRegionLocations();
     }
-  }, [debouncedSearchQuery, loadLocations]);
+  }, [debouncedSearchQuery, loadLocations, reloadRegionLocations]);
 
   return (
     <>
