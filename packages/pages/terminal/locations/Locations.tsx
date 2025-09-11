@@ -121,7 +121,7 @@ export const Locations: NextPage = () => {
 
   return (
     <>
-      <div className="flex flex-col w-full max-w-3xl mx-auto gap-14 pb-40">
+      <div className="flex flex-col w-full max-w-3xl mx-auto gap-10">
         {/* Выбранные локации */}
         <LocationContainer>
           <LocationItem locationName={terminal?.name} />
@@ -156,13 +156,13 @@ export const Locations: NextPage = () => {
         {(selectedLocations.length === 0 || isSearchingLocation) && (
           <div className="flex flex-col gap-3">
             <div className="flex justify-between items-center">
-              <h3 className="text-[32px] text-[#090A0B] font-bold leading-[150%]">
+              <h3 className="text-[28px] text-[#090A0B] font-bold leading-[130%]">
                 {t('Locations.locationsTitle')}
               </h3>
             </div>
 
             <LocationContainer
-              className="max-h-[403px] overflow-y-auto scrollbar-hide"
+              className="max-h-[300px] overflow-y-auto scrollbar-hide"
               showEmptyMessage
               emptyMessage="Локации не найдены"
             >
@@ -184,18 +184,18 @@ export const Locations: NextPage = () => {
           <div className="flex justify-center">
             <button
               onClick={() => setIsSearchingLocation(true)}
-              className="h-[92px] px-[40px] flex items-center gap-[14px] bg-gradient-to-r from-[#1943E6] to-[#0866FF] rounded-[100px] cursor-pointer"
+              className="h-[80px] px-[35px] flex items-center gap-[12px] bg-gradient-to-r from-[#1943E6] to-[#0866FF] rounded-[100px] cursor-pointer"
             >
               <AddIcon />
-              <span className="text-[38px] text-white font-semibold leading-[150%]">
+              <span className="text-[32px] text-white font-semibold leading-[130%]">
                 {t('Locations.addPoint')}
               </span>
             </button>
           </div>
         )}
 
-        {/* Кнопки навигации - фиксированные внизу */}
-        <div className="fixed bottom-8 left-4 right-4 z-50 flex gap-[30px]">
+        {/* Кнопки навигации */}
+        <div className="flex gap-[30px]">
           <button
             onClick={handleBack}
             className={clsx(

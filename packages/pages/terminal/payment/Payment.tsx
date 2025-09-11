@@ -179,8 +179,8 @@ export const Payment: NextPage = () => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-[55px] pb-40">
-      <div className="max-w-3xl mx-auto flex flex-col gap-[50px]">
+    <div className="w-full flex flex-col gap-[35px]">
+      <div className="max-w-3xl mx-auto flex flex-col gap-[30px]">
         {/* Анимация ожидания водителя - абсолютное позиционирование */}
         {isLoading && (
           <div className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-6">
@@ -204,14 +204,14 @@ export const Payment: NextPage = () => {
         )}
 
         {/* Заголовок и описание */}
-        <div className="text-center flex flex-col gap-[10px]">
-          <h3 className="text-[50px] text-[#090A0B] leading-[150%] font-bold">
+        <div className="text-center flex flex-col gap-[8px]">
+          <h3 className="text-[40px] text-[#090A0B] leading-[130%] font-bold">
             {isLoading ? t('waitingDriver') : t('title')}
           </h3>
         </div>
 
         {/* Локации с расстоянием */}
-        <LocationContainer className="max-h-[403px] overflow-y-auto scrollbar-hide">
+        <LocationContainer className="max-h-[300px] overflow-y-auto scrollbar-hide">
           <LocationItem locationName={terminalLocation.address} />
           {selectedLocations.map((location: GetLocationDTO, i: number) => (
             <React.Fragment key={location.id}>
@@ -242,13 +242,13 @@ export const Payment: NextPage = () => {
         </LocationContainer>
 
         {/* Блок с информацией о тарифе */}
-        <div className="w-full h-36 bg-white/70 rounded-[36px] flex items-center pl-[50px]">
+        <div className="w-full h-28 bg-white/70 rounded-[28px] flex items-center pl-[40px]">
           <div className="flex items-center gap-[30px] w-full">
-            <div className="text-black text-3xl font-semibold leading-[49.97px]" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
+            <div className="text-black text-2xl font-semibold leading-[40px]" style={{ fontFamily: 'Gilroy, system-ui, -apple-system, sans-serif' }}>
               {economyTariff?.name || "Эконом-тест"}
             </div>
             <div className="flex-1 flex justify-end">
-              <div className="relative w-[302px] h-36">
+              <div className="relative w-[240px] h-28">
                 <Image 
                   src="/taxi-tariffs/sedan.png" 
                   alt="Sedan" 
@@ -262,10 +262,10 @@ export const Payment: NextPage = () => {
 
         {/* Сумма к оплате */}
         <div className="flex items-center justify-between">
-          <h4 className="text-[64px] text-[#1E1E1E] leading-[90px] font-bold">
+          <h4 className="text-[50px] text-[#1E1E1E] leading-[70px] font-bold">
             {t('paymentAmount')}
           </h4>
-          <span className="text-[74px] text-[#0866FF] leading-[90px] font-bold">
+          <span className="text-[60px] text-[#0866FF] leading-[70px] font-bold">
             {isCalculatingDistance ? (
               <div className="flex items-center gap-3">
                 <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#0866FF] border-t-transparent" />
@@ -279,19 +279,19 @@ export const Payment: NextPage = () => {
 
         {/* Выбор способа оплаты */}
         <div className="flex justify-center">
-          <span className="text-[34px] text-[#1E1E1E] leading-[100%] font-medium">
+          <span className="text-[28px] text-[#1E1E1E] leading-[100%] font-medium">
             {t('selectPaymentMethod')}
           </span>
         </div>
 
         {/* Методы оплаты */}
-        <div className="grid grid-cols-2 gap-[26px] items-center">
+        <div className="grid grid-cols-2 gap-[20px] items-center">
           {paymentMethods.map((item: { name: string; icon: React.ComponentType<{ isActive: boolean }>; value: PaymentMethod }) => (
             <button
               key={item.value}
               onClick={() => onMethodSelect(item.value)}
               disabled={isLoading}
-              className={`h-[176px] flex items-center gap-3 px-[50px] cursor-pointer rounded-[30px] transition-all duration-200 ${
+              className={`h-[140px] flex items-center gap-3 px-[40px] cursor-pointer rounded-[24px] transition-all duration-200 ${
                 method === item.value ? 'bg-[#0866FF]' : 'bg-[#F5F6F7]'
               } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
             >
@@ -299,7 +299,7 @@ export const Payment: NextPage = () => {
                 <item.icon isActive={method === item.value} />
               </Suspense>
               <span
-                className={`text-[38px] text-start leading-[100%] font-bold ${
+                className={`text-[30px] text-start leading-[100%] font-bold ${
                   item.value === method ? 'text-white bg-[#0866FF]' : 'text-[#0866FF] bg-[#F5F6F7]'
                 }`}
               >
@@ -311,13 +311,13 @@ export const Payment: NextPage = () => {
             </button>
           ))}
         </div>
-        {/* Кнопка назад - фиксированная внизу */}
-        <div className='fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50'>
+        {/* Кнопка назад */}
+        <div className='flex justify-center items-center'>
           <button
             onClick={handleBack}
             className={clsx(
               // Основные стили контейнера
-              'w-[500px] h-32 relative rounded-[100px] backdrop-blur-md',
+              'w-[500px] h-32 relative rounded-[100px] backdrop-blur-md mx-auto',
               // Цвет фона с прозрачностью #00000059 ≈ bg-black/35
               'bg-black/35',
               // Состояния
