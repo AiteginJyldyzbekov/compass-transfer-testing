@@ -44,10 +44,6 @@ export function OrderStackList() {
     }
   };
 
-  const handleRejectOrder = (orderId: string) => {
-    removeFromStack(orderId);
-    toast.info('Заказ отклонен');
-  };
 
   const formatTimeRemaining = (expiresAt: number) => {
     const remaining = expiresAt - currentTime;
@@ -68,7 +64,7 @@ export function OrderStackList() {
           Стакан заказов пуст
         </p>
         <p className="text-gray-400 text-xs mt-1">
-          Отклоненные заказы появятся здесь на 3 минуты
+          Новые заказы появятся здесь автоматически
         </p>
       </div>
     );
@@ -151,22 +147,15 @@ export function OrderStackList() {
               </span>
             </div>
 
-            {/* Кнопки действий */}
+            {/* Кнопка принятия заказа */}
             {!isExpired && (
               <div className="flex gap-2">
                 <button
                   onClick={() => handleAcceptOrder(order.id)}
                   disabled={isAccepting}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isAccepting ? 'Принимаем...' : 'Принять заказ'}
-                </button>
-                <button
-                  onClick={() => handleRejectOrder(order.id)}
-                  disabled={isAccepting}
-                  className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Отклонить
                 </button>
               </div>
             )}
