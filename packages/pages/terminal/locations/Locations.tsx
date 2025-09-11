@@ -138,6 +138,11 @@ export const Locations: NextPage = () => {
         </LocationContainer>
 
         {/* Поиск ОТДЕЛЬНО от выбранных локаций */}
+        <div className="flex justify-between items-center">
+          <h3 className="text-[28px] text-[#090A0B] font-bold leading-[130%]">
+            {t('Locations.locationsTitle')}
+          </h3>
+        </div>
         {(selectedLocations.length === 0 || isSearchingLocation) && (
           <LocationContainer>
             <input
@@ -155,12 +160,6 @@ export const Locations: NextPage = () => {
         {/* Список локаций */}
         {(selectedLocations.length === 0 || isSearchingLocation) && (
           <div className="flex flex-col gap-3">
-            <div className="flex justify-between items-center">
-              <h3 className="text-[28px] text-[#090A0B] font-bold leading-[130%]">
-                {t('Locations.locationsTitle')}
-              </h3>
-            </div>
-
             <LocationContainer
               className="max-h-[300px] overflow-y-auto scrollbar-hide"
               showEmptyMessage
