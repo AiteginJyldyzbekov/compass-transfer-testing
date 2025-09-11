@@ -12,7 +12,7 @@ const Regions = () => {
   const t = useTranslations();
   const router = useRouter();
   const { loadLocations } = useTerminalLocations();
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string | null>('Бишкек');
 
   const handleClick = (slug: string) => {
     // Получаем название города из slug
