@@ -77,10 +77,6 @@ export const locationCreateSchema = z.object({
     .string()
     .optional()
     .or(z.literal('')),
-
-  selectedRegion: z
-    .string()
-    .min(1, { message: 'Область обязательна' }),
 });
 
 /**

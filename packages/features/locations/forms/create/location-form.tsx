@@ -52,7 +52,6 @@ export function useLocationFormLogic({
       isActive: true,
       popular: false,
       group: '',
-      selectedRegion: '',
     },
   });
 
@@ -80,30 +79,15 @@ export function useLocationFormLogic({
             .join(', ') ||
           'Новая локация';
 
-        // Определяем город: для Бишкека автоматически, для остальных - из select
-        let finalCity = addressComponents.city || 'Не известно';
-        let finalRegion = addressComponents.region || data.region || 'Не известно';
-
-        // Если выбран регион вручную (не Бишкек), используем его
-        if (data.selectedRegion && data.selectedRegion !== 'Бишкек') {
-          finalCity = data.selectedRegion;
-          finalRegion = data.selectedRegion;
-        }
-        // Если автоматически определился Бишкек, оставляем как есть
-        else if (addressComponents.city === 'Бишкек' || finalCity === 'Бишкек') {
-          finalCity = 'Бишкек';
-          finalRegion = 'Бишкек';
-        }
-
         // Подготавливаем данные для API
         const apiData = {
           name: locationName,
           description: data.description || null,
           type: data.type,
           address: data.address,
-          city: finalCity,
+          city: addressComponents.city || 'Не известно',
           country: addressComponents.country || 'Кыргызстан',
-          region: finalRegion,
+          region: addressComponents.region || data.region || 'Не известно',
           latitude: data.latitude,
           longitude: data.longitude,
           isActive: data.isActive,

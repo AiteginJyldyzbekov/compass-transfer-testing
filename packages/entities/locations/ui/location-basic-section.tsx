@@ -100,39 +100,6 @@ export function LocationBasicSection({
         )}
       </div>
 
-      {/* Выбор области */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          Область *
-        </Label>
-        <Select
-          value={formData.selectedRegion || ''}
-          onValueChange={(value: string) => {
-            setValue('selectedRegion', value, { shouldValidate: true, shouldDirty: true });
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Выберите область" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Бишкек">Бишкек</SelectItem>
-            <SelectItem value="Чуй">Чуй</SelectItem>
-            <SelectItem value="Нарын">Нарын</SelectItem>
-            <SelectItem value="Ош">Ош</SelectItem>
-            <SelectItem value="Баткен">Баткен</SelectItem>
-            <SelectItem value="Талас">Талас</SelectItem>
-            <SelectItem value="Жалал-Абад">Жалал-Абад</SelectItem>
-            <SelectItem value="Иссык-Куль">Иссык-Куль</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.selectedRegion && (
-          <p className="text-sm text-red-600">{errors.selectedRegion.message}</p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          Для Бишкека город определяется автоматически, для остальных областей выберите нужную
-        </p>
-      </div>
-
       {/* Группа локации */}
       <div className="space-y-2">
         <LocationGroupSelect label={labels.group || 'Группа локации'} />
