@@ -23,32 +23,8 @@ export const LocationGroupsList: React.FC<LocationGroupsListProps> = ({ city, cl
   const loadGroups = async () => {
     try {
       setIsLoading(true);
-      
-      // Временное решение: получаем все группы, а затем фильтруем по локациям
-      const allGroupsResponse = await locationGroupsApi.getLocationGroups();
-      const allGroups = allGroupsResponse.data;
-      
-      // Получаем все локации для фильтрации
-      const { locationsApi } = await import('@shared/api/locations');
-      const locationsResponse = await locationsApi.getLocations({ 
-        city: city,
-        size: 1000 // Получаем много локаций для фильтрации
-      });
-      
-      // Находим уникальные группы, которые имеют локации в выбранном городе
-      const cityLocationGroups = new Set<string>();
-      locationsResponse.data.forEach(location => {
-        if (location.group) {
-          cityLocationGroups.add(location.group);
-        }
-      });
-      
-      // Фильтруем группы по найденным ID
-      const filteredGroups = allGroups.filter(group => 
-        cityLocationGroups.has(group.id)
-      );
-      
-      setGroups(filteredGroups);
+      const response = await locationGroupsApi.getLocationGroupsByCity(city);
+      setGroups(response.data);
     } catch (error) {
       console.error('Ошибка загрузки групп:', error);
       toast.error('Ошибка загрузки групп локаций');
