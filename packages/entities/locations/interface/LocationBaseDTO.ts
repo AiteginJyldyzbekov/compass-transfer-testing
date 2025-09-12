@@ -17,4 +17,5 @@ export interface LocationBaseDTO {
   isActive: boolean;
   popular1?: boolean;
   popular2?: boolean;
+  group?: string | null;
 }

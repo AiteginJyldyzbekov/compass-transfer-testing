@@ -69,6 +69,7 @@ export function LocationEditView({ locationId }: LocationEditViewProps) {
       isActive: true,
       popular: false,
       popular2: false,
+      group: null,
     },
     onBack: () => router.push('/locations'),
     onSuccess: () => router.push('/locations'),
@@ -86,6 +87,7 @@ export function LocationEditView({ locationId }: LocationEditViewProps) {
         isActive: location.isActive ?? true,
         popular: location.popular1 ?? false,
         popular2: location.popular2 ?? false,
+        group: location.group || '',
       });
     }
   }, [location, logic.form]);
@@ -138,6 +140,7 @@ function LocationEditFormView({
                       labels={{
                         name: 'Название локации *',
                         type: 'Тип локации *',
+                        group: 'Группа локации',
                       }}
                     />
                   </div>

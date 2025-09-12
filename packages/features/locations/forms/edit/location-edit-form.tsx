@@ -44,6 +44,7 @@ export function useLocationEditFormLogic({
     isActive: boolean;
     popular: boolean;
     popular2: boolean;
+    group?: string | null;
   };
   onBack: () => void;
   onSuccess: () => void;
@@ -62,6 +63,8 @@ export function useLocationEditFormLogic({
       longitude: initialData.longitude,
       isActive: initialData.isActive,
       popular: initialData.popular,
+      popular2: initialData.popular2,
+      group: initialData.group || '',
     },
   });
 
@@ -102,6 +105,7 @@ export function useLocationEditFormLogic({
           isActive: data.isActive,
           popular1: data.popular,
           popular2: data.popular2,
+          group: data.group || null,
         };
         
         const result = await locationsApi.updateLocation(locationId, apiData);

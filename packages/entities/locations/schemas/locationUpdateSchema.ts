@@ -78,6 +78,11 @@ export const locationUpdateSchema = z.object({
       required_error: 'Необходимо указать популярность 2',
       invalid_type_error: 'Поле должно быть логическим значением',
     }),
+
+  group: z
+    .string()
+    .optional()
+    .or(z.literal('')),
 });
 
 /**

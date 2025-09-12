@@ -41,6 +41,9 @@ export interface LocationDTO {
   /** Популярная локация 2 */
   popular2: boolean;
 
+  /** Группа локации */
+  group?: string | null;
+
   /** ID локации */
   id: string;
 }
