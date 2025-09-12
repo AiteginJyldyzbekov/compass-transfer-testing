@@ -11,7 +11,7 @@ export function getBasicLocationDataStatus(
   isSubmitted: boolean,
 ): 'complete' | 'warning' | 'error' | 'pending' {
   // Проверяем наличие ошибок
-  const hasErrors = errors.name || errors.description || errors.type || errors.address;
+  const hasErrors = errors.name || errors.description || errors.type || errors.address || errors.selectedRegion;
   
   if (hasErrors) {
     return 'error';
@@ -23,7 +23,9 @@ export function getBasicLocationDataStatus(
     formData.name.length > 0 && 
     formData.type &&
     formData.address &&
-    formData.address.length > 0;
+    formData.address.length > 0 &&
+    formData.selectedRegion &&
+    formData.selectedRegion.length > 0;
 
   if (requiredFieldsFilled) {
     // Если описание не заполнено, показываем предупреждение
@@ -170,6 +172,7 @@ export function getBasicLocationDataErrors(
   if (errors.description?.message) errorList.push(errors.description.message);
   if (errors.type?.message) errorList.push(errors.type.message);
   if (errors.address?.message) errorList.push(errors.address.message);
+  if (errors.selectedRegion?.message) errorList.push(errors.selectedRegion.message);
 
   return errorList;
 }
