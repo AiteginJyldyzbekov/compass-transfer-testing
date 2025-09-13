@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { SignalRProvider, NotificationProvider, QueryClientProvider } from '@app/providers';
 import { UserRoleProvider } from '@shared/contexts';
 import { SheetProvider } from '@shared/lib';
@@ -36,6 +37,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const userRole = (await getUserFromCookie('role')) as Role | null;
   const userFullName = (await getUserFromCookie('fullName')) as string | null;
   const userId = (await getUserFromCookie('id')) as string | null;
+
+  // Проверяем авторизацию - если пользователь не авторизован, перенаправляем на логин
+  if (!userRole || !userId || !userFullName) {
+    redirect('/login');
+  }
 
   // Формируем объект пользователя для передачи в AppSidebar
   // Создаем email из fullName, так как бэк не передает email

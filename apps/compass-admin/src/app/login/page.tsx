@@ -1,7 +1,18 @@
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
+import { getUserFromCookie } from '@shared/lib/parse-cookie';
 import { LoginForm } from '@features/auth';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  // Проверяем, не авторизован ли уже пользователь
+  const userRole = await getUserFromCookie('role');
+  const userId = await getUserFromCookie('id');
+  const userFullName = await getUserFromCookie('fullName');
+
+  // Если пользователь уже авторизован, перенаправляем на главную
+  if (userRole && userId && userFullName) {
+    redirect('/');
+  }
   return (
     <div className='grid min-h-svh lg:grid-cols-2'>
       <div className='flex flex-col gap-4 p-6 md:p-10'>
