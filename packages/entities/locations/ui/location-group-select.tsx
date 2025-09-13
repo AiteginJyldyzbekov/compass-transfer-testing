@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DeleteConfirmationModal } from '@shared/ui/modals/delete-confirmation-modal';
 import { toast } from '@shared/lib/conditional-toast';
 import { locationGroupsApi, type LocationGroupDTO } from '@shared/api/location-groups';
+import { getRegionsForSelect } from '@shared/constants/kyrgyzstan-regions';
 import type { LocationCreateFormData } from '../schemas/locationCreateSchema';
 
 interface LocationGroupSelectProps {
@@ -33,7 +34,9 @@ export function LocationGroupSelect({ label = 'Группа локации' }: L
   const [editingGroup, setEditingGroup] = useState<LocationGroupDTO | null>(null);
   const [deletingGroup, setDeletingGroup] = useState<LocationGroupDTO | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupCity, setNewGroupCity] = useState('');
   const [editGroupName, setEditGroupName] = useState('');
+  const [editGroupCity, setEditGroupCity] = useState('');
 
   const selectedGroupId = watch('group');
 
@@ -61,10 +64,19 @@ export function LocationGroupSelect({ label = 'Группа локации' }: L
       return;
     }
 
+    if (!newGroupCity) {
+      toast.error('Выберите область');
+      return;
+    }
+
     try {
-      const newGroup = await locationGroupsApi.createLocationGroup({ name: newGroupName.trim() });
+      const newGroup = await locationGroupsApi.createLocationGroup({ 
+        name: newGroupName.trim(),
+        city: newGroupCity
+      });
       setGroups(prev => [...prev, newGroup]);
       setNewGroupName('');
+      setNewGroupCity('');
       setIsCreateModalOpen(false);
       toast.success('Группа создана успешно');
     } catch (error) {
@@ -79,14 +91,21 @@ export function LocationGroupSelect({ label = 'Группа локации' }: L
       return;
     }
 
+    if (!editGroupCity) {
+      toast.error('Выберите область');
+      return;
+    }
+
     try {
       const updatedGroup = await locationGroupsApi.updateLocationGroup(editingGroup.id, { 
-        name: editGroupName.trim() 
+        name: editGroupName.trim(),
+        city: editGroupCity
       });
       setGroups(prev => prev.map(group => 
         group.id === editingGroup.id ? updatedGroup : group
       ));
       setEditGroupName('');
+      setEditGroupCity('');
       setEditingGroup(null);
       setIsEditModalOpen(false);
       toast.success('Группа обновлена успешно');
@@ -125,6 +144,7 @@ export function LocationGroupSelect({ label = 'Группа локации' }: L
   const openEditModal = (group: LocationGroupDTO) => {
     setEditingGroup(group);
     setEditGroupName(group.name);
+    setEditGroupCity(group.city);
     setIsEditModalOpen(true);
   };
 
@@ -169,18 +189,37 @@ export function LocationGroupSelect({ label = 'Группа локации' }: L
                   placeholder="Введите название группы"
                 />
               </div>
+              <div>
+                <Label htmlFor="newGroupCity">Область</Label>
+                <Select value={newGroupCity} onValueChange={setNewGroupCity}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите область" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getRegionsForSelect().map((region) => (
+                      <SelectItem key={region.value} value={region.value}>
+                        {region.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    setNewGroupName('');
+                    setNewGroupCity('');
+                  }}
                 >
                   Отмена
                 </Button>
                 <Button
                   type="button"
                   onClick={handleCreateGroup}
-                  disabled={!newGroupName.trim()}
+                  disabled={!newGroupName.trim() || !newGroupCity}
                 >
                   Создать
                 </Button>
@@ -197,7 +236,10 @@ export function LocationGroupSelect({ label = 'Группа локации' }: L
           <div className="space-y-1">
             {groups.map((group) => (
               <div key={group.id} className="flex items-center justify-between p-2 border rounded-md">
-                <span className="text-sm">{group.name}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{group.name}</span>
+                  <span className="text-xs text-muted-foreground">{group.city}</span>
+                </div>
                 <div className="flex gap-1">
                   <Button
                     type="button"
@@ -238,18 +280,38 @@ export function LocationGroupSelect({ label = 'Группа локации' }: L
                 placeholder="Введите название группы"
               />
             </div>
+            <div>
+              <Label htmlFor="editGroupCity">Область</Label>
+              <Select value={editGroupCity} onValueChange={setEditGroupCity}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите область" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getRegionsForSelect().map((region) => (
+                    <SelectItem key={region.value} value={region.value}>
+                      {region.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsEditModalOpen(false)}
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditGroupName('');
+                  setEditGroupCity('');
+                  setEditingGroup(null);
+                }}
               >
                 Отмена
               </Button>
               <Button
                 type="button"
                 onClick={handleEditGroup}
-                disabled={!editGroupName.trim()}
+                disabled={!editGroupName.trim() || !editGroupCity}
               >
                 Сохранить
               </Button>

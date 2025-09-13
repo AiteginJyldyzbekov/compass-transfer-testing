@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useTerminalLocations } from '@entities/locations/context/TerminalLocationsContext';
-import { REGIONS } from '@entities/locations/helpers/regions';
+import { REGIONS, CITY_MAPPING } from '@entities/locations/helpers/regions';
 
 interface RegionsProps {
   onCitySelect?: (cityName: string) => void;
@@ -17,8 +17,8 @@ const Regions: React.FC<RegionsProps> = ({ onCitySelect }) => {
   const { loadLocations } = useTerminalLocations();
 
   const handleClick = (slug: string) => {
-    // Получаем название города из slug
-    const cityName = REGIONS(t).find(region => region.slug === slug)?.name;
+    // Получаем название города из маппинга для API
+    const cityName = CITY_MAPPING[slug as keyof typeof CITY_MAPPING];
     if (cityName && onCitySelect) {
       onCitySelect(cityName);
     }

@@ -72,7 +72,7 @@ export const LocationGroupsList: React.FC<LocationGroupsListProps> = ({ city, cl
       ) : (
         <div className="text-center py-8">
           <p className="text-[24px] text-[#666666]">
-            В городе {city} нет групп локаций
+            В области {city} нет групп локаций
           </p>
         </div>
       )}

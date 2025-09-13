@@ -115,10 +115,12 @@ export const Main: NextPage = () => {
         </button>
 
         {/* Контейнер групп локаций */}
-        <LocationGroupsList 
-          city={selectedCity}
-          className="max-h-[403px] overflow-y-auto scrollbar-hide"
-        />
+        <div className="flex flex-col gap-4">
+          <LocationGroupsList 
+            city={selectedCity}
+            className="max-h-[403px] overflow-y-auto scrollbar-hide"
+          />
+        </div>
       </div>
 
       {/* Описание такси */}

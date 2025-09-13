@@ -4,6 +4,7 @@ import { apiGet, apiPost, apiPut, apiDelete } from './client';
 export interface LocationGroupDTO {
   id: string;
   name: string;
+  city: string;
 }
 
 // Интерфейс для ответа со списком групп
@@ -18,11 +19,13 @@ export interface LocationGroupListResponseDTO {
 // Интерфейс для создания группы
 export interface CreateLocationGroupDTO {
   name: string;
+  city: string;
 }
 
 // Интерфейс для обновления группы
 export interface UpdateLocationGroupDTO {
   name: string;
+  city: string;
 }
 
 export const locationGroupsApi = {
