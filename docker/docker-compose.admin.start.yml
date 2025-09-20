@@ -6,7 +6,7 @@ services:
     volumes:
       - ../:/app
     ports:
-      - '3027:3027'
+      - '4027:4027'
     environment:
       - NODE_ENV=production
     env_file:

@@ -32,7 +32,7 @@ export const driverQueueApi = {
    * @returns QueueStatusResponse если в очереди (200), данные заказа если есть активный заказ (404), null если нет данных
    */
   async getQueueStatus(): Promise<QueueStatusResponse | null> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.compass.local:3032';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.compass.local:3030';
     
     try {
       const response = await axios.get<QueueStatusResponse>(`${API_URL}/DriverQueue/self`, {

@@ -154,7 +154,7 @@ const nextConfig: NextConfig = {
         source: '/Auth/:path*',
         headers: [
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: 'https://compass-api.karaoketest.ru:80' },
+          { key: 'Access-Control-Allow-Origin', value: 'http://api.compass.local:3030' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT' },
           {
             key: 'Access-Control-Allow-Headers',
@@ -170,7 +170,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://compass-api.karaoketest.ru:80/:path*',
+        destination: 'http://api.compass.local:3030/:path*',
       },
     ];
   },
