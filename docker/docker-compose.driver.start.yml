@@ -8,7 +8,7 @@ services:
     ports:
       - '4028:4028'
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
     env_file:
       - ../apps/compass-driver/.env.production
     command: > 

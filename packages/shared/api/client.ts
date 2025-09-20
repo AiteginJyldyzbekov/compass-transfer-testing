@@ -9,7 +9,10 @@ import axios, {
 // Базовый URL API
 const getApiUrl = () => {
   return (
-    process.env.NEXT_PUBLIC_API_URL || 'http://api.compass.local:3030'
+    process.env.NEXT_PUBLIC_API_URL ||
+    (() => {
+      throw new Error('API URL is not defined in env (NEXT_PUBLIC_API_URL)');
+    })()
   );
 };
 
